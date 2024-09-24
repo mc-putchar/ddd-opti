@@ -5,7 +5,7 @@ SRCDIR := src
 INCDIR := include
 BINDIR := build
 
-SRCS := main
+SRCS := main DroneState
 
 CXX := c++
 CXXFLAGS := -Wall -Wextra

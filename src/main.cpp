@@ -9,19 +9,22 @@
 #include <errno.h>   // Error integer and strerror() function
 #include <fcntl.h>   // Contains file controls like O_RDWR
 #include <termios.h> // Contains POSIX terminal control definitions
-#include <unistd.h>  // write(), read(), close()
+
+#include "DroneState.hpp"
 
 #define X_LIMIT 4
 #define Y_LIMIT 2
 #define Z_LIMIT 4
 #define SAFETY_MARGIN 0.2
+#define SERIAL_PORT "/dev/ttyUSB0"
 
-extern "C" void serial_write() {
-  int serial_port = open("/dev/ttyUSB0", O_RDWR);
+extern "C" int setup_serial() {
+  int serial_port = open(SERIAL_PORT, O_RDWR);
 
   // Check for errors
   if (serial_port < 0) {
     printf("Error %i from open: %s\n", errno, strerror(errno));
+    return (-1);
   }
   // Create new termios struct, we call it 'tty' for convention
   // No need for "= {0}" at the end as we'll immediately write the existing
@@ -34,6 +37,7 @@ extern "C" void serial_write() {
   // is undefined
   if (tcgetattr(serial_port, &tty) != 0) {
     printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+    return (-1);
   }
   struct termios {
     tcflag_t c_iflag; /* input mode flags */
@@ -84,19 +88,11 @@ extern "C" void serial_write() {
   // Save tty settings, also checking for error
   if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
     printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    return (-1);
   }
-  // unsigned char msg[] = {'0', '{', 'l', 'l', 'o', '\r'};
-  static const char msg[] = "0{'setpoint': [0,0,0]}";
-  if (write(serial_port, msg, sizeof(msg)))
-    printf("%s\n", msg);
+  return (serial_port);
 }
-struct SetPoint {
-  float x, y, z;
-  float yaw, pitch, roll;
-  int stoptime;
-  SetPoint(float x, float y, float z, float yaw, float pitch, float roll)
-      : x(x), y(y), z(z), yaw(yaw), pitch(pitch), roll(roll) {}
-};
+
 
 class Trajectory {
 public:
@@ -113,6 +109,7 @@ void TT_RigidBodyLocation(int rbIndex,                  //== RigidBody Index
                           float *qw,                             //== Quaternion
                           float *yaw, float *pitch, float *roll) //== Euler
 {
+  (void)rbIndex;
   *x = 0;
   *y = 0;
   *z = 0;
@@ -121,6 +118,7 @@ void TT_RigidBodyLocation(int rbIndex,                  //== RigidBody Index
 }
 
 int main() {
+  int   serial_port;
   float x, y, z;
   float qx, qy, qz, qw;
   float yaw, pitch, roll;
@@ -131,8 +129,14 @@ int main() {
             << std::endl
             << "yaw: " << yaw << " pitch: " << pitch << " roll: " << roll
             << std::endl;
-  serial_write();
+  if ((serial_port = setup_serial()) < 0)
+    return (1);
   SetPoint point = SetPoint(x, y, z, yaw, pitch, roll);
   std::cout << "SetPoint: " << point << std::endl;
+  DroneState test_drone = DroneState();
+  std::cout << test_drone.arm() << std::endl;
+  std::cout << test_drone.disarm() << std::endl;
+  if (test_drone.send(serial_port, test_drone.arm()) < 0)
+    std::cerr << "Failed to send message on serial port." << std::endl;
   return (0);
 }
