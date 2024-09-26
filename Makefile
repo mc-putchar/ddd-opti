@@ -5,7 +5,7 @@ SRCDIR := src
 INCDIR := include
 BINDIR := build
 
-SRCS := main DroneState
+SRCS := main DroneState Serial OptiMock CommandQueue
 
 CXX := c++
 CXXFLAGS := -Wall -Wextra

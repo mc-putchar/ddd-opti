@@ -28,5 +28,35 @@
     "directory": "/home/mc/Documents/ddd_optitrack",
     "file": "/home/mc/Documents/ddd_optitrack/src/DroneState.cpp",
     "output": "/home/mc/Documents/ddd_optitrack/build/DroneState.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/serial.o",
+      "src/serial.cpp"
+    ],
+    "directory": "/home/mc/Documents/ddd_optitrack",
+    "file": "/home/mc/Documents/ddd_optitrack/src/serial.cpp",
+    "output": "/home/mc/Documents/ddd_optitrack/build/serial.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/OptiMock.o",
+      "src/OptiMock.cpp"
+    ],
+    "directory": "/home/mc/Documents/ddd_optitrack",
+    "file": "/home/mc/Documents/ddd_optitrack/src/OptiMock.cpp",
+    "output": "/home/mc/Documents/ddd_optitrack/build/OptiMock.o"
   }
 ]

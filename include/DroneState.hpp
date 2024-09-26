@@ -1,9 +1,15 @@
 #ifndef DRONESTATE_HPP
 #define DRONESTATE_HPP
 
+#include <csignal>
 #include <map>
 #include <sstream>
 #include <string>
+
+namespace DroneController {
+volatile static sig_atomic_t g_stopme(0);
+extern "C" void sig_handler(int sig);
+}
 
 struct SetPoint {
   float x, y, z;
@@ -33,12 +39,14 @@ public:
   DroneState &operator=(DroneState const &rhs);
   ~DroneState();
 
+  std::string get_state() const;
+  bool send_state(int serial_port);
   ssize_t send(int serial_port, std::string const &msg);
-  std::string arm();
-  std::string disarm();
-  std::string setpoint(SetPoint const &point);
-  std::string setpos(float x, float y, float z, float yaw);
-  std::string trim(float x, float y, float z, float yaw);
+  void arm();
+  void disarm();
+  void setpoint(SetPoint const &point);
+  void setpos(float x, float y, float z, float yaw);
+  void trim(float x, float y, float z, float yaw);
 
 private:
   int index;
