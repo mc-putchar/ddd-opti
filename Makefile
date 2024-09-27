@@ -1,11 +1,12 @@
-
-NAME := ddd-opti
+CLIENT := ddd-client
+CONTROLLER := ddd-controller
 
 SRCDIR := src
 INCDIR := include
 BINDIR := build
 
-SRCS := main DroneState
+CONTROLLER_SRCS = controller DroneState
+CLIENT_SRCS := client DroneState
 
 CXX := c++
 CXXFLAGS := -Wall -Wextra
@@ -19,12 +20,21 @@ COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
 
-.PHONY: all clean fclean re help
+.PHONY: all client controller run clean fclean re help
 
-all: $(NAME)	# Compile all targets
+all: $(CONTROLLER) $(CLIENT)	# Compile all targets
+client: $(CLIENT)	# Compile client
+controller: $(CONTROLLER)	# Compile controller
 
-$(NAME): $(SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(SRCS:%=$(BINDIR)/%.o) -o $(NAME) $(LDFLAGS)
+run: client controller
+	./$(CONTROLLER) &
+	./$(CLIENT)
+
+$(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
+	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER) $(LDFLAGS)
+
+$(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
+	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT) $(LDFLAGS)
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
@@ -36,7 +46,8 @@ clean:	# Remove compiled binary object files
 	rm -fr $(BINDIR)
 
 fclean: clean	# Remove all compiled binaries
-	rm -f $(NAME)
+	rm -f $(CONTROLLER)
+	rm -f $(CLIENT)
 
 re: fclean all	# Re-compile project
 
