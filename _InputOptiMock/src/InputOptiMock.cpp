@@ -30,13 +30,13 @@ InputOptiMock::InputOptiMock() : rbIndex(0), Sx(1.0f), Sy(1.0f), Sz(1.0f),
 		clearScreen();
         std::cout << "Setpoint  X: " << Sx << std::endl;
 		std::cout << "Current   X: " << x  << std::endl;
-		printBar(x, "            "); // Print bar for X
+		printBar(x); // Print bar for X
 		std::cout << "Setpoint  Y: " << Sy << std::endl;
 		std::cout << "Current   Y: " << y  << std::endl;
-		printBar(y, "            "); // Print bar for Y
+		printBar(y); // Print bar for Y
 		std::cout << "Setpoint  Z: " << Sz << std::endl;
 		std::cout << "Current   Z: " << z  << std::endl;
-		printBar(z, "            "); // Print bar for Z
+		printBar(z); // Print bar for Z
 
 
 		// Update x to oscillate between 0 and 1
@@ -65,11 +65,11 @@ void InputOptiMock::clearScreen() {
 #endif
 }
 
-void InputOptiMock::printBar(float value, const std::string& label) {
+void InputOptiMock::printBar(float value) {
     // Calculate the number of characters to represent the value
     int barPosition = static_cast<int>(value * BAR_LENGTH);
     
-    std::cout << label << " |";
+    std::cout << "            " << " |";
     for (int i = 0; i < BAR_LENGTH; ++i) {
         if (i < barPosition) {
             std::cout << " ";

@@ -19,7 +19,7 @@ class InputOptiMock
 	~InputOptiMock();
 
 	void clearScreen();
-	void printBar(float value, const std::string& label);
+	void printBar(float value);
 
 
 
