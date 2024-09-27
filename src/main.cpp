@@ -20,11 +20,10 @@ void TT_RigidBodyLocation(int rbIndex, float *x, float *y, float *z, float *qx,
 #define PROMPT "Input drone command: "
 using DroneController::g_stopme;
 using DroneController::sig_handler;
-int loop(int port) {
+int loop(int port, std::vector<DroneState> drones) {
   char buff[BUFSIZE];
   ssize_t r;
   std::string cmd;
-  DroneState drone = DroneState();
   while (!g_stopme) {
     std::cout << PROMPT;
     std::getline(std::cin, cmd);
@@ -32,17 +31,17 @@ int loop(int port) {
       sig_handler(42);
       break;
   } else if (cmd == "arm" || cmd == "a") {
-      drone.arm();
+      drones[0].arm();
       std::cout << "Drone armed" << std::endl;
     } else if (cmd == "disarm" || cmd == "d") {
-      drone.disarm();
+      drones[0].disarm();
       std::cout << "Drone disarmed" << std::endl;
     } else if (cmd == "set" || cmd == "s") {
       std::cout << "Setpoint(x y z): ";
       std::string tmp;
       std::getline(std::cin, tmp);
       SetPoint point(tmp);
-      drone.setpoint(point);
+      drones[0].setpoint(point);
       std::cout << "New target: " << point.x << ", " << point.y << ", "
                 << point.z << std::endl;
     } else if (cmd == "r") {
@@ -51,7 +50,7 @@ int loop(int port) {
         std::cout << "serial: " << buff << std::endl;
       }
     } else if (cmd == "c" || cmd == "check") {
-      std::cout << "Drone state: " << drone.get_state() << std::endl;
+      std::cout << "Drone state: " << drones[0].get_state() << std::endl;
     } else if (cmd == "t" || cmd == "trim") {
       std::cout << "Trim(x y z yaw): ";
       std::string tmp;
@@ -63,7 +62,7 @@ int loop(int port) {
       iss >> y;
       iss >> z;
       iss >> yaw;
-      drone.trim(x, y, z, yaw);
+      drones[0].trim(x, y, z, yaw);
       std::cout << "Set trim to: " << x << ", " << y << ", " << z << ", " << yaw
                 << std::endl;
     } else {
@@ -101,7 +100,7 @@ int main() {
             << "yaw: " << yaw << " pitch: " << pitch << " roll: " << roll
             << std::endl;
   std::cout << "Drone state: " << drone.get_state() << std::endl;
-  std::thread main_loop(loop, serial.get_fd());
+  std::thread main_loop(loop, serial.get_fd(), std::ref(drones));
   std::thread transmitter(&Serial::handle_serial, &serial, std::ref(drones));
   main_loop.join();
   transmitter.join();

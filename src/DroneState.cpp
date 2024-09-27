@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <sys/types.h>
 #include <unistd.h> // write()
 
 #include "DroneState.hpp"
@@ -18,8 +19,7 @@ std::ostream &operator<<(std::ostream &os, SetPoint &p) {
   return os;
 }
 
-DroneState::DroneState() : index(0), armed(false), json() {
-}
+DroneState::DroneState() : index(0), armed(false), json() {}
 
 DroneState::DroneState(int idx) : index(idx), armed(false), json() {
   json["armed"] = "false";
@@ -60,13 +60,15 @@ std::string DroneState::get_state() const {
 bool DroneState::send_state(int serial_port) {
   std::string state(std::to_string(this->index));
   state.append(this->get_state());
-  return (write(serial_port, state.c_str(), state.length()) > 0);
-}
-
-ssize_t DroneState::send(int serial_port, std::string const &msg) {
-  std::cout << "Port: " << serial_port << " msg: " << msg
-            << " Len: " << msg.length() << std::endl;
-  return write(serial_port, msg.c_str(), msg.length());
+  ssize_t wb(0);
+  ssize_t rem(state.length());
+  while (rem) {
+    wb = write(serial_port, state.c_str(), state.length());
+    if (wb < 0)
+      return false;
+    rem -= wb;
+  }
+  return true;
 }
 
 void DroneState::arm() {

@@ -37,12 +37,12 @@
       "-Iinclude",
       "-c",
       "-o",
-      "build/serial.o",
-      "src/serial.cpp"
+      "build/Serial.o",
+      "src/Serial.cpp"
     ],
     "directory": "/home/mc/Documents/ddd_optitrack",
-    "file": "/home/mc/Documents/ddd_optitrack/src/serial.cpp",
-    "output": "/home/mc/Documents/ddd_optitrack/build/serial.o"
+    "file": "/home/mc/Documents/ddd_optitrack/src/Serial.cpp",
+    "output": "/home/mc/Documents/ddd_optitrack/build/Serial.o"
   },
   {
     "arguments": [
@@ -58,5 +58,20 @@
     "directory": "/home/mc/Documents/ddd_optitrack",
     "file": "/home/mc/Documents/ddd_optitrack/src/OptiMock.cpp",
     "output": "/home/mc/Documents/ddd_optitrack/build/OptiMock.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/c++",
+      "-Wall",
+      "-Wextra",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/CommandQueue.o",
+      "src/CommandQueue.cpp"
+    ],
+    "directory": "/home/mc/Documents/ddd_optitrack",
+    "file": "/home/mc/Documents/ddd_optitrack/src/CommandQueue.cpp",
+    "output": "/home/mc/Documents/ddd_optitrack/build/CommandQueue.o"
   }
 ]
