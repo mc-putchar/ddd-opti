@@ -61,12 +61,13 @@ ssize_t DroneState::send(int fd, std::string const &msg) {
 // to allow arming the drone
 bool DroneState::startup(int serial_port) {
   std::string str(std::to_string(this->index));
-  str.append(this->trim(0, 0, -800, 0));
+  // NOTE: hardcoded roll trim value for current test drone
+  str.append(this->trim(0, 64, -800, 0));
   if (this->send(serial_port, str) < 0) {
     std::cerr << "Failed to send throttle down signal" << std::endl;
     return false;
   }
-  this->json["trim"] = "[0,0,-800,0]";
+  this->json["trim"] = "[0,64,-800,0]";
   str = std::to_string(this->index);
   str.append(this->arm());
   sleep(1);

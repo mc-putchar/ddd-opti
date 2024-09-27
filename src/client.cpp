@@ -1,8 +1,12 @@
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <iostream>
 
 #include "DroneState.hpp"
 
 #define VERSION 0.1
+#define PIPE_NAME "/tmp/ddd-data-interchange"
 #define PROMPT "Input drone command: "
 
 void loop(int fd) {
@@ -67,7 +71,14 @@ void loop(int fd) {
 }
 
 int main() {
-  // TODO: Setup communication with controller
-  loop(1);
+  int const fifo = open(PIPE_NAME, O_WRONLY);
+  if (fifo < 0) {
+    std::cerr << "Failed to open communication with controller. Ensure it is "
+                 "already running."
+              << std::endl;
+    return (1);
+  }
+  loop(fifo);
+  close(fifo);
   return (0);
 }

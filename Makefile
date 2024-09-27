@@ -20,11 +20,15 @@ COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
 
-.PHONY: all clean fclean re help
+.PHONY: all client controller run clean fclean re help
 
 all: $(CONTROLLER) $(CLIENT)	# Compile all targets
 client: $(CLIENT)	# Compile client
 controller: $(CONTROLLER)	# Compile controller
+
+run: client controller
+	./$(CONTROLLER) &
+	./$(CLIENT)
 
 $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER) $(LDFLAGS)

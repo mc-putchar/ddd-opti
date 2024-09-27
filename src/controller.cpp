@@ -4,6 +4,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -14,7 +16,8 @@
 
 #define VERSION 0.1
 #define SERIAL_PORT "/dev/ttyUSB0"
-#define BUFFER_SIZE 4096
+#define PIPE_NAME "/tmp/ddd-data-interchange"
+#define BUFFER_SIZE 512
 
 static volatile std::sig_atomic_t g_stopped(0);
 
@@ -65,18 +68,35 @@ extern "C" int setup_serial() {
   return (serial_port);
 }
 
-int transmit(int fd) {
+void transmit(int serial, int pipe) {
   ssize_t wb(0);
+  ssize_t rb(0);
+  char buf[BUFFER_SIZE];
   std::string msg;
   DroneState drone = DroneState(0);
   while (!g_stopped) {
-    wb = write(fd, msg.c_str(), msg.length());
+    // TODO: switch to select / poll to only read when there is data
+    rb = read(pipe, buf, BUFFER_SIZE - 1);
+    if (rb > 0) {
+      buf[rb] = 0;
+      // TODO: update state
+      std::cout << "Client sent: " << buf << std::endl;
+	  msg = buf;
+      buf[0] = 0;
+	  std::cout << "Msg update: " << msg << std::endl;
+    }
+    if (!msg.empty())
+      wb = write(serial, msg.c_str(), msg.length());
     if (wb < 0) {
       std::cerr << "Failed to send serial data to transmitter." << std::endl;
       continue;
+    } else if (wb) {
+      std::cout << "Sent " << wb << " bytes to transmitter.\nMsg: " << msg
+                << std::endl;
     }
+    sleep(1);
+    wb = 0;
   }
-  return (0);
 }
 
 int main(int ac, char **av) {
@@ -84,18 +104,36 @@ int main(int ac, char **av) {
   (void)ac;
   (void)av;
   // setup serial port connection to transmitter
-  int serial_port = setup_serial();
+  int const serial_port = setup_serial();
   if (serial_port < 0) {
     std::cerr << "Failed to setup serial connection on " << SERIAL_PORT
               << ". Ensure it is properly connected." << std::endl;
     return (1);
   }
-  // TODO:
   // setup communication with client
+  errno = 0;
+  if (mkfifo(PIPE_NAME, 0660)) {
+    unlink(PIPE_NAME);
+    if (mkfifo(PIPE_NAME, 0660)) {
+      std::cerr << "Failed to create named pipe:" << strerror(errno)
+                << std::endl;
+      return (close(serial_port), 1);
+    }
+  }
+  errno = 0;
+  int const fifo = open(PIPE_NAME, O_RDONLY | O_NONBLOCK);
+  if (fifo < 0) {
+    std::cerr << "Failed to open named pipe: " << strerror(errno) << std::endl;
+    return (close(serial_port), 1);
+  }
+  // TODO:
   // continuously send state to transmitter and
   // listen for state updates from client
+  transmit(serial_port, fifo);
 
   // cleanup and exit
   close(serial_port);
+  close(fifo);
+  unlink(PIPE_NAME);
   return (0);
 }
