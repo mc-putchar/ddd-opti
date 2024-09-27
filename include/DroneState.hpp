@@ -33,6 +33,8 @@ public:
   DroneState &operator=(DroneState const &rhs);
   ~DroneState();
 
+  std::string get_state() const;
+  bool send_state(int serial_port);
   ssize_t send(int serial_port, std::string const &msg);
   std::string arm();
   std::string disarm();
