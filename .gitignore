@@ -1,4 +1,5 @@
 build/
+ddd-client
+ddd-controller
 .cache/
-ddd-opti
 compile_commands.json
