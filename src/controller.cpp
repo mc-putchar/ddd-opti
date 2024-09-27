@@ -1,0 +1,101 @@
+// Linux headers
+#include <csignal>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <string>
+
+#include "DroneState.hpp"
+
+#define VERSION 0.1
+#define SERIAL_PORT "/dev/ttyUSB0"
+#define BUFFER_SIZE 4096
+
+static volatile std::sig_atomic_t g_stopped(0);
+
+extern "C" int setup_serial() {
+  int serial_port = open(SERIAL_PORT, O_RDWR | O_NOCTTY | O_SYNC);
+  if (serial_port < 0) {
+    printf("Error %i from open: %s\n", errno, strerror(errno));
+    return (-1);
+  }
+  // Read in existing settings, and handle any error
+  // NOTE: This is important! POSIX states that the struct passed to tcsetattr()
+  // must have been initialized with a call to tcgetattr() overwise behaviour
+  // is undefined
+  struct termios tty;
+  if (tcgetattr(serial_port, &tty) != 0) {
+    printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+    return (-1);
+  }
+  struct termios {
+    tcflag_t c_iflag; /* input mode flags */
+    tcflag_t c_oflag; /* output mode flags */
+    tcflag_t c_cflag; /* control mode flags */
+    tcflag_t c_lflag; /* local mode flags */
+    cc_t c_line;      /* line discipline */
+    cc_t c_cc[NCCS];  /* control characters */
+  };
+  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit characters
+  tty.c_iflag &= ~IGNBRK;                     // disable break processing
+  tty.c_lflag = 0;     // no signaling chars, no echo, no canonical processing
+  tty.c_oflag = 0;     // no remapping, no delays
+  tty.c_cc[VMIN] = 0;  // read doesn't block
+  tty.c_cc[VTIME] = 5; // 0.5 seconds read timeout
+
+  tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+
+  tty.c_cflag |= (CLOCAL | CREAD);   // ignore modem controls, enable reading
+  tty.c_cflag &= ~(PARENB | PARODD); // shut off parity
+  tty.c_cflag &= ~CSTOPB;
+  tty.c_cflag &= ~CRTSCTS;
+  // Our ESP32 transmitter is set to 1000000 baud rate
+  cfsetispeed(&tty, 1000000);
+  cfsetospeed(&tty, 1000000);
+  // Save tty settings, also checking for error
+  if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
+    printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    return (-1);
+  }
+  return (serial_port);
+}
+
+int transmit(int fd) {
+  ssize_t wb(0);
+  std::string msg;
+  DroneState drone = DroneState(0);
+  while (!g_stopped) {
+    wb = write(fd, msg.c_str(), msg.length());
+    if (wb < 0) {
+      std::cerr << "Failed to send serial data to transmitter." << std::endl;
+      continue;
+    }
+  }
+  return (0);
+}
+
+int main(int ac, char **av) {
+  // TODO: Implement flags
+  (void)ac;
+  (void)av;
+  // setup serial port connection to transmitter
+  int serial_port = setup_serial();
+  if (serial_port < 0) {
+    std::cerr << "Failed to setup serial connection on " << SERIAL_PORT
+              << ". Ensure it is properly connected." << std::endl;
+    return (1);
+  }
+  // TODO:
+  // setup communication with client
+  // continuously send state to transmitter and
+  // listen for state updates from client
+
+  // cleanup and exit
+  close(serial_port);
+  return (0);
+}
