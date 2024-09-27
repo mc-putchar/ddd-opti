@@ -6,12 +6,6 @@
 
 #include "DroneState.hpp"
 
-std::ostream &operator<<(std::ostream &os, SetPoint &p) {
-  os << "{'setpoint': [" << p.x << "," << p.y << "," << p.z << "]}"
-     << std::endl;
-  return os;
-}
-
 DroneState::DroneState() : index(0), armed(false), json() {}
 
 DroneState::DroneState(int idx) : index(idx), armed(false), json() {}
@@ -30,9 +24,7 @@ DroneState &DroneState::operator=(DroneState const &rhs) {
 
 DroneState::~DroneState() {}
 
-bool DroneState::is_armed() const {
-  return this->armed;
-}
+bool DroneState::is_armed() const { return this->armed; }
 
 std::string DroneState::get_state() const {
   std::ostringstream ss;
@@ -47,13 +39,13 @@ std::string DroneState::get_state() const {
   return (ss.str());
 }
 
-bool DroneState::send_state(int serial_port) {
+bool DroneState::send_state(int fd) {
   std::string state(std::to_string(this->index));
   state.append(this->get_state());
   ssize_t wb(0);
   ssize_t rem(state.length());
   while (rem) {
-    wb = write(serial_port, state.c_str(), state.length());
+    wb = write(fd, state.c_str(), state.length());
     if (wb < 0)
       return false;
     rem -= wb;
@@ -61,16 +53,8 @@ bool DroneState::send_state(int serial_port) {
   return true;
 }
 
-ssize_t DroneState::send(int serial_port, std::string const &msg) {
-  // std::cout << "Port: " << serial_port << " msg: " << msg
-  //           << " Len: " << msg.length() << std::endl;
-  return write(serial_port, msg.c_str(), msg.length());
-}
-
-std::string DroneState::arm() {
-  this->armed = true;
-  this->json["armed"] = "true";
-  return std::string("{'armed':true}");
+ssize_t DroneState::send(int fd, std::string const &msg) {
+  return write(fd, msg.c_str(), msg.length());
 }
 
 // Startup sequence requires throttling down to safe margin
@@ -82,6 +66,7 @@ bool DroneState::startup(int serial_port) {
     std::cerr << "Failed to send throttle down signal" << std::endl;
     return false;
   }
+  this->json["trim"] = "[0,0,-800,0]";
   str = std::to_string(this->index);
   str.append(this->arm());
   sleep(1);
@@ -92,6 +77,12 @@ bool DroneState::startup(int serial_port) {
   return true;
 }
 
+std::string DroneState::arm() {
+  this->armed = true;
+  this->json["armed"] = "true";
+  return std::string("{'armed':true}");
+}
+
 std::string DroneState::disarm() {
   this->armed = false;
   this->json["armed"] = "false";
@@ -100,21 +91,21 @@ std::string DroneState::disarm() {
 
 std::string DroneState::setpoint(SetPoint const &point) {
   std::stringstream ss;
-  ss << "{'setpoint':[" << point.x << "," << point.y << "," << point.z << "]}";
+  ss << "[" << point.x << "," << point.y << "," << point.z << "]";
   this->json["setpoint"] = ss.str();
-  return ss.str();
+  return std::string("{'setpoint':" + ss.str() + "}");
 }
 
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
   std::stringstream ss;
-  ss << "{'pos':[" << x << "," << y << "," << z << "," << yaw << "]}";
+  ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
   this->json["pos"] = ss.str();
-  return ss.str();
+  return std::string("{'pos':" + ss.str() + "}");
 }
 
 std::string DroneState::trim(float x, float y, float z, float yaw) {
   std::stringstream ss;
-  ss << "{'trim':[" << x << "," << y << "," << z << "," << yaw << "]}";
+  ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
   this->json["trim"] = ss.str();
-  return ss.str();
+  return std::string("{'trim':" + ss.str() + "}");
 }

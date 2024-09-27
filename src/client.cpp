@@ -67,6 +67,7 @@ void loop(int fd) {
 }
 
 int main() {
+  // TODO: Setup communication with controller
   loop(1);
   return (0);
 }

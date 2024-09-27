@@ -38,6 +38,7 @@ public:
 
   bool send_state(int serial_port);
   ssize_t send(int serial_port, std::string const &msg);
+
   bool startup(int serial_port);
   std::string arm();
   std::string disarm();
