@@ -44,6 +44,17 @@ void loop(int fd) {
       }
       std::cout << "New target: " << point.x << ", " << point.y << ", "
                 << point.z << std::endl;
+    } else if (cmd == "pos" || cmd == "p") {
+      std::cout << "Position(x y z): ";
+      std::string tmp;
+      std::getline(std::cin, tmp);
+      SetPoint point(tmp);
+      if (drone.send(fd, "0" + drone.setpos(point.x, point.y, point.z, 0)) < 0) {
+        std::cerr << "Failed to send" << std::endl;
+        continue;
+      }
+      std::cout << "Position update: " << point.x << ", " << point.y << ", "
+                << point.z << std::endl;
     } else if (cmd == "c" || cmd == "check") {
       std::cout << "Drone state: " << drone.get_state() << std::endl;
     } else if (cmd == "t" || cmd == "trim") {
