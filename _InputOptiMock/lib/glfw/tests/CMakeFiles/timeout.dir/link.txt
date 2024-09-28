@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/timeout.dir/timeout.c.o -o timeout.app/Contents/MacOS/timeout  ../src/libglfw3.a -framework Cocoa -framework IOKit -framework CoreFoundation -framework QuartzCore 

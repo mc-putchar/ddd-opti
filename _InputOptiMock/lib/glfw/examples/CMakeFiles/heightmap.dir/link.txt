@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/cc  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/heightmap.dir/heightmap.c.o -o heightmap.app/Contents/MacOS/heightmap  ../src/libglfw3.a -framework Cocoa -framework IOKit -framework CoreFoundation -framework QuartzCore 
