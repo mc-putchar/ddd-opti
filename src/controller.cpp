@@ -9,6 +9,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
+#include <chrono>
 
 #include <iostream>
 #include <string>
@@ -20,6 +21,7 @@
 #define SERIAL_PORT "/dev/ttyUSB0"
 #define PIPE_NAME "/tmp/ddd-data-interchange"
 #define BUFFER_SIZE 512
+#define MIN_INTER_SEND 1.5
 
 static volatile std::sig_atomic_t g_stopped(0);
 
@@ -75,7 +77,10 @@ void transmit(int serial, int pipe) {
   ssize_t rb(0);
   char buf[BUFFER_SIZE];
   std::string msg;
+  std::string lastMsg;   
   DroneState drone = DroneState(0);
+
+  auto lastSendTime = std::chrono::steady_clock::now(); // Track when the last message was sent
 
   while (!g_stopped) {
     fd_set read_fds;
@@ -97,25 +102,40 @@ void transmit(int serial, int pipe) {
         buf[rb] = 0;
         // TODO: update state
         msg = buf;
-        std::cout << "\nClient sent: " << msg << std::endl;
+        std::cout << "Client sent: " << msg << std::endl;
         std::memset(buf, 0, sizeof(buf));
+        lastMsg = msg; // Store the last message
         std::cout << "Msg update:  " << msg << std::endl;
         if (!msg.empty()) {
           // wb = write(serial, msg.c_str(), msg.length());
+          (void)serial;
           wb = 5;
-          (void)serial; // Avoid unused variable warning
           if (wb < 0) {
             std::cerr << "Failed to send serial data to transmitter." << std::endl;
-            continue;
           }
           else {
-            std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg:  "
-              << msg << std::endl;
+            std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg: " << msg << "\n" << std::endl;
+            lastSendTime = std::chrono::steady_clock::now();
           }
         }
       }
       else if (rb < 0) {
         std::cerr << "Error reading from pipe." << std::endl;
+      }
+    }
+    else {
+      auto currentTime = std::chrono::steady_clock::now();
+      if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
+          std::cout << "No new message. Sending last message:" << std::endl;
+          // wb = write(serial, lastMsg.c_str(), lastMsg.length());
+          (void)serial;
+          wb = 5;
+            if (wb < 0) {
+              std::cerr << "Failed to send serial data to transmitter." << std::endl;
+            } else {
+              std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg: " << lastMsg << "\n" << std::endl;
+            }
+            lastSendTime = currentTime; // Update the last send time
       }
     }
     usleep(500);
