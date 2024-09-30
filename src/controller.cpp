@@ -8,9 +8,11 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/select.h>
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 #include "DroneState.hpp"
 
@@ -74,27 +76,49 @@ void transmit(int serial, int pipe) {
   char buf[BUFFER_SIZE];
   std::string msg;
   DroneState drone = DroneState(0);
+
   while (!g_stopped) {
-    // TODO: switch to select / poll to only read when there is data
-    rb = read(pipe, buf, BUFFER_SIZE - 1);
-    if (rb > 0) {
-      buf[rb] = 0;
-      // TODO: update state
-      std::cout << "Client sent: " << buf << std::endl;
-	  msg = buf;
-      buf[0] = 0;
-	  std::cout << "Msg update: " << msg << std::endl;
-    }
-    if (!msg.empty())
-      wb = write(serial, msg.c_str(), msg.length());
-    if (wb < 0) {
-      std::cerr << "Failed to send serial data to transmitter." << std::endl;
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(pipe, &read_fds);
+    struct timeval timeout;
+    timeout.tv_sec = 1;  // Wait for 1 second
+    timeout.tv_usec = 0;
+
+    int activity = select(pipe + 1, &read_fds, nullptr, nullptr, &timeout);
+    if (activity < 0) {
+      std::cerr << "Select error." << std::endl;
       continue;
-    } else if (wb) {
-      std::cout << "Sent " << wb << " bytes to transmitter.\nMsg: " << msg
-                << std::endl;
+      }
+
+    if (FD_ISSET(pipe, &read_fds)) {
+      rb = read(pipe, buf, BUFFER_SIZE - 1);
+      if (rb > 0) {
+        buf[rb] = 0;
+        // TODO: update state
+        msg = buf;
+        std::cout << "\nClient sent: " << msg << std::endl;
+        std::memset(buf, 0, sizeof(buf));
+        std::cout << "Msg update:  " << msg << std::endl;
+        if (!msg.empty()) {
+          // wb = write(serial, msg.c_str(), msg.length());
+          wb = 5;
+          (void)serial; // Avoid unused variable warning
+          if (wb < 0) {
+            std::cerr << "Failed to send serial data to transmitter." << std::endl;
+            continue;
+          }
+          else {
+            std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg:  "
+              << msg << std::endl;
+          }
+        }
+      }
+      else if (rb < 0) {
+        std::cerr << "Error reading from pipe." << std::endl;
+      }
     }
-    sleep(1);
+    usleep(500);
     wb = 0;
   }
 }
@@ -104,7 +128,8 @@ int main(int ac, char **av) {
   (void)ac;
   (void)av;
   // setup serial port connection to transmitter
-  int const serial_port = setup_serial();
+  // int const serial_port = setup_serial();
+  int const serial_port = 5;
   if (serial_port < 0) {
     std::cerr << "Failed to setup serial connection on " << SERIAL_PORT
               << ". Ensure it is properly connected." << std::endl;
