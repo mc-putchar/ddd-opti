@@ -6,7 +6,7 @@
 
 
 
-InputOptiMock::InputOptiMock() : rbIndex(0), Sx(1.0f), Sy(1.0f), Sz(1.0f),
+InputOptiMock::InputOptiMock() : rbIndex(0), Sx(0.0f), Sy(0.0f), Sz(0.0f),
 		  x(0.0f), y(0.0f), z(0.0f),
           qx(0.0f), qy(0.0f), qz(0.0f), qw(0.0f),
           yaw(0.0f), pitch(0.0f), roll(0.0f)
@@ -46,11 +46,8 @@ InputOptiMock::InputOptiMock() : rbIndex(0), Sx(1.0f), Sy(1.0f), Sz(1.0f),
         float elapsedSeconds = std::chrono::duration<float>(currentTime - startTime).count();
 
         // Calculate x using sine wave oscillation
-        x = (std::sin(frequency * elapsedSeconds) + 1) / 2;
+        z = (std::sin(frequency * elapsedSeconds) + 1) / 2;
 
-        // Increment value
-		// y += 0.01;
-		// z += 0.01;
 
         // Wait for 100 milliseconds
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
