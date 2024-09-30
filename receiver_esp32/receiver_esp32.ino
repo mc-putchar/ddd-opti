@@ -11,6 +11,7 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
+#define DEFAULT_VEL 0.1
 
 #define DRONE_INDEX 1
 
@@ -82,6 +83,15 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   if (json.containsKey("pos") && json.containsKey("vel")) {
+    xPos = json["pos"][0];
+    yPos = json["pos"][1];
+    zPos = json["pos"][2];
+    yawPos = json["pos"][3];
+
+    xVel = DEFAULT_VEL;
+    yVel = DEFAULT_VEL;
+    zVel = DEFAULT_VEL;
+  } else if (json.containsKey("pos")) {
     xPos = json["pos"][0];
     yPos = json["pos"][1];
     zPos = json["pos"][2];
