@@ -146,7 +146,7 @@ int main() {
     std::cerr << "Failed to open communication with controller. Ensure it is "
                  "already running."
               << std::endl;
-    // return (1);
+    return (1);
   }
   loop(fifo);
   close(fifo);
