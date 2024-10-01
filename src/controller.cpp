@@ -18,8 +18,8 @@
 #include "DroneState.hpp"
 
 #define VERSION 0.1
-// #define SERIAL_PORT "/dev/ttyUSB0"
-#define SERIAL_PORT "/dev/cu.usbserial-0001"
+#define SERIAL_PORT "/dev/ttyUSB0"
+// #define SERIAL_PORT "/dev/cu.usbserial-0001"
 #define PIPE_NAME "/tmp/ddd-data-interchange"
 #define BUFFER_SIZE 512
 #define MIN_INTER_SEND 1.5
