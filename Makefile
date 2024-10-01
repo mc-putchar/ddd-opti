@@ -9,7 +9,7 @@ CONTROLLER_SRCS = controller DroneState
 CLIENT_SRCS := client DroneState
 
 CXX := c++
-CXXFLAGS := -Wall -Wextra
+CXXFLAGS := -Wall -Wextra -std=c++11
 CPPFLAGS := -I$(INCDIR)
 
 COLOUR_END := \033[0m

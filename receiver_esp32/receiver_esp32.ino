@@ -7,10 +7,13 @@
 #include <EEPROM.h>
 #include "sbus.h"
 
+// made for ESP32 3.0.2 by expressif
+
 #define batVoltagePin 34
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
-#define Z_GAIN 0.7
+// #define Z_GAIN 0.7
+#define Z_GAIN 1.0
 #define DEFAULT_VEL 0.1
 
 #define DRONE_INDEX 1
@@ -73,13 +76,14 @@ float sbusFrequency = 50.0;
 #endif
 
 // callback function that will be executed when data is received
-void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
+// void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info *info, const uint8_t *data, int len) {
   // Serial.println((char*)incomingData);
   DeserializationError err = deserializeJson(json, (char *)incomingData);
 
   if (err) {
     Serial.print("failed to parse json");
-    return;
+    return;	
   }
 
   if (json.containsKey("pos") && json.containsKey("vel")) {
@@ -95,11 +99,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
     xPos = json["pos"][0];
     yPos = json["pos"][1];
     zPos = json["pos"][2];
-    yawPos = json["pos"][3];
+    yawPos = json["pos"][3];	
 
-    xVel = json["vel"][0];
-    yVel = json["vel"][1];
-    zVel = json["vel"][2];
+
   } else if (json.containsKey("armed")) {
     if (json["armed"] != armed && json["armed"]) {
       timeArmed = millis();

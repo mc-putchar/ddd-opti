@@ -18,7 +18,8 @@
 #include "DroneState.hpp"
 
 #define VERSION 0.1
-#define SERIAL_PORT "/dev/ttyUSB0"
+// #define SERIAL_PORT "/dev/ttyUSB0"
+#define SERIAL_PORT "/dev/cu.usbserial-0001"
 #define PIPE_NAME "/tmp/ddd-data-interchange"
 #define BUFFER_SIZE 512
 #define MIN_INTER_SEND 1.5
@@ -107,9 +108,9 @@ void transmit(int serial, int pipe) {
         lastMsg = msg; // Store the last message
         std::cout << "Msg update:  " << msg << std::endl;
         if (!msg.empty()) {
-          // wb = write(serial, msg.c_str(), msg.length());
-          (void)serial;
-          wb = 5;
+          wb = write(serial, msg.c_str(), msg.length());
+        //   (void)serial;
+        //   wb = 5;
           if (wb < 0) {
             std::cerr << "Failed to send serial data to transmitter." << std::endl;
           }
@@ -127,9 +128,9 @@ void transmit(int serial, int pipe) {
       auto currentTime = std::chrono::steady_clock::now();
       if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
           std::cout << "No new message. Sending last message:" << std::endl;
-          // wb = write(serial, lastMsg.c_str(), lastMsg.length());
-          (void)serial;
-          wb = 5;
+          wb = write(serial, lastMsg.c_str(), lastMsg.length());
+        //   (void)serial;
+        //   wb = 5;
             if (wb < 0) {
               std::cerr << "Failed to send serial data to transmitter." << std::endl;
             } else {
@@ -148,8 +149,8 @@ int main(int ac, char **av) {
   (void)ac;
   (void)av;
   // setup serial port connection to transmitter
-  // int const serial_port = setup_serial();
-  int const serial_port = 5;
+  int const serial_port = setup_serial();
+//   int const serial_port = 5;
   if (serial_port < 0) {
     std::cerr << "Failed to setup serial connection on " << SERIAL_PORT
               << ". Ensure it is properly connected." << std::endl;
