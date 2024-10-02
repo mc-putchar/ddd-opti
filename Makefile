@@ -1,4 +1,5 @@
 CLIENT := ddd-client
+CLIENTKEY := ddd-clientkey
 CONTROLLER := ddd-controller
 
 SRCDIR := src
@@ -7,6 +8,7 @@ BINDIR := build
 
 CONTROLLER_SRCS = controller DroneState
 CLIENT_SRCS := client DroneState
+CLIENTKEY_SRCS := clientKeyHook DroneState
 
 CXX := c++
 CXXFLAGS := -Wall -Wextra -std=c++11
@@ -22,8 +24,9 @@ COLOUR_CYNB := \033[1;36m
 
 .PHONY: all client controller run clean fclean re help
 
-all: $(CONTROLLER) $(CLIENT)	# Compile all targets
+all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)	# Compile all targets
 client: $(CLIENT)	# Compile client
+clientkey: $(CLIENTKEY)	# Compile client
 controller: $(CONTROLLER)	# Compile controller
 
 run: client controller
@@ -35,6 +38,9 @@ $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
 
 $(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT) $(LDFLAGS)
+
+$(CLIENTKEY): $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o)
+	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY) $(LDFLAGS)
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@

@@ -45,11 +45,16 @@ public:
   std::string setpoint(SetPoint const &point);
   std::string setpos(float x, float y, float z, float yaw);
   std::string trim(float x, float y, float z, float yaw);
+  std::string adjustpos(std::string var, std::string change);
 
 private:
   int index;
   bool armed;
   std::map<std::string, std::string> json;
+  float _x;
+  float _y;
+  float _z;
+  float _yaw;
 };
 
 #endif // DRONESTATE_HPP
