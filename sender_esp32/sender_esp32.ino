@@ -11,13 +11,14 @@ esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("\r\nLast Packet Send Status:\t");
+//   Serial.print("\r\nLast Packet Send Status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
 void setup() {
   // Init Serial Monitor
   Serial.begin(115200);
+//   Serial.begin(1000000);
 
   // Set device as a Wi-Fi Station
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -74,8 +75,8 @@ void loop() {
     int droneIndex = Serial.read() - '0';
     Serial.readBytes(buffer, availableBytes-1);
     buffer[availableBytes-1] = '\0';
-    Serial.printf("\n drone index %d: ", droneIndex);
-    Serial.print(buffer);
+    //Serial.printf("\n drone index %d: ", droneIndex);
+    // Serial.print(buffer);
 
     esp_err_t result = esp_now_send(broadcastAddresses[droneIndex], (uint8_t *)&buffer, strlen(buffer) + 1);
     if (result) {

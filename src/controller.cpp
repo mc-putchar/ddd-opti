@@ -66,10 +66,10 @@ extern "C" int setup_serial() {
   tty.c_cflag &= ~CSTOPB;
   tty.c_cflag &= ~CRTSCTS;
   // Our ESP32 transmitter is set to 1000000 baud rate
-//  cfsetispeed(&tty, B115200);
-//  cfsetospeed(&tty, B115200);
- cfsetispeed(&tty, 1000000);
- cfsetospeed(&tty, 1000000);
+ cfsetispeed(&tty, B115200);
+ cfsetospeed(&tty, B115200);
+//  cfsetispeed(&tty, 1000000);
+//  cfsetospeed(&tty, 1000000);
   // Save tty settings, also checking for error
   if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
     printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
