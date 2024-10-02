@@ -5,10 +5,11 @@
 #include <unistd.h>
 
 #include "DroneState.hpp"
+#define INCREMENTATION 0.1
 
-DroneState::DroneState() : index(0), armed(false), json() {}
+DroneState::DroneState() : index(0), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0) {}
 
-DroneState::DroneState(int idx) : index(idx), armed(false), json() {}
+DroneState::DroneState(int idx) : index(idx), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0) {}
 
 DroneState::DroneState(DroneState const &cpy)
     : index(cpy.index), armed(cpy.armed), json(cpy.json) {}
@@ -100,6 +101,42 @@ std::string DroneState::setpoint(SetPoint const &point) {
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
   std::stringstream ss;
   ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
+  _x = x;
+  _y = y;
+  _z = z;
+  _yaw = yaw;
+  this->json["pos"] = ss.str();
+  return std::string("{'pos':" + ss.str() + "}");
+}
+
+std::string DroneState::adjustpos(std::string var, std::string change) {
+
+  if (var == "x") {
+	if (change == "+") 
+	  _x += INCREMENTATION;
+	if (change == "-") 
+	  _x -= INCREMENTATION;
+  }
+  if (var == "y") {
+	if (change == "+") 
+	  _y += INCREMENTATION;
+	if (change == "-") 
+	  _y -= INCREMENTATION;
+  }
+  if (var == "z") {
+    if (change == "+") 
+	  _z += INCREMENTATION;
+	if (change == "-") 
+	  _z -= INCREMENTATION;
+  }
+  if (var == "yaw") {
+     if (change == "+") 
+	  _yaw += INCREMENTATION;
+	if (change == "-") 
+	  _yaw -= INCREMENTATION;
+  }
+  std::stringstream ss;
+  ss << "[" << _x << "," << _y << "," << _z << "," << _yaw << "]";
   this->json["pos"] = ss.str();
   return std::string("{'pos':" + ss.str() + "}");
 }

@@ -11,7 +11,7 @@
 #define TIME_TO_SETPOINT 1.8 // Setpoint oscillation period in seconds
 
 #define VERSION 0.1
-#define PIPE_NAME "./tmp/ddd-data-interchange"
+#define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
 #define PROMPT "Input drone command: "
 
 void droneFloat(DroneState & drone, int fd, int target_oscillations) {
@@ -141,7 +141,7 @@ void loop(int fd) {
 }
 
 int main() {
-  int const fifo = open(PIPE_NAME, O_WRONLY);
+  int const fifo = open(PIPE_NAME_CMD_LINE, O_WRONLY);
   if (fifo < 0) {
     std::cerr << "Failed to open communication with controller. Ensure it is "
                  "already running."

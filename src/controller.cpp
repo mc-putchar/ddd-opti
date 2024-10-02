@@ -20,7 +20,8 @@
 #define VERSION 0.1
 // #define SERIAL_PORT "/dev/ttyUSB0"
 #define SERIAL_PORT "/dev/cu.usbserial-0001"
-#define PIPE_NAME "./tmp/ddd-data-interchange"
+#define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
+#define PIPE_NAME_KEY_HOOK "./tmp/ddd-data-interchange1"
 #define BUFFER_SIZE 512
 #define MIN_INTER_SEND 1.5
 
@@ -78,7 +79,7 @@ extern "C" int setup_serial() {
   return (serial_port);
 }
 
-void transmit(int serial, int pipe) {
+void transmit(int serial, int pipe, int pipeKey) {
   ssize_t wb(0);
   ssize_t rb(0);
   char buf[BUFFER_SIZE];
@@ -92,6 +93,7 @@ void transmit(int serial, int pipe) {
     fd_set read_fds;
     FD_ZERO(&read_fds);
     FD_SET(pipe, &read_fds);
+	FD_SET(pipeKey, &read_fds);
 	FD_SET(serial, &read_fds);
     struct timeval timeout;
     timeout.tv_sec = 1;  // Wait for 1 second
@@ -111,10 +113,10 @@ void transmit(int serial, int pipe) {
         buf[rb] = 0;
         // TODO: update state
         msg = buf;
-        std::cout << "Client sent: " << msg << std::endl;
+        std::cout << "\n                      Client sent: " << msg << std::endl;
         std::memset(buf, 0, sizeof(buf));
         lastMsg = msg; // Store the last message
-        std::cout << "Msg update:  " << msg << std::endl;
+        // std::cout << "Msg update:  " << msg << std::endl;
         if (!msg.empty()) {
           wb = write(serial, msg.c_str(), msg.length());
         //   (void)serial;
@@ -123,7 +125,7 @@ void transmit(int serial, int pipe) {
             std::cerr << "Failed to send serial data to transmitter." << std::endl;
           }
           else {
-            std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg: " << msg << "\n" << std::endl;
+            std::cout << "Sent " << wb << " bytes to transmitter. Msg: " << msg << std::endl;
             lastSendTime = std::chrono::steady_clock::now();
           }
         }
@@ -136,9 +138,8 @@ void transmit(int serial, int pipe) {
 	if (FD_ISSET(serial, &read_fds)) {
       rb = read(serial, buf, BUFFER_SIZE - 1);
       if (rb > 0) {
-        buf[rb] = 0; // Null-terminate the buffer
-        std::cout << "Received " << rb << " from serial: " << buf << std::endl;
-        // TODO: Process received data if necessary
+        buf[rb] = 0;
+        std::cout << buf << std::endl;
       } else if (rb < 0) {
         std::cerr << "Error reading from serial." << std::endl;
       }
@@ -146,14 +147,14 @@ void transmit(int serial, int pipe) {
 
       auto currentTime = std::chrono::steady_clock::now();
       if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-          std::cout << "No new message. Sending last message:" << std::endl;
+          std::cout << "\nNo new message, sending last message" << std::endl;
           wb = write(serial, lastMsg.c_str(), lastMsg.length());
         //   (void)serial;
         //   wb = 5;
             if (wb < 0) {
               std::cerr << "Failed to send serial data to transmitter." << std::endl;
             } else {
-              std::cout << "Sent " << wb << " bytes to transmitter.\n       Msg: " << lastMsg << "\n" << std::endl;
+              std::cout << "Sent " << wb << " bytes to transmitter. Msg: " << lastMsg << std::endl;
             }
             lastSendTime = currentTime; // Update the last send time
       }
@@ -162,45 +163,52 @@ void transmit(int serial, int pipe) {
     wb = 0;
   }
 }
+
+int createNAmePipe(std::string namePipe, int serial_port) {
+  std::cout << "Creating named pipe..." << std::endl;
+  if (mkfifo(namePipe.c_str(), 0660) != 0) {
+    std::cout << "mkfifo returned: " << errno << std::endl;
+    if (errno == EEXIST) {
+      std::cerr << "Named pipe already exists. Proceeding to open." << std::endl;
+    } else {
+      std::cerr << "Failed to create named pipe: " << strerror(errno) << std::endl;
+      exit (close(serial_port), 1);
+    }
+  }
+  std::cout << "Named pipe created or already exists." << std::endl;
+
+  // Open the named pipe for reading
+  int const fifo = open(namePipe.c_str(), O_RDONLY | O_NONBLOCK);
+  if (fifo < 0) {
+    std::cerr << "Failed to open named pipe: " << strerror(errno) << std::endl;
+    exit (close(serial_port), 1);
+  }
+  return (fifo);
+}
+
 int main(int ac, char **av) {
   (void)ac;
   (void)av;
   
   // setup serial port connection to transmitter
   std::cout << "Setting up serial connection..." << std::endl;
-int const serial_port = setup_serial();
-std::cout << "Serial connection setup completed." << std::endl;
+  int const serial_port = setup_serial();
+  std::cout << "Serial connection setup completed." << std::endl;
 
-if (serial_port < 0) {
-  std::cerr << "Failed to setup serial connection." << std::endl;
-  return (1);
-}
-
-std::cout << "Creating named pipe..." << std::endl;
-if (mkfifo(PIPE_NAME, 0660) != 0) {
-  std::cout << "mkfifo returned: " << errno << std::endl;
-  if (errno == EEXIST) {
-    std::cerr << "Named pipe already exists. Proceeding to open." << std::endl;
-  } else {
-    std::cerr << "Failed to create named pipe: " << strerror(errno) << std::endl;
-    return (close(serial_port), 1);
+  if (serial_port < 0) {
+    std::cerr << "Failed to setup serial connection." << std::endl;
+    return (1);
   }
-}
-std::cout << "Named pipe created or already exists." << std::endl;
-
-  // Open the named pipe for reading
-  int const fifo = open(PIPE_NAME, O_RDONLY | O_NONBLOCK);
-  if (fifo < 0) {
-    std::cerr << "Failed to open named pipe: " << strerror(errno) << std::endl;
-    return (close(serial_port), 1);
-  }
+  int fifo = createNAmePipe(PIPE_NAME_CMD_LINE, serial_port);
+  int fifoKey = createNAmePipe(PIPE_NAME_KEY_HOOK, serial_port);
 
   // Start the transmission loop
-  transmit(serial_port, fifo);
+  transmit(serial_port, fifo, fifoKey);
 
   // Cleanup and exit
   close(serial_port);
   close(fifo);
-  unlink(PIPE_NAME);
+  close(fifoKey);
+  unlink(PIPE_NAME_CMD_LINE);
   return (0);
 }
