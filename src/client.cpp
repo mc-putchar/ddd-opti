@@ -11,7 +11,7 @@
 #define TIME_TO_SETPOINT 1.8 // Setpoint oscillation period in seconds
 
 #define VERSION 0.1
-#define PIPE_NAME "/tmp/ddd-data-interchange"
+#define PIPE_NAME "./tmp/ddd-data-interchange"
 #define PROMPT "Input drone command: "
 
 void droneFloat(DroneState & drone, int fd, int target_oscillations) {

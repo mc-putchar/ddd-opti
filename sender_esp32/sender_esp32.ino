@@ -3,8 +3,8 @@
 #include <WiFi.h>
 
 uint8_t broadcastAddresses[][6] = {
-  { 0xC0, 0x4E, 0x30, 0x4B, 0x61, 0x3A },
-  { 0xC0, 0x4E, 0x30, 0x4B, 0x80, 0x3B },
+  { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9B },
+  { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9C },
 };
 
 esp_now_peer_info_t peerInfo;
@@ -17,7 +17,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void setup() {
   // Init Serial Monitor
-  Serial.begin(1000000);
+  Serial.begin(115200);
 
   // Set device as a Wi-Fi Station
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
