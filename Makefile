@@ -25,6 +25,12 @@ COLOUR_CYNB := \033[1;36m
 .PHONY: all client controller run clean fclean re help
 
 all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)	# Compile all targets
+	git clone https://github.com/kwhat/libuiohook
+    cd libuiohook
+    mkdir build && cd build
+    cmake -S .. -D BUILD_SHARED_LIBS=ON -D BUILD_DEMO=ON -DCMAKE_INSTALL_PREFIX=../dist
+    cmake --build . --parallel 2 --target install
+	cd ..
 client: $(CLIENT)	# Compile client
 clientkey: $(CLIENTKEY)	# Compile client
 controller: $(CONTROLLER)	# Compile controller

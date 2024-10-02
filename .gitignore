@@ -3,3 +3,4 @@ ddd-client
 ddd-controller
 .cache/
 compile_commands.json
+libuiohook/

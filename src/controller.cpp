@@ -172,7 +172,7 @@ int createNAmePipe(std::string namePipe, int serial_port) {
       std::cerr << "Named pipe already exists. Proceeding to open." << std::endl;
     } else {
       std::cerr << "Failed to create named pipe: " << strerror(errno) << std::endl;
-      exit (close(serial_port), 1);
+      exit (close(serial_port));
     }
   }
   std::cout << "Named pipe created or already exists." << std::endl;
@@ -181,7 +181,7 @@ int createNAmePipe(std::string namePipe, int serial_port) {
   int const fifo = open(namePipe.c_str(), O_RDONLY | O_NONBLOCK);
   if (fifo < 0) {
     std::cerr << "Failed to open named pipe: " << strerror(errno) << std::endl;
-    exit (close(serial_port), 1);
+    exit (close(serial_port));
   }
   return (fifo);
 }
