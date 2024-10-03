@@ -55,6 +55,9 @@ private:
   float _y;
   float _z;
   float _yaw;
+//   float _Sx;
+//   float _Sy;
+//   float _Sz;
 };
 
 #endif // DRONESTATE_HPP
