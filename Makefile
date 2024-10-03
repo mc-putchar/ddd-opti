@@ -5,14 +5,17 @@ CONTROLLER := ddd-controller
 SRCDIR := src
 INCDIR := include
 BINDIR := build
+LIBUIOHOOCK_LIB_PATH = ./libuiohook/dist/lib
+LIBUIOHOOCK_INCLUDE_PATH = ./libuiohook/dist/include
 
 CONTROLLER_SRCS = controller DroneState
 CLIENT_SRCS := client DroneState
 CLIENTKEY_SRCS := clientKeyHook DroneState
 
 CXX := c++
-CXXFLAGS := -Wall -Wextra -std=c++11
+CXXFLAGS := -Wall -Wextra -std=c++11 -I$(LIBUIOHOOCK_INCLUDE_PATH)
 CPPFLAGS := -I$(INCDIR)
+LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook
 
 COLOUR_END := \033[0m
 COLOUR_GREEN := \033[0;32m

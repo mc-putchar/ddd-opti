@@ -44,6 +44,8 @@ void loop(int fd) {
 	  std::cerr << "Failed to send" << std::endl;
 	std::cout << "Drone disarmed" << std::endl;
 
+	
+
 }
 
 int main() {
