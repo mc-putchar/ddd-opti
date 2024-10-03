@@ -39,24 +39,57 @@ void loop(int fd) {
 
         // Perform actions based on the key pressed
         switch (key) {
-            case 'w': // Move up
+            case 's': // Move up
 				if (drone.send(fd, "0" + drone.adjustpos("z", "+")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving up" << std::endl;
                 break;
-            case 's': // Move down
+            case 'w': // Move down
                 if (drone.send(fd, "0" + drone.adjustpos("z", "-")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving down" << std::endl;
                 break;
-				
-            case 'a': // Move left
+
+			case 'k':
+				if (drone.send(fd, "0" + drone.adjustpos("x", "+")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving up" << std::endl;
+                break;
+            case 'i':
+                if (drone.send(fd, "0" + drone.adjustpos("x", "-")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving down" << std::endl;
+                break;
+
+			case 'j':
+				if (drone.send(fd, "0" + drone.adjustpos("z", "+")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving up" << std::endl;
+                break;
+            case 'l':
+                if (drone.send(fd, "0" + drone.adjustpos("z", "-")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving down" << std::endl;
+                break;
+
+			case 'a': // Move up
+				if (drone.send(fd, "0" + drone.adjustpos("yaw", "+")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving up" << std::endl;
+                break;
+            case 'd': // Move down
+                if (drone.send(fd, "0" + drone.adjustpos("yaw", "-")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving down" << std::endl;
+                break;
+
+            case 'r': // Move left
                 if (drone.is_armed())
 				  std::cout << "Drone already armed." << std::endl;
 			    if (!drone.startup(fd))
 				  std::cerr << "Failed to send startup sequence" << std::endl;
                 break;
-            case 'd': // Move right
+            case 'x': 
                 if (drone.send(fd, "0" + drone.disarm()) < 0)
                   std::cerr << "Failed to send" << std::endl;
                 std::cout << "Drone disarmed" << std::endl;
@@ -66,9 +99,11 @@ void loop(int fd) {
                 std::cout << "Exiting..." << std::endl;
                 return; // Exit the loop
             // Add more cases for other keys as needed
-            default:
-                std::cout << "Unknown key pressed!" << std::endl;
+            // default:
         }
+		// usleep(500000);
+		// drone.send(fd, "0{'pos':[0,0,0.5,0]");
+        // std::cout << "reset position" << std::endl;
     }
 }
 

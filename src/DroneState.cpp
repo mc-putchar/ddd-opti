@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "DroneState.hpp"
-#define INCREMENTATION 0.1
+#define INCREMENTATION 0.3
 
 DroneState::DroneState() : index(0), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0) {}
 
@@ -84,6 +84,13 @@ str.append(this->trim(0, 64, 0, 0));
     return false;
   }
   this->json["trim"] = "[0,64,0,0]";
+
+  sleep(1);
+  if (this->send(serial_port, "0{'setpoint':[0,0,0.5]") < 0)
+    std::cerr << "Failed to send" << std::endl;
+  usleep(500000);
+  if (this->send(serial_port, "0{'pos':[0,0,0.5,0]") < 0)
+    std::cerr << "Failed to send" << std::endl;
   return true;
 }
 
