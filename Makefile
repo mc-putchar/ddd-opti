@@ -1,22 +1,38 @@
+# Define the targets
 CLIENT := ddd-client
 CLIENTKEY := ddd-clientkey
 CONTROLLER := ddd-controller
 
+# Define directories
 SRCDIR := src
 INCDIR := include
 BINDIR := build
 LIBUIOHOOCK_LIB_PATH = ./libuiohook/dist/lib
 LIBUIOHOOCK_INCLUDE_PATH = ./libuiohook/dist/include
 
+# Source files for each target
 CONTROLLER_SRCS = controller DroneState
 CLIENT_SRCS := client DroneState
 CLIENTKEY_SRCS := clientKeyHook DroneState
 
+# Compiler settings
 CXX := c++
 CXXFLAGS := -Wall -Wextra -std=c++11 -I$(LIBUIOHOOCK_INCLUDE_PATH)
 CPPFLAGS := -I$(INCDIR)
-LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook
 
+# Platform detection
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    # macOS specific settings
+    LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook -lpthread \
+               -framework CoreFoundation -framework CoreGraphics \
+               -framework IOKit -framework Carbon
+else
+    # Linux specific settings
+    LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook -lpthread
+endif
+
+# Color definitions for output
 COLOUR_END := \033[0m
 COLOUR_GREEN := \033[0;32m
 COLOUR_RED := \033[0;31m
@@ -27,21 +43,27 @@ COLOUR_CYNB := \033[1;36m
 
 .PHONY: all LIB client controller run clean fclean re help
 
-all:  LIB $(CONTROLLER) $(CLIENT) $(CLIENTKEY)	# Compile all targets
+# Compile all targets
+all: LIB $(CONTROLLER) $(CLIENT) $(CLIENTKEY)
 
+# Build libuiohook
 LIB:
 	git clone https://github.com/kwhat/libuiohook || (cd libuiohook && git pull)
 	cd libuiohook && mkdir -p build && cd build && \
-	cmake -S .. -D BUILD_SHARED_LIBS=ON -D BUILD_DEMO=ON -DCMAKE_INSTALL_PREFIX=../dist && \
+	cmake -S .. -D BUILD_SHARED_LIBS=OFF -D BUILD_DEMO=OFF -DCMAKE_INSTALL_PREFIX=../dist && \
 	cmake --build . --parallel 2 --target install
-client: $(CLIENT)	# Compile client
-clientkey: $(CLIENTKEY)	# Compile client
-controller: $(CONTROLLER)	# Compile controller
 
+# Compile individual targets
+client: $(CLIENT)
+clientkey: $(CLIENTKEY)
+controller: $(CONTROLLER)
+
+# Run targets
 run: client controller
 	./$(CONTROLLER) &
 	./$(CLIENT)
 
+# Link and create executables
 $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER) $(LDFLAGS)
 
@@ -51,23 +73,26 @@ $(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
 $(CLIENTKEY): $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY) $(LDFLAGS)
 
+# Compile object files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
-clean:	# Remove compiled binary object files
+# Clean up
+clean: 
 	rm -fr $(BINDIR)
 
-fclean: clean	# Remove all compiled binaries
+fclean: clean
 	rm -f $(CONTROLLER)
 	rm -f $(CLIENT)
 	rm -rf libuiohook
 
-re: fclean all	# Re-compile project
+re: fclean all
 
-help:			# Print help on Makefile
+# Print help on Makefile
+help:
 	@awk 'BEGIN { \
 	FS = ":.*#"; printf "Usage:\n\t$(COLOUR_CYNB)make $(COLOUR_MAGB)<target> \
 	$(COLOUR_END)\n\nTargets:\n"; } \
