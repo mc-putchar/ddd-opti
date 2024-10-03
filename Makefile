@@ -22,15 +22,15 @@ COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
 
-.PHONY: all client controller run clean fclean re help
+.PHONY: all LIB client controller run clean fclean re help
 
-all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)	# Compile all targets
-	git clone https://github.com/kwhat/libuiohook
-    cd libuiohook
-    mkdir build && cd build
-    cmake -S .. -D BUILD_SHARED_LIBS=ON -D BUILD_DEMO=ON -DCMAKE_INSTALL_PREFIX=../dist
-    cmake --build . --parallel 2 --target install
-	cd ..
+all:  LIB $(CONTROLLER) $(CLIENT) $(CLIENTKEY)	# Compile all targets
+
+LIB:
+	git clone https://github.com/kwhat/libuiohook || (cd libuiohook && git pull)
+	cd libuiohook && mkdir -p build && cd build && \
+	cmake -S .. -D BUILD_SHARED_LIBS=ON -D BUILD_DEMO=ON -DCMAKE_INSTALL_PREFIX=../dist && \
+	cmake --build . --parallel 2 --target install
 client: $(CLIENT)	# Compile client
 clientkey: $(CLIENTKEY)	# Compile client
 controller: $(CONTROLLER)	# Compile controller
@@ -60,6 +60,7 @@ clean:	# Remove compiled binary object files
 fclean: clean	# Remove all compiled binaries
 	rm -f $(CONTROLLER)
 	rm -f $(CLIENT)
+	rm -rf libuiohook
 
 re: fclean all	# Re-compile project
 
