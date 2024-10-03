@@ -18,12 +18,17 @@
 #include "DroneState.hpp"
 
 #define VERSION 0.1
-// #define SERIAL_PORT "/dev/ttyUSB0"
+
 #define SERIAL_PORT "/dev/cu.usbserial-0001"
 #define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
 #define PIPE_NAME_KEY_HOOK "./tmp/ddd-data-interchange1"
 #define BUFFER_SIZE 512
 #define MIN_INTER_SEND 1.5
+#ifdef _linux
+	#define SERIAL_PORT "/dev/ttyUSB0"
+#elif __APPLE__
+	#define SERIAL_PORT "/dev/cu.usbserial-0001"
+#endif
 
 static volatile std::sig_atomic_t g_stopped(0);
 

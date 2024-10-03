@@ -19,18 +19,31 @@ void loop(int fd) {
 
   std::string key = "up";
   
-    if (key == "up") {
-      std::cout << "Position(x y z): ";
-      std::string tmp;
-      std::getline(std::cin, tmp);
-      SetPoint point(tmp);
-      if (drone.send(fd, "0" + drone.setpos(point.x, point.y, point.z, 0)) < 0) {
-        std::cerr << "Failed to send" << std::endl;
-      }
-      std::cout << "Position update: " << point.x << ", " << point.y << ", "
-                << point.z << std::endl;
-    }
-    
+   //key up
+    drone.adjustpos("z", "+");
+	//key down
+	drone.adjustpos("z", "-");
+	// key 
+	drone.adjustpos("y", "+");
+	drone.adjustpos("y", "-");
+
+	drone.adjustpos("x", "+");
+	drone.adjustpos("x", "-");
+
+	drone.adjustpos("yaw", "+");
+	drone.adjustpos("yaw", "-");
+
+	//key a
+	if (drone.is_armed()) 
+        std::cout << "Drone already armed." << std::endl;
+    if (!drone.startup(fd))
+        std::cerr << "Failed to send startup sequence" << std::endl;
+
+	//key d
+	if (drone.send(fd, "0" + drone.disarm()) < 0)
+	  std::cerr << "Failed to send" << std::endl;
+	std::cout << "Drone disarmed" << std::endl;
+
 }
 
 int main() {
