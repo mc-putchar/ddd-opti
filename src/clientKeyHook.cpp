@@ -1,94 +1,87 @@
 #include <fcntl.h>
 #include <unistd.h>
-#include <uiohook.h>
-
 #include <iostream>
 #include <cmath>
 #include <chrono>
 #include <thread>
-
+#include <termios.h>
 #include "DroneState.hpp"
-#include "../libuiohook/include/uiohook.h"
-
 
 #define VERSION 0.1
 #define PIPE_NAME_KEY_HOOK "./tmp/ddd-data-interchange1"
 
-int fifo;
+// Function to configure terminal settings to read a single character
+char getch() {
+    char buf = 0;
+    struct termios old;
 
-// Function to handle key events
-void hook_event_dispatcher(uiohook_event *event) {
+    // Explicitly initialize all fields of the termios struct to zero
+    std::memset(&old, 0, sizeof(old));  // Clear the struct
+
+    if (tcgetattr(0, &old) < 0) perror("tcsetattr()");
+    old.c_lflag &= ~ICANON; // Disable canonical mode
+    old.c_lflag &= ~ECHO;   // Disable echo
+    if (tcsetattr(0, TCSANOW, &old) < 0) perror("tcsetattr()");
+    if (read(0, &buf, 1) < 0) return 0; // Read one character
+    old.c_lflag |= ICANON; // Enable canonical mode
+    old.c_lflag |= ECHO;   // Enable echo
+    return (tcsetattr(0, TCSANOW, &old), buf); // Restore terminal settings
+}
+
+void loop(int fd) {
     DroneState drone = DroneState();
+    
+    std::cout << "Press 'w' to move up, 's' to move down, 'a' to move left, 'd' to move right, 'q' to quit." << std::endl;
 
-    if (event->type == EVENT_KEY_PRESSED) {
-        std::cout << "Key pressed: " << event->data.keyboard.keycode << std::endl;
+    while (true) {
+        char key = getch(); // Read a single character
+        std::cout << "Key pressed: " << key << std::endl;
 
-        // Check for specific key codes
-        switch (event->data.keyboard.keycode) {
-            case VC_W: // Up arrow key
-				drone.send(fifo, "0" + drone.adjustpos("z", "+"));
-                
+        // Perform actions based on the key pressed
+        switch (key) {
+            case 'w': // Move up
+				if (drone.send(fd, "0" + drone.adjustpos("z", "+")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving up" << std::endl;
                 break;
-            case VC_S: // Down arrow key
-                drone.adjustpos("z", "-");
+            case 's': // Move down
+                if (drone.send(fd, "0" + drone.adjustpos("z", "-")) < 0)
+       			  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Moving down" << std::endl;
                 break;
-            // Add other keys if needed
+				
+            case 'a': // Move left
+                if (drone.is_armed())
+				  std::cout << "Drone already armed." << std::endl;
+			    if (!drone.startup(fd))
+				  std::cerr << "Failed to send startup sequence" << std::endl;
+                break;
+            case 'd': // Move right
+                if (drone.send(fd, "0" + drone.disarm()) < 0)
+                  std::cerr << "Failed to send" << std::endl;
+                std::cout << "Drone disarmed" << std::endl;
+                break;
+
+            case 'q': // Quit the loop
+                std::cout << "Exiting..." << std::endl;
+                return; // Exit the loop
+            // Add more cases for other keys as needed
+            default:
+                std::cout << "Unknown key pressed!" << std::endl;
         }
     }
-	
-	drone.adjustpos("y", "+");
-	drone.adjustpos("y", "-");
-
-	drone.adjustpos("x", "+");
-	drone.adjustpos("x", "-");
-
-	drone.adjustpos("yaw", "+");
-	drone.adjustpos("yaw", "-");
-
-	//key a
-	if (drone.is_armed()) 
-        std::cout << "Drone already armed." << std::endl;
-    if (!drone.startup(fifo))
-        std::cerr << "Failed to send startup sequence" << std::endl;
-
-	//key d
-	if (drone.send(fifo, "0" + drone.disarm()) < 0)
-	  std::cerr << "Failed to send" << std::endl;
-	std::cout << "Drone disarmed" << std::endl;
-
 }
 
 int main() {
-
-  fifo = open(PIPE_NAME_KEY_HOOK, O_WRONLY);
-  if (fifo < 0) {
-    std::cerr << "Failed to open communication with controller. Ensure it is "
-                 "already running."
-              << std::endl;
-    return (1);
-  }
-    // Set the hook event dispatcher
-    hook_set_dispatch_proc(hook_event_dispatcher);
-
-    // Run the hook to start capturing events
-    if (hook_run() != UIOHOOK_SUCCESS) {
-        std::cerr << "Failed to start hook!" << std::endl;
-        return -1;
+    int const fifo = open(PIPE_NAME_KEY_HOOK, O_WRONLY);
+    if (fifo < 0) {
+        std::cerr << "Failed to open communication with controller. Ensure it is already running." << std::endl;
+        return 1;
     }
+	std::cout << "Pipe opened" << std::endl;
 
-    // Keep the program running to listen for events
-    std::cout << "Press UP or DOWN arrow keys (press ESC to exit)..." << std::endl;
-    while (true) {
-        // Exit on ESC key press (key code 41)
-        if (getchar() == 27) {
-            break;
-        }
-    }
-  close(fifo);
+    loop(fifo); // Call the loop to start reading input and adjusting the drone
 
-    // Cleanup and exit
-    hook_stop();
+    close(fifo);
     return 0;
 }
-
-
