@@ -19,7 +19,6 @@
 
 #define VERSION 0.1
 
-#define SERIAL_PORT "/dev/cu.usbserial-0001"
 #define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
 #define PIPE_NAME_KEY_HOOK "./tmp/ddd-data-interchange1"
 #define BUFFER_SIZE 512
@@ -72,10 +71,14 @@ extern "C" int setup_serial() {
   tty.c_cflag &= ~CSTOPB;
   tty.c_cflag &= ~CRTSCTS;
   // Our ESP32 transmitter is set to 1000000 baud rate
- cfsetispeed(&tty, B115200);
- cfsetospeed(&tty, B115200);
-//  cfsetispeed(&tty, 1000000);
-//  cfsetospeed(&tty, 1000000);
+
+  #ifdef _linux
+  cfsetispeed(&tty, 1000000);
+  cfsetospeed(&tty, 1000000);
+#elif __APPLE__
+  cfsetispeed(&tty, B115200);
+  cfsetospeed(&tty, B115200);
+#endif
   // Save tty settings, also checking for error
   if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
     printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
@@ -104,7 +107,7 @@ void transmit(int serial, int pipe, int pipeKey) {
     timeout.tv_sec = 1;  // Wait for 1 second
     timeout.tv_usec = 0;
 
-	int max_fd = std::max(pipe, serial); // Get the highest file descriptor value
+	int max_fd = std::max(pipeKey, serial); // Get the highest file descriptor value
 
     int activity = select(max_fd + 1, &read_fds, nullptr, nullptr, &timeout);
     if (activity < 0) {
@@ -135,6 +138,35 @@ void transmit(int serial, int pipe, int pipeKey) {
           }
         }
       }
+	  
+      else if (rb < 0) {
+        std::cerr << "Error reading from pipe." << std::endl;
+      }
+    }
+	if (FD_ISSET(pipeKey, &read_fds)) {
+      rb = read(pipeKey, buf, BUFFER_SIZE - 1);
+      if (rb > 0) {
+        buf[rb] = 0;
+        // TODO: update state
+        msg = buf;
+        std::cout << "\n                      Clientkey sent: " << msg << std::endl;
+        std::memset(buf, 0, sizeof(buf));
+        lastMsg = msg; // Store the last message
+        // std::cout << "Msg update:  " << msg << std::endl;
+        if (!msg.empty()) {
+          wb = write(serial, msg.c_str(), msg.length());
+        //   (void)serial;
+        //   wb = 5;
+          if (wb < 0) {
+            std::cerr << "Failed to send serial data to transmitter." << std::endl;
+          }
+          else {
+            std::cout << "Sent " << wb << " bytes to transmitter. Msg: " << msg << std::endl;
+            lastSendTime = std::chrono::steady_clock::now();
+          }
+        }
+      }
+	  
       else if (rb < 0) {
         std::cerr << "Error reading from pipe." << std::endl;
       }

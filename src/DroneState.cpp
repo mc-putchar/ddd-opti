@@ -76,6 +76,14 @@ bool DroneState::startup(int serial_port) {
     std::cerr << "Failed to send arming signal" << std::endl;
     return false;
   }
+  sleep(1);
+  str = std::to_string(this->index);
+str.append(this->trim(0, 64, 0, 0));
+  if (this->send(serial_port, str) < 0) {
+    std::cerr << "Failed to reset throttle" << std::endl;
+    return false;
+  }
+  this->json["trim"] = "[0,64,0,0]";
   return true;
 }
 

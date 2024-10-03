@@ -7,8 +7,6 @@ CONTROLLER := ddd-controller
 SRCDIR := src
 INCDIR := include
 BINDIR := build
-LIBUIOHOOCK_LIB_PATH = ./libuiohook/dist/lib
-LIBUIOHOOCK_INCLUDE_PATH = ./libuiohook/dist/include
 
 # Source files for each target
 CONTROLLER_SRCS = controller DroneState
@@ -17,20 +15,9 @@ CLIENTKEY_SRCS := clientKeyHook DroneState
 
 # Compiler settings
 CXX := c++
-CXXFLAGS := -Wall -Wextra -std=c++11 -I$(LIBUIOHOOCK_INCLUDE_PATH)
+CXXFLAGS := -Wall -Wextra -std=c++11
 CPPFLAGS := -I$(INCDIR)
 
-# Platform detection
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Darwin)
-    # macOS specific settings
-    LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook -lpthread \
-               -framework CoreFoundation -framework CoreGraphics \
-               -framework IOKit -framework Carbon
-else
-    # Linux specific settings
-    LDFLAGS += -L$(LIBUIOHOOCK_LIB_PATH) -luiohook -lpthread
-endif
 
 # Color definitions for output
 COLOUR_END := \033[0m
@@ -41,17 +28,10 @@ COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
 
-.PHONY: all LIB client controller run clean fclean re help
+.PHONY: all client controller run clean fclean re help
 
 # Compile all targets
-all: LIB $(CONTROLLER) $(CLIENT) $(CLIENTKEY)
-
-# Build libuiohook
-LIB:
-	git clone https://github.com/kwhat/libuiohook || (cd libuiohook && git pull)
-	cd libuiohook && mkdir -p build && cd build && \
-	cmake -S .. -D BUILD_SHARED_LIBS=OFF -D BUILD_DEMO=OFF -DCMAKE_INSTALL_PREFIX=../dist && \
-	cmake --build . --parallel 2 --target install
+all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)
 
 # Compile individual targets
 client: $(CLIENT)
@@ -65,13 +45,13 @@ run: client controller
 
 # Link and create executables
 $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER) $(LDFLAGS)
+	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER)
 
 $(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT) $(LDFLAGS)
+	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT)
 
 $(CLIENTKEY): $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY) $(LDFLAGS)
+	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY)
 
 # Compile object files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
@@ -87,7 +67,6 @@ clean:
 fclean: clean
 	rm -f $(CONTROLLER)
 	rm -f $(CLIENT)
-	rm -rf libuiohook
 
 re: fclean all
 
