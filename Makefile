@@ -67,6 +67,7 @@ clean:
 fclean: clean
 	rm -f $(CONTROLLER)
 	rm -f $(CLIENT)
+	rm -f $(CLIENTKEY)
 
 re: fclean all
 
