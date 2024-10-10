@@ -40,45 +40,45 @@ void loop(int fd) {
         // Perform actions based on the key pressed
         switch (key) {
             case 's': // Move up
-				if (drone.send(fd, "0" + drone.adjusttrim("z", "+")) < 0)
+				if (drone.send(fd, "0" + drone.adjustpos("z", "+")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving up" << std::endl;
                 break;
             case 'w': // Move down
-                if (drone.send(fd, "0" + drone.adjusttrim("z", "-")) < 0)
+                if (drone.send(fd, "0" + drone.adjustpos("z", "-")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving down" << std::endl;
                 break;
 
 			case 'k':
-				if (drone.send(fd, "0" + drone.adjusttrim("x", "+")) < 0)
+				if (drone.send(fd, "0" + drone.adjustpos("x", "+")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving up" << std::endl;
                 break;
             case 'i':
-                if (drone.send(fd, "0" + drone.adjusttrim("x", "-")) < 0)
+                if (drone.send(fd, "0" + drone.adjustpos("x", "-")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving down" << std::endl;
                 break;
 
 			case 'j':
-				if (drone.send(fd, "0" + drone.adjusttrim("y", "+")) < 0)
+				if (drone.send(fd, "0" + drone.adjustpos("z", "+")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving up" << std::endl;
                 break;
             case 'l':
-                if (drone.send(fd, "0" + drone.adjusttrim("y", "-")) < 0)
+                if (drone.send(fd, "0" + drone.adjustpos("z", "-")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving down" << std::endl;
                 break;
 
 			case 'a': // Move up
-				if (drone.send(fd, "0" + drone.adjusttrim("yaw", "+")) < 0)
+				if (drone.send(fd, "0" + drone.adjustpos("yaw", "+")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving up" << std::endl;
                 break;
             case 'd': // Move down
-                if (drone.send(fd, "0" + drone.adjusttrim("yaw", "-")) < 0)
+                if (drone.send(fd, "0" + drone.adjustpos("yaw", "-")) < 0)
        			  std::cerr << "Failed to send" << std::endl;
                 std::cout << "Moving down" << std::endl;
                 break;

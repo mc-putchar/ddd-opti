@@ -6,8 +6,9 @@
 
 #include "DroneState.hpp"
 #define INCREMENTATION 0.3
+#define TRIM_INCREMENTATION 25
 
-DroneState::DroneState() : index(0), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0) {}
+DroneState::DroneState() : index(0), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0), _Tx(0), _Ty(0), _Tz(0), _Tyaw(0) {}
 
 DroneState::DroneState(int idx) : index(idx), armed(false), json(), _x(0), _y(0), _z(0), _yaw(0) {}
 
@@ -84,13 +85,14 @@ str.append(this->trim(0, 64, 0, 0));
     return false;
   }
   this->json["trim"] = "[0,64,0,0]";
+  _Ty = 64;
 
-  sleep(1);
-  if (this->send(serial_port, "0{'setpoint':[0,0,0.5]") < 0)
-    std::cerr << "Failed to send" << std::endl;
-  usleep(500000);
-  if (this->send(serial_port, "0{'pos':[0,0,0.5,0]") < 0)
-    std::cerr << "Failed to send" << std::endl;
+//   sleep(1);
+//   if (this->send(serial_port, "0{'setpoint':[0,0,0.5]") < 0)
+//     std::cerr << "Failed to send" << std::endl;
+//   usleep(500000);
+//   if (this->send(serial_port, "0{'pos':[0,0,0.5,0]") < 0)
+//     std::cerr << "Failed to send" << std::endl;
   return true;
 }
 
@@ -154,6 +156,38 @@ std::string DroneState::adjustpos(std::string var, std::string change) {
   ss << "[" << _x << "," << _y << "," << _z << "," << _yaw << "]";
   this->json["pos"] = ss.str();
   return std::string("{'pos':" + ss.str() + "}");
+}
+
+std::string DroneState::adjusttrim(std::string var, std::string change) {
+
+  if (var == "x") {
+	if (change == "+") 
+	  _Tx -= TRIM_INCREMENTATION;
+	if (change == "-") 
+	  _Tx += TRIM_INCREMENTATION;
+  }
+  if (var == "y") {
+	if (change == "+") 
+	  _Ty -= TRIM_INCREMENTATION;
+	if (change == "-") 
+	  _Ty += TRIM_INCREMENTATION;
+  }
+  if (var == "z") {
+    if (change == "+") 
+	  _Tz -= TRIM_INCREMENTATION;
+	if (change == "-") 
+	  _Tz += TRIM_INCREMENTATION;
+  }
+  if (var == "yaw") {
+     if (change == "+") 
+	  _Tyaw -= TRIM_INCREMENTATION;
+	if (change == "-") 
+	  _Tyaw += TRIM_INCREMENTATION;
+  }
+  std::stringstream ss;
+  ss << "[" << _Tx << "," << _Ty << "," << _Tz << "," << _Tyaw << "]";
+  this->json["trim"] = ss.str();
+  return std::string("{'trim':" + ss.str() + "}");
 }
 
 std::string DroneState::trim(float x, float y, float z, float yaw) {

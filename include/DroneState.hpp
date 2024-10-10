@@ -46,6 +46,7 @@ public:
   std::string setpos(float x, float y, float z, float yaw);
   std::string trim(float x, float y, float z, float yaw);
   std::string adjustpos(std::string var, std::string change);
+  std::string adjusttrim(std::string var, std::string change);
 
 private:
   int index;
@@ -55,9 +56,10 @@ private:
   float _y;
   float _z;
   float _yaw;
-//   float _Sx;
-//   float _Sy;
-//   float _Sz;
+  int _Tx;
+  int _Ty;
+  int _Tz;
+  int _Tyaw;
 };
 
 #endif // DRONESTATE_HPP
