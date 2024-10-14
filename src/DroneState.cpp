@@ -190,6 +190,20 @@ std::string DroneState::adjusttrim(std::string var, std::string change) {
   return std::string("{'trim':" + ss.str() + "}");
 }
 
+std::string DroneState::adjustlight(std::string var, std::string change) {
+
+  if (var == "servo") {
+	if (change == "+") 
+	  _servoAngle -= 5;
+	if (change == "-") 
+	  _servoAngle += 5;
+  }
+
+  std::stringstream ss;
+  ss << "[" << _servoAngle << "]";
+  return std::string("{'servo':" + ss.str() + "}");
+}
+
 std::string DroneState::trim(float x, float y, float z, float yaw) {
   std::stringstream ss;
   ss << "[" << x << "," << y << "," << z << "," << yaw << "]";

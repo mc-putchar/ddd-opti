@@ -47,6 +47,7 @@ public:
   std::string trim(float x, float y, float z, float yaw);
   std::string adjustpos(std::string var, std::string change);
   std::string adjusttrim(std::string var, std::string change);
+  std::string adjustlight(std::string var, std::string change);
 
 private:
   int index;
@@ -60,6 +61,7 @@ private:
   int _Ty;
   int _Tz;
   int _Tyaw;
+  int _servoAngle;
 };
 
 #endif // DRONESTATE_HPP
