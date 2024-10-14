@@ -76,6 +76,12 @@
 		"ios": "cpp",
 		"locale": "cpp",
 		"queue": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"any": "cpp",
+		"codecvt": "cpp",
+		"forward_list": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"valarray": "cpp"
 	}
 }

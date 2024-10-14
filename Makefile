@@ -11,7 +11,7 @@ BINDIR := build
 # Source files for each target
 CONTROLLER_SRCS = controller DroneState
 CLIENT_SRCS := client DroneState
-CLIENTKEY_SRCS := clientKeyHook DroneState
+CLIENTKEY_SRCS := clientKeyHook DroneState Path
 
 # Compiler settings
 CXX := c++
@@ -27,7 +27,6 @@ COLOUR_MAG := \033[0;35m
 COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
-
 .PHONY: all client controller run clean fclean re help
 
 # Compile all targets
