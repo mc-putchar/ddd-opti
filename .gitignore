@@ -1,6 +1,7 @@
 build/
 ddd-client
 ddd-controller
+ddd-clientkey
 .cache/
 compile_commands.json
-libuiohook/
+tmp/
