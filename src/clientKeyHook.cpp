@@ -83,6 +83,17 @@ void loop(int fd) {
                 std::cout << "Moving down" << std::endl;
                 break;
 
+			case 'b': 
+                if (drone.send(fd, "0" + drone.adjustlight("servo", "-")) < 0)
+                  std::cerr << "Failed to send" << std::endl;
+                std::cout << "servo down" << std::endl;
+                break;
+			case 'n': 
+                if (drone.send(fd, "0" + drone.adjustlight("servo", "+")) < 0)
+                  std::cerr << "Failed to send" << std::endl;
+                std::cout << "servo up" << std::endl;
+                break;
+
             case 'r': // Move left
                 if (drone.is_armed())
 				  std::cout << "Drone already armed." << std::endl;
