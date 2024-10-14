@@ -25,6 +25,8 @@ struct SetPoint {
 // setpoint = array[3]
 // pid = array[17]
 // trim = array[4]
+// light = var;
+// servo = var;
 class DroneState {
 public:
   DroneState();
