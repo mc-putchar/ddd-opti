@@ -39,13 +39,13 @@ void droneFloat(DroneState & drone, int fd, int target_oscillations) {
             oscillationCount++; // Increment counter
             startTime = std::chrono::steady_clock::now(); // Reset start time
         }
-        if (drone.send(fd, std::string("0") +"{'setpoint':[" + 
+        if (drone.send(fd, "{'setpoint':[" + 
           std::to_string(Sx) + "," + std::to_string(Sy) + "," + std::to_string(Sz) + "]}") < 0) {
           std::cerr << "Failed to send" << std::endl;
           continue;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        if (drone.send(fd, std::string("0") + "{'pos':[" + 
+        if (drone.send(fd, "{'pos':[" + 
           std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "]}") < 0) {
           std::cerr << "Failed to send" << std::endl;
           continue;
@@ -78,7 +78,7 @@ void loop(int fd) {
       std::cout << "Drone armed" << std::endl;
     }
     else if (cmd == "disarm" || cmd == "d") {
-      if (drone.send(fd, "0" + drone.disarm()) < 0) {
+      if (drone.send(fd, drone.disarm()) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
@@ -89,7 +89,7 @@ void loop(int fd) {
       std::string tmp;
       std::getline(std::cin, tmp);
       SetPoint point(tmp);
-      if (drone.send(fd, "0" + drone.setpoint(point)) < 0) {
+      if (drone.send(fd, drone.setpoint(point.x, point.y, point.z)) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
@@ -108,9 +108,9 @@ void loop(int fd) {
       std::cout << "Position update: " << point.x << ", " << point.y << ", "
                 << point.z << std::endl;
     }
-    else if (cmd == "c" || cmd == "check") {
-      std::cout << "Drone state: " << drone.get_state() << std::endl;
-    }
+    // else if (cmd == "c" || cmd == "check") {
+    //   std::cout << "Drone state: " << drone.get_state() << std::endl;
+    // }
     else if (cmd == "t" || cmd == "trim") {
       std::cout << "Trim(x y z yaw): ";
       std::string tmp;
@@ -122,7 +122,7 @@ void loop(int fd) {
       iss >> y;
       iss >> z;
       iss >> yaw;
-      if (drone.send(fd, "0" + drone.trim(x, y, z, yaw)) < 0) {
+      if (drone.send(fd, drone.settrim(x, y, z, yaw)) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
