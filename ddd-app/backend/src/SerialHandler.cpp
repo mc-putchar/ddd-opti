@@ -9,8 +9,8 @@ SerialHandler::~SerialHandler() {
 
 
 bool SerialHandler::setup() {
-	serial_port = setup_serial();
-	// serial_port = 2;
+	// serial_port = setup_serial();
+	serial_port = 2;
 	if (serial_port < 0) return false;
 	return true;
 	// fifo = createNamedPipe(PIPE_NAME_CMD_LINE);
