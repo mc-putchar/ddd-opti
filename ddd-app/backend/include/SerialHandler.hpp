@@ -14,7 +14,7 @@
 #include <cstring>
 #include "DroneState.hpp"
 
-#define VERSION 0.1
+// #define VERSION 0.1 // acted out when compiling with crow ???
 
 #define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
 #define PIPE_NAME_KEY_HOOK "./tmp/ddd-data-interchange1"

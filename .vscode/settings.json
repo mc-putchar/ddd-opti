@@ -82,6 +82,12 @@
 		"forward_list": "cpp",
 		"fstream": "cpp",
 		"iomanip": "cpp",
-		"valarray": "cpp"
+		"valarray": "cpp",
+		"future": "cpp",
+		"list": "cpp",
+		"set": "cpp",
+		"source_location": "cpp",
+		"strstream": "cpp",
+		"unordered_set": "cpp"
 	}
 }
