@@ -1,5 +1,7 @@
 {
     "object_name": "drone01",
+    "path_name": "path01",
+    "length": 400,
     "frames": [
         {
             "frame": 1,
