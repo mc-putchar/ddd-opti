@@ -36,8 +36,8 @@ public:
 
 private:
 	Path(){}
-	// int						lenght;
-	// std::string 			name;
+	int						lenght;
+	std::string 			name;
 	std::vector<FrameData>	frames;
 
 

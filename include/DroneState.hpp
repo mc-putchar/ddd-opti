@@ -66,7 +66,7 @@ public:
 private:
 	int				index;
 	bool			armed;
-	Position	position;
+	Position		position;
 	Trim			trim;
 	DLight			light;
 

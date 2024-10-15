@@ -9,13 +9,13 @@ INCDIR := include
 BINDIR := build
 
 # Source files for each target
-CONTROLLER_SRCS = controller DroneState
+CONTROLLER_SRCS = main DroneState Path SerialHandler
 CLIENT_SRCS := client DroneState
-CLIENTKEY_SRCS := clientKeyHook DroneState Path
+CLIENTKEY_SRCS := clientKeyHook DroneState
 
 # Compiler settings
 CXX := c++
-CXXFLAGS := -Wall -Wextra -std=c++11
+CXXFLAGS := -Wall -Wextra -std=c++11 -g
 CPPFLAGS := -I$(INCDIR)
 
 
@@ -27,7 +27,7 @@ COLOUR_MAG := \033[0;35m
 COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
-.PHONY: all client controller run clean fclean re help
+.PHONY: all client controller clientkey run clean fclean re help
 
 # Compile all targets
 all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)

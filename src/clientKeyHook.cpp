@@ -115,18 +115,17 @@ void loop(int fd) {
 }
 
 int main() {
-	// int const fifo = open(PIPE_NAME_KEY_HOOK, O_WRONLY);
-	// if (fifo < 0) {
-	// 	std::cerr << "Failed to open communication with controller.\n"
-	// 	<< "Ensure it is already running." << std::endl;
-	// 	return 1;
-	// }
-	// std::cout << "Pipe opened" << std::endl;
+	int const fifo = open(PIPE_NAME_KEY_HOOK, O_WRONLY);
+	if (fifo < 0) {
+		std::cerr << "Failed to open communication with controller.\n"
+		<< "Ensure it is already running." << std::endl;
+		return 1;
+	}
+	std::cout << "Pipe opened" << std::endl;
 
-	Path path1("animation.json");
 
-	// loop(fifo); // Call the loop to start reading input and adjusting the drone
+	loop(fifo); // Call the loop to start reading input and adjusting the drone
 
-	// close(fifo);
+	close(fifo);
 	return 0;
 }
