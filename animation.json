@@ -2,6 +2,7 @@
     "object_name": "drone01",
     "path_name": "path01",
     "length": 400,
+	"fps": 24,
     "frames": [
         {
             "frame": 1,
