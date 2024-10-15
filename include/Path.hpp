@@ -35,10 +35,12 @@ public:
 	~Path();
 
 private:
-	Path(){}
 	int						lenght;
+	int						fps;
 	std::string 			name;
 	std::vector<FrameData>	frames;
+
+	Path(){}
 
 
 };

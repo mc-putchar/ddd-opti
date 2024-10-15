@@ -16,6 +16,7 @@ Path::Path(std::string file_path) {
 		json data = json::parse(jsonStr);
 		this->name = data["path_name"];
 		this->lenght = data["length"];
+		this->fps = data["fps"];
 		for (const auto& frame : data["frames"]) {
 			FrameData f;
 			f.frame = frame["frame"];
