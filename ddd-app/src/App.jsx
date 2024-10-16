@@ -37,7 +37,7 @@ function App() {
 	const [ws, setWs] = useState(null);
 
 	useEffect(() => {
-	const socket = new WebSocket('ws://0.0.0.0:18083/ws'); // Match the port of the C++ server
+	const socket = new WebSocket('ws://0.0.0.0:18084/ws'); // Match the port of the C++ server
 	setWs(socket);
 
 	socket.onopen = () => {
