@@ -2,9 +2,10 @@
 
 Path::Path(std::string file_path) {
 
-	std::ifstream inputFile(file_path);  // Replace with your actual source
-	std::string jsonStr((std::istreambuf_iterator<char>(inputFile)),
+	std::ifstream inputFile(file_path);
+	std::string str((std::istreambuf_iterator<char>(inputFile)),
 						std::istreambuf_iterator<char>());
+	jsonStr = str;
 
 	if (jsonStr.empty()) {
 		std::cerr << "Error: JSON input is empty!" << std::endl;
@@ -50,10 +51,26 @@ Path::Path(std::string file_path) {
 	// }
 }
 
+int Path::send(crow::websocket::connection*& wsConn) {
+	
+	for (size_t i = 0; i < lenght; i++)
+	{
+		std::stringstream ss;
+
+		ss << "Frame: " << frames[i].frame << "\n"
+				  << "Location: " << frames[i].location.x << ", " << frames[i].location.y << ", " << frames[i].location.z << "\n"
+				  << "Rotation: " << frames[i].rotation.x << ", " << frames[i].rotation.y << ", " << frames[i].rotation.z << "\n"
+				  << "Light Power: " << frames[i].light.power << ", Angle: " << frames[i].light.angle << "\n\n";
+
+		wsConn->send_text(ss.str().c_str());
+		sleep(1); // std::this_thread::sleep_for(std::chrono::seconds(1)); this is better
+	}
+	return 0;
+}
+
 Path::Path(Path const &cpy) {
 	(void)cpy;
 	// TODO ?
-
 }
 
 Path & Path::operator=(Path const &rhs) {
@@ -63,7 +80,6 @@ Path & Path::operator=(Path const &rhs) {
 }
 
 Path::~Path() {
-
 }
 
 
