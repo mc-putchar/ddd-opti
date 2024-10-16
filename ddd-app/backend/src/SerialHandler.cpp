@@ -1,8 +1,13 @@
 #include "SerialHandler.hpp"
 
-SerialHandler::SerialHandler(std::mutex & mutex, crow::websocket::connection* & wsconn) : g_stopped(false), serial_port(-1), fifo(-1), fifoKey(-1), wsMutex(mutex), wsConn(wsconn) {
-	std::cout << "wsconn ptr in handler = " << wsConn << std::endl;
-}
+SerialHandler::SerialHandler(std::mutex & wsmutex, crow::websocket::connection*& wsconn)
+	: g_stopped(false),
+	serial_port(-1),
+	fifo(-1),
+	fifoKey(-1),
+	wsMutex(wsmutex),
+	wsConn(wsconn)
+	{}
 
 
 SerialHandler::~SerialHandler() {
@@ -151,50 +156,26 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 			rb = read(serial_port, buf, BUFFER_SIZE - 1);
 			if (rb > 0) {
 				buf[rb] = 0;
-			if (FD_ISSET(pipe, &read_fds)) {
-				rb = read(pipe, buf, BUFFER_SIZE - 1);
-				if (rb > 0) {
-					buf[rb] = 0;
-					msg = buf;
-					// std::cout << "\n                      Client sent: " << msg << std::endl;
-					std::memset(buf, 0, sizeof(buf));
-					lastMsg = msg; // Store the last message
-					// std::cout << "Msg update:  " << msg << std::endl;
-					if (!msg.empty()) {
-						wb = write(serial_port, msg.c_str(), msg.length());
-					//   (void)serial;
-					//   wb = 5;
-						if (wb < 0) {
-						std::cerr << "Failed to send serial data to transmitter." << std::endl;
-						}
-						else {
-							std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
-							lastSendTime = std::chrono::steady_clock::now();
-						}
-					}
+				msg = buf;
+				std::memset(buf, 0, sizeof(buf));
+				if (!msg.empty())
+					std::cout << msg << std::endl;
 				}
-				else if (rb < 0) {
-					std::cerr << "Error reading from pipe." << std::endl;
-				}
-			}
-				std::cout << buf << std::endl;
-			} else if (rb < 0) {
+			else if (rb < 0) {
 				std::cerr << "Error reading from serial." << std::endl;
 			}
 		}
 
 		auto currentTime = std::chrono::steady_clock::now();
 		if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-			std::cout << "\nNo new message, sending last message" << std::endl;
-			wb = write(serial_port, lastMsg.c_str(), lastMsg.length());
-			//   (void)serial;
-			//   wb = 5;
-				if (wb < 0) {
+			const char* ping = "ping";
+			wb = write(serial_port, ping, strlen(ping));
+			if (wb < 0) {
 				std::cerr << "Failed to send serial data to transmitter." << std::endl;
-				} else {
-				std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << lastMsg << std::endl;
-				}
-				lastSendTime = currentTime; // Update the last send time
+			} else {
+				std::cout << "Pinged the receiver" << std::endl;
+			}
+			lastSendTime = currentTime; // Update the last send time
 		}
 		
 		usleep(500);

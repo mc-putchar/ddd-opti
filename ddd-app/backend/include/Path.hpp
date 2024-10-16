@@ -5,6 +5,11 @@
 #include <string>
 #include <fstream>
 #include "json.hpp"
+#include "crow_all.h"
+
+#include <thread>  // For std::this_thread::sleep_for
+#include <chrono>  // For std::chrono::seconds
+#include <unistd.h>
 
 using json = nlohmann::json;
 
@@ -34,11 +39,14 @@ public:
 	Path &operator=(Path const &rhs);
 	~Path();
 
+	int send(crow::websocket::connection*& wsConn);
+
 private:
-	int						lenght;
+	size_t					lenght;
 	int						fps;
 	std::string 			name;
 	std::vector<FrameData>	frames;
+	std::string				jsonStr;
 
 	Path(){}
 
