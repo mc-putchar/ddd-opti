@@ -26,7 +26,7 @@ function App() {
 
 			socket.onopen = () => {
 				console.log('Connected to WebSocket server');
-				socket.send('Hello from React');
+				socket.send('Hello from react');
 			};
 
 			socket.onmessage = (event) => {
