@@ -57,12 +57,13 @@ int Path::send(crow::websocket::connection*& wsConn) {
 	{
 		std::stringstream ss;
 
-		ss << "Frame: " << frames[i].frame << "\n"
-				  << "Location: " << frames[i].location.x << ", " << frames[i].location.y << ", " << frames[i].location.z << "\n"
-				  << "Rotation: " << frames[i].rotation.x << ", " << frames[i].rotation.y << ", " << frames[i].rotation.z << "\n"
-				  << "Light Power: " << frames[i].light.power << ", Angle: " << frames[i].light.angle << "\n\n";
+		ss << "Frame: " << frames[i].frame << "<br />"
+				  << "Location: " << frames[i].location.x << ", " << frames[i].location.y << ", " << frames[i].location.z << "<br />"
+				  << "Rotation: " << frames[i].rotation.x << ", " << frames[i].rotation.y << ", " << frames[i].rotation.z << "<br />"
+				  << "Light Power: " << frames[i].light.power << ", Angle: " << frames[i].light.angle << "<br /><br />";
 
-		wsConn->send_text(ss.str().c_str());
+		if (wsConn)
+			wsConn->send_text(ss.str().c_str());
 		sleep(1); // std::this_thread::sleep_for(std::chrono::seconds(1)); this is better
 	}
 	return 0;
