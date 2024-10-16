@@ -1,6 +1,8 @@
 #include "SerialHandler.hpp"
 
-SerialHandler::SerialHandler() : g_stopped(false), serial_port(-1), fifo(-1), fifoKey(-1) {}
+SerialHandler::SerialHandler(std::mutex & mutex, crow::websocket::connection* & wsconn) : g_stopped(false), serial_port(-1), fifo(-1), fifoKey(-1), wsMutex(mutex), wsConn(wsconn) {
+	std::cout << "wsconn ptr in handler = " << wsConn << std::endl;
+}
 
 
 SerialHandler::~SerialHandler() {
@@ -10,12 +12,11 @@ SerialHandler::~SerialHandler() {
 
 bool SerialHandler::setup() {
 	serial_port = setup_serial();
-	// serial_port = 2;
 	if (serial_port < 0) return false;
 	return true;
-	// fifo = createNamedPipe(PIPE_NAME_CMD_LINE);
-	// fifoKey = createNamedPipe(PIPE_NAME_KEY_HOOK);
-	// return fifo >= 0 && fifoKey >= 0;
+	fifo = createNamedPipe(PIPE_NAME_CMD_LINE);
+	fifoKey = createNamedPipe(PIPE_NAME_KEY_HOOK);
+	return fifo >= 0 && fifoKey >= 0;
 }
 
 void SerialHandler::cleanup() {
@@ -64,6 +65,15 @@ int SerialHandler::setup_serial() {
 	return (serial_port);
 }
 
+void SerialHandler::send_to_ws(std::string msg) {
+	std::lock_guard<std::mutex> guard(wsMutex);
+	if (wsConn) {
+		wsConn->send_text(msg.c_str()); // Send message through WebSocket connection
+	} else {
+		std::cout << "WebSocket connection is not available." << std::endl;
+	}
+}
+
 void SerialHandler::transmit(int pipe, int pipeKey) {
 	ssize_t wb(0);
 	ssize_t rb(0);
@@ -79,7 +89,7 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 		FD_ZERO(&read_fds);
 		FD_SET(pipe, &read_fds);
 		FD_SET(pipeKey, &read_fds);
-		if (serial_port >= 0) // in case there is no ESP#@ connected
+		if (serial_port >= 0) // in case there is no ESP32 connected
 			FD_SET(serial_port, &read_fds);
 		struct timeval timeout;
 		timeout.tv_sec = 1;  // Wait for 1 second
@@ -92,89 +102,104 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 		continue;
 		}
 
-	if (FD_ISSET(pipe, &read_fds)) {
-		rb = read(pipe, buf, BUFFER_SIZE - 1);
-		if (rb > 0) {
-			buf[rb] = 0;
-			// TODO: update state
-			msg = buf;
-			// std::cout << "\n                      Client sent: " << msg << std::endl;
-			std::memset(buf, 0, sizeof(buf));
-			lastMsg = msg; // Store the last message
-			// std::cout << "Msg update:  " << msg << std::endl;
-			if (!msg.empty()) {
+		if (FD_ISSET(pipe, &read_fds)) {
+			rb = read(pipe, buf, BUFFER_SIZE - 1);
+			if (rb > 0) {
+				buf[rb] = 0;
+				msg = buf;
+				std::memset(buf, 0, sizeof(buf));
+				if (!msg.empty()) {
+					wb = write(serial_port, msg.c_str(), msg.length());
+					if (wb < 0) {
+						std::cerr << "Failed to send serial data to transmitter." << std::endl;
+					}
+					else {
+						std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
+						lastSendTime = std::chrono::steady_clock::now();
+					}
+					send_to_ws(msg);
+				}
+			}
+			else if (rb < 0) {
+				std::cerr << "Error reading from pipe." << std::endl;
+			}
+		}
+		if (FD_ISSET(pipeKey, &read_fds)) {
+			rb = read(pipeKey, buf, BUFFER_SIZE - 1);
+			if (rb > 0) {
+				buf[rb] = 0;
+				msg = buf;
+				std::memset(buf, 0, sizeof(buf));
+				if (!msg.empty()) {
 				wb = write(serial_port, msg.c_str(), msg.length());
-			//   (void)serial;
-			//   wb = 5;
 				if (wb < 0) {
-				std::cerr << "Failed to send serial data to transmitter." << std::endl;
+					std::cerr << "Failed to send serial data to transmitter." << std::endl;
 				}
 				else {
 					std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
 					lastSendTime = std::chrono::steady_clock::now();
 				}
+				send_to_ws(msg);
+				}
+			}
+			else if (rb < 0) {
+				std::cerr << "Error reading from pipe." << std::endl;
 			}
 		}
-		else if (rb < 0) {
-			std::cerr << "Error reading from pipe." << std::endl;
-		}
-	}
-	if (FD_ISSET(pipeKey, &read_fds)) {
-	  rb = read(pipeKey, buf, BUFFER_SIZE - 1);
-	  if (rb > 0) {
-		buf[rb] = 0;
-		// TODO: update state
-		msg = buf;
-		// std::cout << "\n                      Clientkey sent: " << msg << std::endl;
-		std::memset(buf, 0, sizeof(buf));
-		lastMsg = msg; // Store the last message
-		// std::cout << "Msg update:  " << msg << std::endl;
-		if (!msg.empty()) {
-		  wb = write(serial_port, msg.c_str(), msg.length());
-		//   (void)serial;
-		//   wb = 5;
-		  if (wb < 0) {
-			std::cerr << "Failed to send serial data to transmitter." << std::endl;
-		  }
-		  else {
-			std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
-			lastSendTime = std::chrono::steady_clock::now();
-		  }
-		}
-	  }
-	  
-	  else if (rb < 0) {
-		std::cerr << "Error reading from pipe." << std::endl;
-	  }
-	}
 
-	if (FD_ISSET(serial_port, &read_fds)) {
-	  rb = read(serial_port, buf, BUFFER_SIZE - 1);
-	  if (rb > 0) {
-		buf[rb] = 0;
-		std::cout << buf << std::endl;
-	  } else if (rb < 0) {
-		std::cerr << "Error reading from serial." << std::endl;
-	  }
-	}
-
-	  auto currentTime = std::chrono::steady_clock::now();
-	  if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-		  std::cout << "\nNo new message, sending last message" << std::endl;
-		  wb = write(serial_port, lastMsg.c_str(), lastMsg.length());
-		//   (void)serial;
-		//   wb = 5;
-			if (wb < 0) {
-			  std::cerr << "Failed to send serial data to transmitter." << std::endl;
-			} else {
-			  std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << lastMsg << std::endl;
+		if (FD_ISSET(serial_port, &read_fds)) {
+			rb = read(serial_port, buf, BUFFER_SIZE - 1);
+			if (rb > 0) {
+				buf[rb] = 0;
+			if (FD_ISSET(pipe, &read_fds)) {
+				rb = read(pipe, buf, BUFFER_SIZE - 1);
+				if (rb > 0) {
+					buf[rb] = 0;
+					msg = buf;
+					// std::cout << "\n                      Client sent: " << msg << std::endl;
+					std::memset(buf, 0, sizeof(buf));
+					lastMsg = msg; // Store the last message
+					// std::cout << "Msg update:  " << msg << std::endl;
+					if (!msg.empty()) {
+						wb = write(serial_port, msg.c_str(), msg.length());
+					//   (void)serial;
+					//   wb = 5;
+						if (wb < 0) {
+						std::cerr << "Failed to send serial data to transmitter." << std::endl;
+						}
+						else {
+							std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
+							lastSendTime = std::chrono::steady_clock::now();
+						}
+					}
+				}
+				else if (rb < 0) {
+					std::cerr << "Error reading from pipe." << std::endl;
+				}
 			}
-			lastSendTime = currentTime; // Update the last send time
-	  }
-	
-	usleep(500);
-	wb = 0;
-  }
+				std::cout << buf << std::endl;
+			} else if (rb < 0) {
+				std::cerr << "Error reading from serial." << std::endl;
+			}
+		}
+
+		auto currentTime = std::chrono::steady_clock::now();
+		if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
+			std::cout << "\nNo new message, sending last message" << std::endl;
+			wb = write(serial_port, lastMsg.c_str(), lastMsg.length());
+			//   (void)serial;
+			//   wb = 5;
+				if (wb < 0) {
+				std::cerr << "Failed to send serial data to transmitter." << std::endl;
+				} else {
+				std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << lastMsg << std::endl;
+				}
+				lastSendTime = currentTime; // Update the last send time
+		}
+		
+		usleep(500);
+		wb = 0;
+	}
 }
 
 int SerialHandler::createNamedPipe(std::string namePipe) {

@@ -8,10 +8,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
+#include "crow_all.h"
 #include <chrono>
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <mutex>
 #include "DroneState.hpp"
 
 // #define VERSION 0.1 // acted out when compiling with crow ???
@@ -32,7 +34,8 @@
 
 class SerialHandler {
 public:
-	SerialHandler();
+	SerialHandler() = delete;
+	SerialHandler(std::mutex & mutex, crow::websocket::connection*& wsConn);
 	~SerialHandler();
 
 	bool	setup();
@@ -41,11 +44,14 @@ public:
 	int		createNamedPipe(std::string namePipe);
 
 private:
-	volatile	std::sig_atomic_t g_stopped;
-	int			serial_port;
-	int			fifo;
-	int			fifoKey;
+	volatile std::sig_atomic_t	g_stopped;
+	int							serial_port;
+	int							fifo;
+	int							fifoKey;
+	std::mutex & 				wsMutex;
+	crow::websocket::connection*& wsConn;
 
+	void send_to_ws(std::string msg);
 	int setup_serial();
 
 };
