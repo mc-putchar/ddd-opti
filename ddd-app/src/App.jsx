@@ -1,7 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Container } from 'react-bootstrap';
+import { Col, Form, Container,Button } from 'react-bootstrap';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
+
+
+function Slider({name}) {
+	const [value, setValue] = useState(200);
+  
+	const handleChange = (event) => {
+	  setValue(event.target.value);
+	};
+  
+	return (
+	  <div>
+		<Form.Group>
+		  <Form.Label>{name}: {value}</Form.Label>
+		  <Form.Control
+			type="range"
+			min="-500"
+			max="500"
+			value={value}
+			onChange={handleChange}
+		  />
+		</Form.Group>
+	  </div>
+	);
+  }
 
 function App() {
 	const [message, setMessage] = useState('');
@@ -47,9 +71,15 @@ function App() {
 
 	return (
 		<Container fluid>
-			<h4>Stage Preview</h4>
-			<p>{message}</p>
-			<Col style={{ height: "800px", width: "1400px" }}>
+			<h4>DDD liveView</h4>
+			<p dangerouslySetInnerHTML={{ __html: message }}></p>
+			<Button> Arm</Button>
+			<Button> Disarm</Button>
+			<Slider name="Trim___x"/>
+			<Slider name="Trim___y"/>
+			<Slider name="Trim___z"/>
+			<Slider name="Trim_yaw"/>
+			<Col style={{ height: "600px", width: "1000px" }}>
 				<Canvas
 					orthographic
 					camera={{ zoom: 100, position: [0, 0, 10] }}
