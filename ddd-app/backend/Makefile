@@ -2,7 +2,6 @@
 CLIENT := ddd-client
 CLIENTKEY := ddd-clientkey
 CONTROLLER := ddd-controller
-WEBSOCKERSERVER := ddd-WebSocketServer
 
 # Define directories
 SRCDIR := src
@@ -13,7 +12,6 @@ BINDIR := build
 CLIENT_SRCS := client DroneState
 CLIENTKEY_SRCS := clientKeyHook DroneState
 CONTROLLER_SRCS = main DroneState Path SerialHandler
-WEBSOCKERSERVER_SRCS := WebsocketServer
 
 # Compiler settings
 CXX := c++
@@ -29,7 +27,7 @@ COLOUR_MAG := \033[0;35m
 COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
-.PHONY: all client controller WebSocketServer clientkey run clean fclean re help
+.PHONY: all client controller clientkey run clean fclean re help
 
 # Compile all targets
 all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY) $(WEBSOCKERSERVER)
@@ -38,7 +36,7 @@ all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY) $(WEBSOCKERSERVER)
 client: $(CLIENT)
 clientkey: $(CLIENTKEY)
 controller: $(CONTROLLER)
-WebSocketServer: $(WEBSOCKERSERVER)
+
 
 # Run targets
 run: client controller
@@ -55,9 +53,6 @@ $(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
 
 $(CLIENTKEY): $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY)
-
-$(WEBSOCKERSERVER): $(WEBSOCKERSERVER_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(WEBSOCKERSERVER_SRCS:%=$(BINDIR)/%.o) -o $(WEBSOCKERSERVER)
 
 # Compile object files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)

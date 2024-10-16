@@ -9,8 +9,8 @@ SerialHandler::~SerialHandler() {
 
 
 bool SerialHandler::setup() {
-	// serial_port = setup_serial();
-	serial_port = 2;
+	serial_port = setup_serial();
+	// serial_port = 2;
 	if (serial_port < 0) return false;
 	return true;
 	// fifo = createNamedPipe(PIPE_NAME_CMD_LINE);
@@ -79,13 +79,13 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 		FD_ZERO(&read_fds);
 		FD_SET(pipe, &read_fds);
 		FD_SET(pipeKey, &read_fds);
-		FD_SET(serial_port, &read_fds);
+		if (serial_port >= 0) // in case there is no ESP#@ connected
+			FD_SET(serial_port, &read_fds);
 		struct timeval timeout;
 		timeout.tv_sec = 1;  // Wait for 1 second
 		timeout.tv_usec = 0;
 
 		int max_fd = std::max(pipeKey, serial_port); // Get the highest file descriptor value
-
 		int activity = select(max_fd + 1, &read_fds, nullptr, nullptr, &timeout);
 		if (activity < 0) {
 			std::cerr << "Select error." << std::endl;

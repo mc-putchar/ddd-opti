@@ -115,6 +115,7 @@ void loop(int fd) {
 }
 
 int main() {
+	std::cout << "client KeyHook. Pres keys...\n" << std::endl;
 	int const fifo = open(PIPE_NAME_KEY_HOOK, O_WRONLY);
 	if (fifo < 0) {
 		std::cerr << "Failed to open communication with controller.\n"
