@@ -12,14 +12,19 @@
 crow::websocket::connection* wsConn = nullptr;
 std::mutex wsMutex; // Mutex to protect the WebSocket connection
 
-int main() {
+int main(int argc, char ** argv) {
 
+	int wsport = 8080;
+
+	if (argc == 2)
+		wsport = std::atoi(argv[1]);
+	std::cout << "port = " << wsport << std::endl;
 	std::cout << "Setting up serial connection..." << std::endl;
 	SerialHandler handler;
 
 	if (!handler.setup()) {
 		std::cerr << "Failed to initialize serial connection." << std::endl;
-		return 1;
+		std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
 	}
 
 	// Create named pipes
@@ -63,8 +68,8 @@ int main() {
     });
 
     // Run the Crow app in another thread so it doesn't block the main thread
-    std::thread crowThread([&app]() {
-        app.port(18084).multithreaded().run();
+    std::thread crowThread([&app, wsport]() {
+        app.port(wsport).multithreaded().run();
     });
 
 	int i = 0;
