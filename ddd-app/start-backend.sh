@@ -43,10 +43,14 @@ SERVER_PID=$!
 # Capture the PID of the server for cleanup on exit
 echo "Server running with PID: $SERVER_PID\n"
 
+sleep 1
+
 ./ddd-controller &
 CONTROLLER_PID=$!
 
 echo "Controller running with PID: $CONTROLLER_PID\n"
+
+sleep 1
 
 # Usage example: run a command in a new terminal
 open_terminal "./ddd-clientkey" &
