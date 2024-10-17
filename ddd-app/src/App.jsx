@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Form, Container,Button } from 'react-bootstrap';
+import { Col, Card, Row, Form, Container, Button} from 'react-bootstrap';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Sphere } from '@react-three/drei';
+import { OrbitControls, Sphere, Plane } from '@react-three/drei';
 
 
 function Slider({name}) {
@@ -70,36 +70,59 @@ function App() {
 	}, []);
 
 	return (
+		<>
 		<Container fluid>
-			<h4>DDD liveView</h4>
-			<p dangerouslySetInnerHTML={{ __html: message }}></p>
-			<Button> Arm</Button>
-			<Button> Disarm</Button>
-			<Slider name="Trim___x"/>
-			<Slider name="Trim___y"/>
-			<Slider name="Trim___z"/>
-			<Slider name="Trim_yaw"/>
-			<Col style={{ height: "600px", width: "1000px" }}>
-				<Canvas
-					orthographic
-					camera={{ zoom: 100, position: [0, 0, 10] }}
-					style={{ background: '#333' }} // Set background color to dark grey
-				>
-					<ambientLight intensity={0.5} />
-					<spotLight
-						position={[5, 5, 5]} // Positioning the light to the side
-						angle={0.3} // Spread of the light cone
-						penumbra={1} // Softness of the edges
-						intensity={1} // Brightness of the light
-						castShadow // Enable shadows
-					/>
-					<Sphere position={[0, 0, 0]} args={[1, 32, 32]}>
-						<meshStandardMaterial attach="material" color="blue" />
-					</Sphere>
-					<OrbitControls />
-				</Canvas>
-			</Col>
+			<Row className="m-3 p-3">
+				<h4>DDD liveView</h4>
+				<Card className="shadow-sm p-3 h-100" >
+				<Col style={{ height: "300px" }}>
+							<Canvas
+								orthographic
+								camera={{ zoom: 80, position: [3, 3, 10] }}
+								style={{ background: '#222' }}
+								shadowMap
+								>
+								<ambientLight intensity={0.5} />
+								<spotLight
+									position={[5, 5, 5]}
+									angle={0.25}
+									penumbra={1}
+									intensity={100}
+									castShadow // not castin nay shadow for some reason ?
+									/>
+								<Sphere position={[0, 1, 0]} args={[1, 32, 32]} castShadow>
+									<meshStandardMaterial attach="material" color="blue" />
+								</Sphere>
+								<Plane position={[0, -0.01, 0]} args={[9, 9]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+									<meshStandardMaterial attach="material" color="lightgrey" />
+								</Plane>
+								<Sphere position={[5, 5, 5]} args={[0.5, 12, 12]}>
+									<meshStandardMaterial attach="material" color="yellow" />
+								</Sphere>
+								<OrbitControls />
+								<axesHelper args={[1.5]} />
+								<gridHelper args={[10, 10]} />
+								{/* <directionalLight /> */}
+							</Canvas>
+					</Col>
+						</Card>
+				
+				<Col className="p-3">
+				<Button>Arm</Button>
+				<Button>Disarm</Button>
+
+				<Slider name="Trim___x" />
+				<Slider name="Trim___y" />
+				<Slider name="Trim___z" />
+				<Slider name="Trim_yaw" />
+				</Col>
+				<Col className="p-3">
+					<p dangerouslySetInnerHTML={{ __html: message }}></p>
+				</Col>
+
+			</Row>
 		</Container>
+		</>
 	);
 }
 

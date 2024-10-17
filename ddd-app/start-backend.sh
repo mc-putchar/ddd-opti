@@ -43,7 +43,8 @@ open_terminal() {
         "Darwin")  # macOS
             if command -v osascript > /dev/null 2>&1; then
                 # Properly escape the command for osascript
-                osascript -e "tell application \"Terminal\" to do script \"${command//\"/\\\"}\""
+				local current_dir=$(pwd)  # Get the current working directory
+   				osascript -e "tell application \"Terminal\" to do script \"cd '$current_dir'; $command\""
             else
                 echo "osascript not found on macOS!"
                 exit 1
