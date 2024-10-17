@@ -59,6 +59,11 @@ double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
 double lightAngle = 0;
 double lightPower = 0;
 
+  const int ledPin = 26;  // GPIO pin to control the LED
+  const int pwmChannel = 0;  // PWM channel
+  const int freq = 5000;  // Frequency of the PWM signal
+  const int resolution = 8;  // Resolution in bits (8 bits = 256 levels)
+
 PID xPosPID(&xPos, &xVelSetpoint, &xPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
 PID yPosPID(&yPos, &yVelSetpoint, &yPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
 PID zPosPID(&zPos, &zVelSetpoint, &zPosSetpoint, zPosKp, zPosKi, zPosKd, DIRECT);
@@ -114,8 +119,11 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 	// myServo.write(servoAngle);
 
 	// Modulate brightness based on lightPower
-    int brightness = map(lightPower * 100, 0, 100, 0, 255);  // Map lightPower (0-1) to PWM duty cycle (0-255)
-    ledcWrite(pwmChannel, brightness);
+    int brightness = map(lightPower, 0, 100, 0, 255);  // Map lightPower (0-1) to PWM duty cycle (0-255)
+    if (ledcWrite(ledPin, brightness))
+	{
+		Serial.printf("Led succesfully set to ", brightness);
+	}
 
   } if (json.containsKey("armed")) {
     if (json["armed"] != armed && json["armed"]) {
@@ -169,17 +177,16 @@ void readMacAddress(){
 void setup() {
 
   // servo control
-  myServo.attach(servoPin);
+//   myServo.attach(servoPin);
 
   //light control
-  const int ledPin = 5;  // GPIO pin to control the LED
-  const int pwmChannel = 0;  // PWM channel
-  const int freq = 5000;  // Frequency of the PWM signal
-  const int resolution = 8;  // Resolution in bits (8 bits = 256 levels)
+
    // Configure the PWM channel
-  ledcSetup(pwmChannel, freq, resolution);
-  // Attach the channel to the GPIO pin
-  ledcAttachPin(ledPin, pwmChannel);
+   if ( ledcAttach(ledPin, freq, resolution))
+   {
+		Serial.printf("LEDc attach sucess");
+   }
+	
 
   // Initialize Serial Monitor
   Serial.begin(115200);
@@ -198,9 +205,6 @@ void setup() {
     sbus_tx.Write();
   }
 
-  // Init replacement data from Serial
-  // for (int i = 0; i < 5; ++i)
-  //   rep_data[i] = 0;
 
   // Set device as a Wi-Fi Station
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -263,15 +267,6 @@ void setup() {
   lastSbusSend = micros();
 }
 
-// void read_input()
-// {
-//   String s = Serial.readStringUntil('\n');
-//   if (s[0] - '0' >= 0 && s[0] - '0' < 5) {
-//     String tmp = s.substring(2);
-//     rep_data[s[0] - '0'] = tmp.toInt();
-//     Serial.printf("Replaced channel %c with value %d\n", s[0], rep_data[s[0] - '0']);
-//   }
-// }
 
 void loop() {
   while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
@@ -325,27 +320,9 @@ void loop() {
 
   if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
     lastSbusSend = micros();
-    // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\nPos x: %f, y: %f, z: %f, yaw: %f\n", xPWM, yPWM, zPWM, yawPWM, xVel, yVel, zPos, yawPos);
-    // Serial.printf("Setpoint x: %f, y: %f, z: %f\n", xVelSetpoint, yVelSetpoint, zVelSetpoint);
-    // Serial.printf("Pos x: %f, y: %f, z: %f\n", xVel, yVel, zPos);
-    // Serial.printf("Output x: %f, y: %f, z: %f\n", xVelOutput, yVelOutput, zVelOutput);
     Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
     sbus_tx.data(data);
     sbus_tx.Write();
   }
-  // if (Serial.available() > 0) {
-  //   read_input();
-  // }
-//   for (int angle = 0; angle <= 89; angle++) {
-//     myServo.write(angle);  // Move servo to the angle
-// 	Serial.print("Moving to angle: ");
-//     Serial.println(angle);
-//     delay(15);             // Wait for the servo to reach the position
-//   }
-//   for (int angle = 180; angle >= 89; angle--) {
-// 	Serial.print("Moving to angle: ");
-//     Serial.println(angle);
-//     myServo.write(angle);
-//     delay(15);
-  }
+
 }
