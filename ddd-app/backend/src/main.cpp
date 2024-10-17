@@ -51,39 +51,36 @@ crow::SimpleApp & settingWsConnection() {
 
 int main(int argc, char ** argv) {
 
-	int wsport = settingWsPort(argc, argv);
+	const int wsport = settingWsPort(argc, argv);
 
+	std::vector<DroneState> drones;
+	drones.emplace_back(0); //push back a drone instance with move semantic. the arg is the index;
 
-	std::cout << "Setting up serial connection..." << std::endl;
-	SerialHandler handler(wsMutex, wsConn);
-	if (!handler.setup()) {
-		std::cerr << "Failed to initialize serial connection." << std::endl;
-		std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
-	}
-	int fifoCmd = handler.createNamedPipe(PIPE_NAME_CMD_LINE);
-	int fifoKey = handler.createNamedPipe(PIPE_NAME_KEY_HOOK);
+	SerialHandler serialHandler(wsMutex, wsConn);
+	serialHandler.setup();
+	int fifoCmd = serialHandler.createNamedPipe(PIPE_NAME_CMD_LINE);
+	int fifoKey = serialHandler.createNamedPipe(PIPE_NAME_KEY_HOOK);
 	if (fifoCmd < 0 || fifoKey < 0) return 1;
-	// Launch the transmitData function in a separate thread
-	std::thread transmitThread([&handler, fifoCmd, fifoKey]() {
-		handler.transmit(fifoCmd, fifoKey);
+
+	std::thread transmitThread([&serialHandler, fifoCmd, fifoKey]() { // Launch transmitData fnct in thread
+		serialHandler.transmit(fifoCmd, fifoKey);
 	});
 
-
-	// WebSocket server with Crow
-	crow::SimpleApp & app = settingWsConnection();
-	// Run the Crow app in another thread so it doesn't block the main thread
-	std::thread crowThread([&app, wsport]() {
+	crow::SimpleApp & app = settingWsConnection(); // WebSocket server with Crow
+	std::thread crowThread([&app, wsport]() { // Run the Crow app in another thread so it doesn't block the main thread
 		app.port(wsport).multithreaded().run();
 	});
 
 
 	// Do other stuff in the main thread if needed
 	std::cout << "Main thread doing other work..." << std::endl;
-	Path path1("animation.json");
 
-	sleep(10); // std::this_thread::sleep_for(std::chrono::seconds(3));
+	auto path = std::make_unique<Path>("animation.json"); // Create the unique_ptr
+	drones[0].setPath(std::move(path));
 
-	path1.send(wsConn);
+	std::this_thread::sleep_for(std::chrono::seconds(10));
+
+	drones[0].path->send(wsConn);
 
 
 	int i = 0;

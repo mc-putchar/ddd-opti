@@ -9,18 +9,24 @@
 #define TRIM_INCREMENTATION 25
 
 DroneState::DroneState() 
-	: index(0),
+	: path(nullptr),
+		index(0),
 		armed(false),
 		position{0, 0, 0, 0},
 		trim{0, 0, 0, 0},
-		light{0, 0} {}
+		light{0, 0}
+		{}
+
 
 DroneState::DroneState(int idx)
-	: index(idx),
+	: path(nullptr),
+		index(idx),
 		armed(false),
 		position{0, 0, 0, 0},
 		trim{0, 0, 0, 0},
-		light{0, 0} {}
+		light{0, 0}
+		{}
+
 
 DroneState::DroneState(DroneState const &cpy)
 	: index(cpy.index),
@@ -28,6 +34,7 @@ DroneState::DroneState(DroneState const &cpy)
 		position{cpy.position.x, cpy.position.y, cpy.position.z, cpy.position.yaw},
 		trim{cpy.trim.x, cpy.trim.y, cpy.trim.z, cpy.trim.yaw},
 		light{cpy.light.power, cpy.light.angle} {}
+
 
 DroneState &DroneState::operator=(DroneState const &rhs) {
 	if (this == &rhs)
@@ -40,36 +47,16 @@ DroneState &DroneState::operator=(DroneState const &rhs) {
 	return *this;
 }
 
+
 DroneState::~DroneState() {}
+
+void DroneState::setPath(std::unique_ptr<Path> p) {
+	path = std::move(p);
+}
+
 
 bool DroneState::is_armed() const { return this->armed; }
 
-// std::string DroneState::get_state() const {
-// 	std::ostringstream ss;
-// 	ss << "{";
-// 	for (std::map<std::string, std::string>::const_iterator it =
-// 					 this->json.begin();
-// 			 it != this->json.end(); ++it) {
-// 		ss << "'" << it->first << "'";
-// 		ss << ":" << it->second << ",";
-// 	}
-	// ss << "}";
-// 	return (ss.str());
-// }
-
-// bool DroneState::send_state(int fd) {
-// 	std::string state(std::to_string(this->index));
-// 	state.append(this->get_state());
-// 	ssize_t wb(0);
-// 	ssize_t rem(state.length());
-// 	while (rem) {
-// 		wb = write(fd, state.c_str(), state.length());
-// 		if (wb < 0)
-// 			return false;
-// 		rem -= wb;
-// 	}
-// 	return true;
-// }
 
 ssize_t DroneState::send(int fd, std::string const &msg) {
 	std::ostringstream oss;
@@ -77,6 +64,7 @@ ssize_t DroneState::send(int fd, std::string const &msg) {
 	std::string output = oss.str();
 	return write(fd, output.c_str(), output.length());
 }
+
 
 // Startup sequence requires throttling down to safe margin
 // to allow arming the drone
@@ -99,21 +87,25 @@ bool DroneState::startup(int serial_port) {
 	return true;
 }
 
+
 std::string DroneState::arm() {
 	this->armed = true;
 	return std::string("{'armed':true}");
 }
+
 
 std::string DroneState::disarm() {
 	this->armed = false;
 	return std::string("{'armed':false}");
 }
 
+
 std::string DroneState::setpoint(float x, float y, float z) {
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "]";
 	return std::string("{'setpoint':[" + ss.str() + "]}");
 }
+
 
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	position.x = x;
@@ -125,11 +117,13 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	return std::string("{'pos':" + ss.str() + "}");
 }
 
+
 std::string DroneState::settrim(float x, float y, float z, float yaw) {
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
 	return std::string("{'trim':" + ss.str() + "}");
 }
+
 
 std::string DroneState::adjustpos(std::string var, std::string change) {
 	if (var == "x") {
@@ -161,6 +155,7 @@ std::string DroneState::adjustpos(std::string var, std::string change) {
 	return std::string("{'pos':" + ss.str() + "}");
 }
 
+
 std::string DroneState::adjusttrim(std::string var, std::string change) {
 	if (var == "x") {
 		if (change == "+") 
@@ -190,6 +185,7 @@ std::string DroneState::adjusttrim(std::string var, std::string change) {
 	ss << "[" << trim.x << "," << trim.y << "," << trim.z << "," << trim.yaw << "]";
 	return std::string("{'trim':" + ss.str() + "}");
 }
+
 
 std::string DroneState::adjustlight(std::string var, std::string change) {
 	std::stringstream ss;

@@ -15,7 +15,7 @@ CONTROLLER_SRCS = main DroneState Path SerialHandler
 
 # Compiler settings
 CXX := c++
-CXXFLAGS := -Wall -Wextra -std=c++11 -g
+CXXFLAGS := -Wall -Wextra -std=c++14 -g
 CPPFLAGS := -I$(INCDIR) -I/asio/include
 
 

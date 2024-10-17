@@ -16,12 +16,15 @@ SerialHandler::~SerialHandler() {
 
 
 bool SerialHandler::setup() {
+	std::cout << "Setting up serial connection..." << std::endl;
 	serial_port = setup_serial();
-	if (serial_port < 0) return false;
+	if (serial_port < 0) {
+		std::cerr << "Failed to initialize serial connection." << std::endl;
+		std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
+		return false;
+	}
+	std::cerr << "Serial connection Sucessfull." << std::endl;
 	return true;
-	fifo = createNamedPipe(PIPE_NAME_CMD_LINE);
-	fifoKey = createNamedPipe(PIPE_NAME_KEY_HOOK);
-	return fifo >= 0 && fifoKey >= 0;
 }
 
 void SerialHandler::cleanup() {

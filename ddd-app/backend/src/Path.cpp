@@ -42,13 +42,6 @@ Path::Path(std::string file_path) {
 	}
 	std::cout << "JSON Parsing sucesfull!" << std::endl;
 
-	// Output for checking
-	// for (const auto& f : frames) {
-	// 	std::cout << "Frame: " << f.frame << "\n"
-	// 			  << "Location: " << f.location.x << ", " << f.location.y << ", " << f.location.z << "\n"
-	// 			  << "Rotation: " << f.rotation.x << ", " << f.rotation.y << ", " << f.rotation.z << "\n"
-	// 			  << "Light Power: " << f.light.power << ", Angle: " << f.light.angle << "\n\n";
-	// }
 }
 
 int Path::send(crow::websocket::connection*& wsConn) {

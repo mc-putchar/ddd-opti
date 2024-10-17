@@ -5,6 +5,8 @@
 #include <sstream>
 #include <string>
 
+#include "Path.hpp"
+
 struct SetPoint {
 	float x, y, z;
 	float yaw, pitch, roll;
@@ -48,9 +50,7 @@ public:
 	~DroneState();
 
 	bool is_armed() const;
-	// std::string get_state() const;
 
-	// bool send_state(int serial_port);
 	ssize_t send(int serial_port, std::string const &msg);
 
 	bool startup(int serial_port);
@@ -63,13 +63,15 @@ public:
 	std::string adjusttrim(std::string var, std::string change);
 	std::string adjustlight(std::string var, std::string change);
 
-private:
-	int				index;
-	bool			armed;
-	Position		position;
-	Trim			trim;
-	DLight			light;
+	void setPath(std::unique_ptr<Path> p);
+	std::unique_ptr<Path>	path; 
 
+private:
+	int						index;
+	bool					armed;
+	Position				position;
+	Trim					trim;
+	DLight					light;
 };
 
 #endif // DRONESTATE_HPP

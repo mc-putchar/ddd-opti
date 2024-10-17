@@ -35,6 +35,7 @@ struct FrameData {
 class Path {
 public:
 	Path(std::string file);
+	Path() = delete;
 	Path(Path const &cpy);
 	Path &operator=(Path const &rhs);
 	~Path();
@@ -48,7 +49,6 @@ private:
 	std::vector<FrameData>	frames;
 	std::string				jsonStr;
 
-	Path(){}
 
 
 };
