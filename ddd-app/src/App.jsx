@@ -25,7 +25,41 @@ function Slider({name}) {
 		</Form.Group>
 	  </div>
 	);
-  }
+}
+
+function Live3dview() {
+
+	return (
+		<Canvas
+			orthographic
+			camera={{ zoom: 80, position: [3, 3, 10] }}
+			style={{ background: '#222' }}
+			shadowMap
+			>
+			<ambientLight intensity={0.5} />
+			<spotLight
+				position={[5, 5, 5]}
+				angle={0.25}
+				penumbra={1}
+				intensity={100}
+				castShadow // not castin nay shadow for some reason ?
+				/>
+			<Sphere position={[0, 1, 0]} args={[1, 32, 32]} castShadow>
+				<meshStandardMaterial attach="material" color="blue" />
+			</Sphere>
+			<Plane position={[0, -0.01, 0]} args={[9, 9]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+				<meshStandardMaterial attach="material" color="lightgrey" />
+			</Plane>
+			<Sphere position={[5, 5, 5]} args={[0.5, 12, 12]}>
+				<meshStandardMaterial attach="material" color="yellow" />
+			</Sphere>
+			<OrbitControls />
+			<axesHelper args={[1.5]} />
+			<gridHelper args={[10, 10]} />
+			{/* <directionalLight /> */}
+		</Canvas>
+	);
+}
 
 function App() {
 	const [message, setMessage] = useState('');
@@ -75,51 +109,22 @@ function App() {
 			<Row className="m-3 p-3">
 				<h4>DDD liveView</h4>
 				<Card className="shadow-sm p-3 h-100" >
-				<Col style={{ height: "300px" }}>
-							<Canvas
-								orthographic
-								camera={{ zoom: 80, position: [3, 3, 10] }}
-								style={{ background: '#222' }}
-								shadowMap
-								>
-								<ambientLight intensity={0.5} />
-								<spotLight
-									position={[5, 5, 5]}
-									angle={0.25}
-									penumbra={1}
-									intensity={100}
-									castShadow // not castin nay shadow for some reason ?
-									/>
-								<Sphere position={[0, 1, 0]} args={[1, 32, 32]} castShadow>
-									<meshStandardMaterial attach="material" color="blue" />
-								</Sphere>
-								<Plane position={[0, -0.01, 0]} args={[9, 9]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-									<meshStandardMaterial attach="material" color="lightgrey" />
-								</Plane>
-								<Sphere position={[5, 5, 5]} args={[0.5, 12, 12]}>
-									<meshStandardMaterial attach="material" color="yellow" />
-								</Sphere>
-								<OrbitControls />
-								<axesHelper args={[1.5]} />
-								<gridHelper args={[10, 10]} />
-								{/* <directionalLight /> */}
-							</Canvas>
+					<Col style={{ height: "300px" }}>
+						<Live3dview />
 					</Col>
-						</Card>
-				
+				</Card>
 				<Col className="p-3">
-				<Button>Arm</Button>
-				<Button>Disarm</Button>
+					<Button>Arm</Button>
+					<Button>Disarm</Button>
 
-				<Slider name="Trim___x" />
-				<Slider name="Trim___y" />
-				<Slider name="Trim___z" />
-				<Slider name="Trim_yaw" />
+					<Slider name="Trim___x" />
+					<Slider name="Trim___y" />
+					<Slider name="Trim___z" />
+					<Slider name="Trim_yaw" />
 				</Col>
 				<Col className="p-3">
 					<p dangerouslySetInnerHTML={{ __html: message }}></p>
 				</Col>
-
 			</Row>
 		</Container>
 		</>
