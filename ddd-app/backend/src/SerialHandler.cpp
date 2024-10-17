@@ -168,12 +168,13 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 
 		auto currentTime = std::chrono::steady_clock::now();
 		if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-			const char* ping = "ping";
+			const char* ping = "0{'ping'}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
 			wb = write(serial_port, ping, strlen(ping));
 			if (wb < 0) {
 				std::cerr << "Failed to send serial data to transmitter." << std::endl;
 			} else {
 				std::cout << "Pinged the receiver" << std::endl;
+				send_to_ws(ping);
 			}
 			lastSendTime = currentTime; // Update the last send time
 		}

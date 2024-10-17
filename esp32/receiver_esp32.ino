@@ -54,10 +54,10 @@ double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
 double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
 
 // Define the pin for the servo
-Servo myServo;
-int servoPin = 26; // Change to your desired GPIO pin
-int servoAngle = 0;
-double light = 0;
+// Servo myServo;
+// int servoPin = 26; // Change to your desired GPIO pin
+double lightAngle = 0;
+double lightPower = 0;
 
 PID xPosPID(&xPos, &xVelSetpoint, &xPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
 PID yPosPID(&yPos, &yVelSetpoint, &yPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
@@ -108,22 +108,25 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
     yPos = json["pos"][1];
     zPos = json["pos"][2];
     yawPos = json["pos"][3];
-    } else if (json.containsKey("servo")) {
-    servoAngle = json["servo"][0];
-	myServo.write(servoAngle); 
-	} else if (json.containsKey("light")) {
-    light = json["light"][0];
+    } else if (json.containsKey("light")) {
+    // lightAngle = json["light"][0];
+	lightPower = json["light"][1];
+	// myServo.write(servoAngle);
 
-  } else if (json.containsKey("armed")) {
+	// Modulate brightness based on lightPower
+    int brightness = map(lightPower * 100, 0, 100, 0, 255);  // Map lightPower (0-1) to PWM duty cycle (0-255)
+    ledcWrite(pwmChannel, brightness);
+
+  } if (json.containsKey("armed")) {
     if (json["armed"] != armed && json["armed"]) {
       timeArmed = millis();
     }
     armed = json["armed"];
-  } else if (json.containsKey("setpoint")) {
+  } if (json.containsKey("setpoint")) {
     xPosSetpoint = json["setpoint"][0];
     yPosSetpoint = json["setpoint"][1];
     zPosSetpoint = json["setpoint"][2];
-  } else if (json.containsKey("pid")) {
+  } if (json.containsKey("pid")) {
     xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
     yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
     zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
@@ -135,7 +138,7 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 
     groundEffectCoef = json["pid"][15];
     groundEffectOffset = json["pid"][16];
-  } else if (json.containsKey("trim")) {
+  } if (json.containsKey("trim")) {
     xTrim = json["trim"][0];
     yTrim = json["trim"][1];
     zTrim = json["trim"][2];
@@ -168,15 +171,15 @@ void setup() {
   // servo control
   myServo.attach(servoPin);
 
-//   //light control
-//   const int ledPin = 5;  // GPIO pin to control the LED
-//   const int pwmChannel = 0;  // PWM channel
-//   const int freq = 5000;  // Frequency of the PWM signal
-//   const int resolution = 8;  // Resolution in bits (8 bits = 256 levels)
-//    // Configure the PWM channel
-//   ledcSetup(pwmChannel, freq, resolution);
-//   // Attach the channel to the GPIO pin
-//   ledcAttachPin(ledPin, pwmChannel);
+  //light control
+  const int ledPin = 5;  // GPIO pin to control the LED
+  const int pwmChannel = 0;  // PWM channel
+  const int freq = 5000;  // Frequency of the PWM signal
+  const int resolution = 8;  // Resolution in bits (8 bits = 256 levels)
+   // Configure the PWM channel
+  ledcSetup(pwmChannel, freq, resolution);
+  // Attach the channel to the GPIO pin
+  ledcAttachPin(ledPin, pwmChannel);
 
   // Initialize Serial Monitor
   Serial.begin(115200);
@@ -333,16 +336,16 @@ void loop() {
   // if (Serial.available() > 0) {
   //   read_input();
   // }
-  for (int angle = 0; angle <= 89; angle++) {
-    myServo.write(angle);  // Move servo to the angle
-	Serial.print("Moving to angle: ");
-    Serial.println(angle);
-    delay(15);             // Wait for the servo to reach the position
-  }
-  for (int angle = 180; angle >= 89; angle--) {
-	Serial.print("Moving to angle: ");
-    Serial.println(angle);
-    myServo.write(angle);
-    delay(15);
+//   for (int angle = 0; angle <= 89; angle++) {
+//     myServo.write(angle);  // Move servo to the angle
+// 	Serial.print("Moving to angle: ");
+//     Serial.println(angle);
+//     delay(15);             // Wait for the servo to reach the position
+//   }
+//   for (int angle = 180; angle >= 89; angle--) {
+// 	Serial.print("Moving to angle: ");
+//     Serial.println(angle);
+//     myServo.write(angle);
+//     delay(15);
   }
 }

@@ -108,11 +108,11 @@ function App() {
 		<Container fluid>
 			<Row className="m-3 p-3">
 				<h4>DDD liveView</h4>
-				<Card className="shadow-sm p-3 h-100" >
-					<Col style={{ height: "300px" }}>
+				{/* <Card className="shadow-sm p-3 h-100" > */}
+					<Row style={{ height: "300px" }}>
 						<Live3dview />
-					</Col>
-				</Card>
+					</Row>
+				{/* </Card> */}
 				<Col className="p-3">
 					<Button>Arm</Button>
 					<Button>Disarm</Button>
