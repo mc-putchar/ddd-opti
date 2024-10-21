@@ -42,6 +42,7 @@ public:
 	void	cleanup();
 	void	transmit(int pipe, int pipeKey);
 	int		createNamedPipe(std::string namePipe);
+	int		getSerialPort();
 
 private:
 	volatile std::sig_atomic_t	g_stopped;

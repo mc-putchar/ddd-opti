@@ -4,8 +4,11 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <mutex>
 
 #include "Path.hpp"
+
+class Path;
 
 struct SetPoint {
 	float x, y, z;
@@ -43,35 +46,38 @@ struct DLight {
 // servo = var;
 class DroneState {
 public:
-	DroneState();
-	DroneState(int idx);
+	DroneState() = delete;
+	DroneState(int idx, int serialport, std::mutex & ref);
 	DroneState(DroneState const &cpy);
 	DroneState &operator=(DroneState const &rhs);
 	~DroneState();
 
 	bool is_armed() const;
 
-	ssize_t send(int serial_port, std::string const &msg);
+	ssize_t send(std::string const &msg);
 
-	bool startup(int serial_port);
+	bool startup();
 	std::string arm();
 	std::string disarm();
-	std::string setpoint(float x, float y, float z);
+	std::string setpoint(float x, float y, float z, float yaw);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
 	std::string adjustpos(std::string var, std::string change);
 	std::string adjusttrim(std::string var, std::string change);
 	std::string adjustlight(std::string var, std::string change);
+	void		setPath(std::unique_ptr<Path> p);
 
-	void setPath(std::unique_ptr<Path> p);
 	std::unique_ptr<Path>	path; 
+	std::mutex &			serialMutex;
+	const int				index;
 
 private:
-	int						index;
+	const int 				serialPort;
 	bool					armed;
 	Position				position;
 	Trim					trim;
 	DLight					light;
+	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
 };
 
 #endif // DRONESTATE_HPP

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <mutex>
 #include "json.hpp"
 #include "crow_all.h"
 
@@ -11,7 +12,11 @@
 #include <chrono>  // For std::chrono::seconds
 #include <unistd.h>
 
+#include "DroneState.hpp"
+
 using json = nlohmann::json;
+
+class DroneState;
 
 struct Location {
 	float x, y, z;
@@ -34,13 +39,17 @@ struct FrameData {
 
 class Path {
 public:
-	Path(std::string file);
+	Path(std::string file, DroneState & drone);
 	Path() = delete;
 	Path(Path const &cpy);
 	Path &operator=(Path const &rhs);
-	~Path();
+	~Path(){}
 
-	int send(crow::websocket::connection*& wsConn);
+	std::vector<FrameData> &	getFrames();
+	int							getLenght();
+	int							sendFrameByFrame(crow::websocket::connection*& wsConn,
+													std::mutex & wsMutex);
+	DroneState &			drone;
 
 private:
 	size_t					lenght;
@@ -48,8 +57,6 @@ private:
 	std::string 			name;
 	std::vector<FrameData>	frames;
 	std::string				jsonStr;
-
-
 
 };
 

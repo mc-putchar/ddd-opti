@@ -19,7 +19,6 @@ char getch() {
 
 	// Explicitly initialize all fields of the termios struct to zero
 	memset(&old, 0, sizeof(old));  // Clear the struct
-
 	if (tcgetattr(0, &old) < 0) perror("tcsetattr()");
 	old.c_lflag &= ~ICANON; // Disable canonical mode
 	old.c_lflag &= ~ECHO;   // Disable echo
@@ -31,7 +30,7 @@ char getch() {
 }
 
 void loop(int fd) {
-	DroneState drone = DroneState();
+	DroneState drone = DroneState(0, fd);
 
 	while (true) {
 		char key = getch(); // Read a single character
@@ -40,66 +39,66 @@ void loop(int fd) {
 		// Perform actions based on the key pressed
 		switch (key) {
 			case 's': // Move up
-				if (drone.send(fd, drone.adjusttrim("z", "+")) < 0)
+				if (drone.send(drone.adjusttrim("z", "+")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving up" << std::endl;
 				break;
 			case 'w': // Move down
-				if (drone.send(fd, drone.adjusttrim("z", "-")) < 0)
+				if (drone.send(drone.adjusttrim("z", "-")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving down" << std::endl;
 				break;
 
 			case 'k':
-				if (drone.send(fd, drone.adjusttrim("x", "+")) < 0)
+				if (drone.send(drone.adjusttrim("x", "+")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving up" << std::endl;
 				break;
 			case 'i':
-				if (drone.send(fd, drone.adjusttrim("x", "-")) < 0)
+				if (drone.send(drone.adjusttrim("x", "-")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving down" << std::endl;
 				break;
 
 			case 'j':
-				if (drone.send(fd, drone.adjusttrim("y", "+")) < 0)
+				if (drone.send(drone.adjusttrim("y", "+")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving up" << std::endl;
 				break;
 			case 'l':
-				if (drone.send(fd, drone.adjusttrim("y", "-")) < 0)
+				if (drone.send(drone.adjusttrim("y", "-")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving down" << std::endl;
 				break;
 
 			case 'a': // Move up
-				if (drone.send(fd, drone.adjusttrim("yaw", "+")) < 0)
+				if (drone.send(drone.adjusttrim("yaw", "+")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving up" << std::endl;
 				break;
 			case 'd': // Move down
-				if (drone.send(fd, drone.adjusttrim("yaw", "-")) < 0)
+				if (drone.send(drone.adjusttrim("yaw", "-")) < 0)
 	   			  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Moving down" << std::endl;
 				break;
 
 			case 'c': 
-				if (drone.send(fd, drone.adjustlight("angle", "-")) < 0)
+				if (drone.send(drone.adjustlight("angle", "-")) < 0)
 				  std::cerr << "Failed to send" << std::endl;
 				std::cout << "servo down" << std::endl;
 				break;
 			case 'v': 
-				if (drone.send(fd, drone.adjustlight("angle", "+")) < 0)
+				if (drone.send(drone.adjustlight("angle", "+")) < 0)
 				  std::cerr << "Failed to send" << std::endl;
 				std::cout << "servo up" << std::endl;
 				break;
 			case 'b': 
-				if (drone.send(fd, drone.adjustlight("power", "-")) < 0)
+				if (drone.send(drone.adjustlight("power", "-")) < 0)
 				  std::cerr << "Failed to send" << std::endl;
 				std::cout << "light down" << std::endl;
 				break;
 			case 'n': 
-				if (drone.send(fd, drone.adjustlight("power", "+")) < 0)
+				if (drone.send(drone.adjustlight("power", "+")) < 0)
 				  std::cerr << "Failed to send" << std::endl;
 				std::cout << "light up" << std::endl;
 				break;
@@ -107,11 +106,11 @@ void loop(int fd) {
 			case 'r': // Move left
 				if (drone.is_armed())
 				  std::cout << "Drone already armed." << std::endl;
-				if (!drone.startup(fd))
+				if (!drone.startup())
 				  std::cerr << "Failed to send startup sequence" << std::endl;
 				break;
 			case 'x': 
-				if (drone.send(fd, drone.disarm()) < 0)
+				if (drone.send(drone.disarm()) < 0)
 				  std::cerr << "Failed to send" << std::endl;
 				std::cout << "Drone disarmed" << std::endl;
 				break;

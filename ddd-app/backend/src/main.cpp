@@ -11,6 +11,7 @@
 // Shared pointer for WebSocket connection
 crow::websocket::connection* wsConn = nullptr;
 std::mutex wsMutex; // Mutex to protect the WebSocket connection
+std::mutex serialMutex; // to protect the write to serial; 
 
 int settingWsPort(int argc, char ** argv) {
 	int wsport = 8080;
@@ -38,7 +39,8 @@ crow::SimpleApp & settingWsConnection() {
 		std::cout << "Received message: " << message << std::endl;
 
 		// Echo the message back to the client
-		conn.send_text("Message received: " + message);
+		// conn.send_text("8{\"front\":\"hello\")"); // on handshake
+		conn.send_text(message);
 	})
 	.onclose([](crow::websocket::connection& conn, const std::string& reason) {
 		(void)conn;
@@ -53,18 +55,22 @@ int main(int argc, char ** argv) {
 
 	const int wsport = settingWsPort(argc, argv);
 
-	std::vector<DroneState> drones;
-	drones.emplace_back(0); //push back a drone instance with move semantic. the arg is the index;
 
 	SerialHandler serialHandler(wsMutex, wsConn);
 	serialHandler.setup();
-	int fifoCmd = serialHandler.createNamedPipe(PIPE_NAME_CMD_LINE);
-	int fifoKey = serialHandler.createNamedPipe(PIPE_NAME_KEY_HOOK);
+	const int fifoCmd = serialHandler.createNamedPipe(PIPE_NAME_CMD_LINE);
+	const int fifoKey = serialHandler.createNamedPipe(PIPE_NAME_KEY_HOOK);
+	const int serial_port = serialHandler.getSerialPort();
 	if (fifoCmd < 0 || fifoKey < 0) return 1;
-
 	std::thread transmitThread([&serialHandler, fifoCmd, fifoKey]() { // Launch transmitData fnct in thread
 		serialHandler.transmit(fifoCmd, fifoKey);
 	});
+
+	std::vector<DroneState> drones;
+	drones.emplace_back(0, serial_port, serialMutex); //push back a drone instance with move semantic. the arg is the index;
+	drones.emplace_back(1, serial_port, serialMutex);
+	drones.emplace_back(2, serial_port, serialMutex);
+	drones.emplace_back(3, serial_port, serialMutex);
 
 	crow::SimpleApp & app = settingWsConnection(); // WebSocket server with Crow
 	std::thread crowThread([&app, wsport]() { // Run the Crow app in another thread so it doesn't block the main thread
@@ -75,12 +81,14 @@ int main(int argc, char ** argv) {
 	// Do other stuff in the main thread if needed
 	std::cout << "Main thread doing other work..." << std::endl;
 
-	auto path = std::make_unique<Path>("animation.json"); // Create the unique_ptr
+	auto path = std::make_unique<Path>("animation.json", drones[0]); // Create the unique_ptr directly
 	drones[0].setPath(std::move(path));
+
+
 
 	std::this_thread::sleep_for(std::chrono::seconds(10));
 
-	drones[0].path->send(wsConn);
+	drones[0].path->sendFrameByFrame(wsConn, wsMutex);
 
 
 	int i = 0;

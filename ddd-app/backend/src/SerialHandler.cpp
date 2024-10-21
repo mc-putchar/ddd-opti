@@ -87,8 +87,6 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 	ssize_t rb(0);
 	char buf[BUFFER_SIZE];
 	std::string msg;
-	std::string lastMsg;
-	DroneState drone = DroneState(0);
 
 	auto lastSendTime = std::chrono::steady_clock::now(); // Track when the last message was sent
 
@@ -171,7 +169,7 @@ void SerialHandler::transmit(int pipe, int pipeKey) {
 
 		auto currentTime = std::chrono::steady_clock::now();
 		if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-			const char* ping = "0{'ping'}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
+			const char* ping = "0{\"ping\"}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
 			wb = write(serial_port, ping, strlen(ping));
 			if (wb < 0) {
 				std::cerr << "Failed to send serial data to transmitter." << std::endl;
@@ -192,3 +190,6 @@ int SerialHandler::createNamedPipe(std::string namePipe) {
 	return open(namePipe.c_str(), O_RDONLY | O_NONBLOCK);
 }
 
+int SerialHandler::getSerialPort() {
+	return serial_port;
+}

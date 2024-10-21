@@ -14,53 +14,53 @@
 #define PIPE_NAME_CMD_LINE "./tmp/ddd-data-interchange0"
 #define PROMPT "Input drone command: "
 
-void droneFloat(DroneState & drone, int fd, int target_oscillations) {
-    float Sx = 0.0f, Sy = 0.0f, Sz = 1.0f; // Setpoints
-    float x = 0.0f, y = 0.0f, z = 0.0f; // Current values
+// void droneFloat(DroneState & drone, int fd, int target_oscillations) {
+//     float Sx = 0.0f, Sy = 0.0f, Sz = 1.0f; // Setpoints
+//     float x = 0.0f, y = 0.0f, z = 0.0f; // Current values
 
-    const float frequency = 2 * M_PI / TIME_TO_SETPOINT;
-    int oscillationCount = 0; // Initialize oscillation counter
+//     const float frequency = 2 * M_PI / TIME_TO_SETPOINT;
+//     int oscillationCount = 0; // Initialize oscillation counter
 
-    // Track the start time
-    auto startTime = std::chrono::steady_clock::now();
+//     // Track the start time
+//     auto startTime = std::chrono::steady_clock::now();
 
-    // Condition for the while loop
-    while (oscillationCount < target_oscillations) {
+//     // Condition for the while loop
+//     while (oscillationCount < target_oscillations) {
 
-        // Update z to oscillate between 0 and 1
-        auto currentTime = std::chrono::steady_clock::now();
-        float elapsedSeconds = std::chrono::duration<float>(currentTime - startTime).count();
+//         // Update z to oscillate between 0 and 1
+//         auto currentTime = std::chrono::steady_clock::now();
+//         float elapsedSeconds = std::chrono::duration<float>(currentTime - startTime).count();
 
-        // Calculate z using sine wave oscillation
-        z = (std::sin(frequency * elapsedSeconds) + 1) / 2;
+//         // Calculate z using sine wave oscillation
+//         z = (std::sin(frequency * elapsedSeconds) + 1) / 2;
 
-        // Check for oscillation completion
-        if (elapsedSeconds >= TIME_TO_SETPOINT) {
-            oscillationCount++; // Increment counter
-            startTime = std::chrono::steady_clock::now(); // Reset start time
-        }
-        if (drone.send(fd, "{'setpoint':[" + 
-          std::to_string(Sx) + "," + std::to_string(Sy) + "," + std::to_string(Sz) + "]}") < 0) {
-          std::cerr << "Failed to send" << std::endl;
-          continue;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        if (drone.send(fd, "{'pos':[" + 
-          std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "]}") < 0) {
-          std::cerr << "Failed to send" << std::endl;
-          continue;
-        }
+//         // Check for oscillation completion
+//         if (elapsedSeconds >= TIME_TO_SETPOINT) {
+//             oscillationCount++; // Increment counter
+//             startTime = std::chrono::steady_clock::now(); // Reset start time
+//         }
+//         if (drone.send( "{'setpoint':[" + 
+//           std::to_string(Sx) + "," + std::to_string(Sy) + "," + std::to_string(Sz) + "]}") < 0) {
+//           std::cerr << "Failed to send" << std::endl;
+//           continue;
+//         }
+//         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//         if (drone.send( "{'pos':[" + 
+//           std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "]}") < 0) {
+//           std::cerr << "Failed to send" << std::endl;
+//           continue;
+//         }
 
-        // Wait for 50 milliseconds
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
+//         // Wait for 50 milliseconds
+//         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+//     }
 
-    std::cout << "Completed " << target_oscillations << " oscillations." << std::endl;
-}
+//     std::cout << "Completed " << target_oscillations << " oscillations." << std::endl;
+// }
 
 void loop(int fd) {
   std::string cmd;
-  DroneState drone = DroneState();
+  DroneState drone = DroneState(0, fd);
   while (1) {
     std::cout << PROMPT;
     std::getline(std::cin, cmd);
@@ -71,14 +71,14 @@ void loop(int fd) {
         std::cout << "Drone already armed." << std::endl;
         continue;
       }
-      if (!drone.startup(fd)) {
+      if (!drone.startup()) {
         std::cerr << "Failed to send startup sequence" << std::endl;
         continue;
       }
       std::cout << "Drone armed" << std::endl;
     }
     else if (cmd == "disarm" || cmd == "d") {
-      if (drone.send(fd, drone.disarm()) < 0) {
+      if (drone.send(drone.disarm()) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
@@ -89,7 +89,7 @@ void loop(int fd) {
       std::string tmp;
       std::getline(std::cin, tmp);
       SetPoint point(tmp);
-      if (drone.send(fd, drone.setpoint(point.x, point.y, point.z)) < 0) {
+      if (drone.send(drone.setpoint(point.x, point.y, point.z)) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
@@ -101,7 +101,7 @@ void loop(int fd) {
       std::string tmp;
       std::getline(std::cin, tmp);
       SetPoint point(tmp);
-      if (drone.send(fd, "0" + drone.setpos(point.x, point.y, point.z, 0)) < 0) {
+      if (drone.send(drone.setpos(point.x, point.y, point.z, 0)) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
@@ -122,17 +122,17 @@ void loop(int fd) {
       iss >> y;
       iss >> z;
       iss >> yaw;
-      if (drone.send(fd, drone.settrim(x, y, z, yaw)) < 0) {
+      if (drone.send(drone.settrim(x, y, z, yaw)) < 0) {
         std::cerr << "Failed to send" << std::endl;
         continue;
       }
       std::cout << "Set trim to: " << x << ", " << y << ", " << z << ", " << yaw
                 << std::endl;
     }
-    else if (cmd == "f" || cmd == "float") {
-        // make the drone go up and down floating.
-      droneFloat(drone, fd, 3);
-    }
+    // else if (cmd == "f" || cmd == "float") {
+    //     // make the drone go up and down floating.
+    //   droneFloat(drone, fd, 3);
+    // }
     else {
       std::cout << "Command not recognized" << std::endl;
     }

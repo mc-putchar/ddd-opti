@@ -30,7 +30,8 @@ COLOUR_CYNB := \033[1;36m
 .PHONY: all client controller clientkey run clean fclean re help
 
 # Compile all targets
-all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY) $(WEBSOCKERSERVER)
+# all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)
+all: $(CONTROLLER)
 
 # Compile individual targets
 client: $(CLIENT)
