@@ -56,7 +56,7 @@ int main(int argc, char ** argv) {
 	const int wsport = settingWsPort(argc, argv);
 
 
-	SerialHandler serialHandler(wsMutex, wsConn);
+	SerialHandler serialHandler(wsMutex, wsConn); // TO DO get rid of the serial mutex. not needed anymore
 	serialHandler.setup();
 	const int fifoCmd = serialHandler.createNamedPipe(PIPE_NAME_CMD_LINE);
 	const int fifoKey = serialHandler.createNamedPipe(PIPE_NAME_KEY_HOOK);
@@ -92,19 +92,8 @@ int main(int argc, char ** argv) {
 
 
 	int i = 0;
-	while (true) { // test to see if the connectio is working
+	while (true) {
 		(void)i;
-		//  std::this_thread::sleep_for(std::chrono::seconds(1));
-		// std::lock_guard<std::mutex> guard(wsMutex);
-		// if (wsConn) { // If the connection exists
-		//     std::cout << "Sending message from main thread..." << std::endl;
-		// 	std::stringstream ss;
-		// 	ss << "Data " << i << " from main thread";
-		//     wsConn->send_text(ss.str());
-		// 	i++;
-		// } else {
-		//     std::cout << "No active WebSocket connection" << std::endl;
-		// }
 	}
 
 
