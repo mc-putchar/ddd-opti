@@ -7,8 +7,10 @@
 #include <mutex>
 
 #include "Path.hpp"
+#include "SerialHandler.hpp"
 
 class Path;
+class SerialHandler;
 
 struct SetPoint {
 	float x, y, z;
@@ -47,7 +49,7 @@ struct DLight {
 class DroneState {
 public:
 	DroneState() = delete;
-	DroneState(int idx, int serialport, std::mutex & ref);
+	DroneState(int idx, SerialHandler & ref);
 	DroneState(DroneState const &cpy);
 	DroneState &operator=(DroneState const &rhs);
 	~DroneState();
@@ -68,15 +70,14 @@ public:
 	void		setPath(std::unique_ptr<Path> p);
 
 	std::unique_ptr<Path>	path; 
-	std::mutex &			serialMutex;
 	const int				index;
 
 private:
-	const int 				serialPort;
 	bool					armed;
 	Position				position;
 	Trim					trim;
 	DLight					light;
+	SerialHandler &			serialHandler;
 	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
 };
 

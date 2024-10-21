@@ -47,8 +47,7 @@ public:
 
 	std::vector<FrameData> &	getFrames();
 	int							getLenght();
-	int							sendFrameByFrame(crow::websocket::connection*& wsConn,
-													std::mutex & wsMutex);
+	int							sendFrameByFrame();
 	DroneState &			drone;
 
 private:

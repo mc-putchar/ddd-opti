@@ -89,6 +89,7 @@
 		"source_location": "cpp",
 		"strstream": "cpp",
 		"unordered_set": "cpp",
-		"coroutine": "cpp"
+		"coroutine": "cpp",
+		"*.ipp": "cpp"
 	}
 }

@@ -1,17 +1,16 @@
 #include "SerialHandler.hpp"
 
-SerialHandler::SerialHandler(std::mutex & wsmutex, crow::websocket::connection*& wsconn)
-	: g_stopped(false),
+SerialHandler::SerialHandler(WsServer & ref)
+	: wsServer(ref),
+	g_stopped(false),
 	serial_port(-1),
 	fifo(-1),
-	fifoKey(-1),
-	wsMutex(wsmutex),
-	wsConn(wsconn)
+	fifoKey(-1)
 	{}
 
 
 SerialHandler::~SerialHandler() {
-	cleanup();
+	if (serial_port >= 0) close(serial_port);
 }
 
 
@@ -25,14 +24,6 @@ bool SerialHandler::setup() {
 	}
 	std::cerr << "Serial connection Sucessfull." << std::endl;
 	return true;
-}
-
-void SerialHandler::cleanup() {
-	if (serial_port >= 0) close(serial_port);
-	if (fifo >= 0) close(fifo);
-	if (fifoKey >= 0) close(fifoKey);
-	unlink(PIPE_NAME_CMD_LINE);
-	unlink(PIPE_NAME_KEY_HOOK);
 }
 
 
@@ -73,123 +64,36 @@ int SerialHandler::setup_serial() {
 	return (serial_port);
 }
 
-void SerialHandler::send_to_ws(std::string msg) {
-	std::lock_guard<std::mutex> guard(wsMutex);
-	if (wsConn) {
-		wsConn->send_text(msg.c_str()); // Send message through WebSocket connection
-	} else {
-		std::cout << "WebSocket connection is not available." << std::endl;
-	}
-}
-
-void SerialHandler::transmit(int pipe, int pipeKey) {
-	ssize_t wb(0);
+void SerialHandler::monitorIncoming() {
 	ssize_t rb(0);
 	char buf[BUFFER_SIZE];
 	std::string msg;
 
-	auto lastSendTime = std::chrono::steady_clock::now(); // Track when the last message was sent
-
 	while (!g_stopped) {
-		fd_set read_fds;
-		FD_ZERO(&read_fds);
-		FD_SET(pipe, &read_fds);
-		FD_SET(pipeKey, &read_fds);
-		if (serial_port >= 0) // in case there is no ESP32 connected
-			FD_SET(serial_port, &read_fds);
-		struct timeval timeout;
-		timeout.tv_sec = 1;  // Wait for 1 second
-		timeout.tv_usec = 0;
-
-		int max_fd = std::max(pipeKey, serial_port); // Get the highest file descriptor value
-		int activity = select(max_fd + 1, &read_fds, nullptr, nullptr, &timeout);
-		if (activity < 0) {
-			std::cerr << "Select error." << std::endl;
-		continue;
-		}
-
-		if (FD_ISSET(pipe, &read_fds)) {
-			rb = read(pipe, buf, BUFFER_SIZE - 1);
-			if (rb > 0) {
-				buf[rb] = 0;
-				msg = buf;
-				std::memset(buf, 0, sizeof(buf));
-				if (!msg.empty()) {
-					wb = write(serial_port, msg.c_str(), msg.length());
-					if (wb < 0) {
-						std::cerr << "Failed to send serial data to transmitter." << std::endl;
-					}
-					else {
-						std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
-						lastSendTime = std::chrono::steady_clock::now();
-					}
-					send_to_ws(msg);
-				}
-			}
-			else if (rb < 0) {
-				std::cerr << "Error reading from pipe." << std::endl;
-			}
-		}
-		if (FD_ISSET(pipeKey, &read_fds)) {
-			rb = read(pipeKey, buf, BUFFER_SIZE - 1);
-			if (rb > 0) {
-				buf[rb] = 0;
-				msg = buf;
-				std::memset(buf, 0, sizeof(buf));
-				if (!msg.empty()) {
-				wb = write(serial_port, msg.c_str(), msg.length());
-				if (wb < 0) {
-					std::cerr << "Failed to send serial data to transmitter." << std::endl;
-				}
-				else {
-					std::cout << "Sent " << wb << " bytes to transmitter.\nMsg:  " << msg << std::endl;
-					lastSendTime = std::chrono::steady_clock::now();
-				}
-				send_to_ws(msg);
-				}
-			}
-			else if (rb < 0) {
-				std::cerr << "Error reading from pipe." << std::endl;
-			}
-		}
-
-		if (FD_ISSET(serial_port, &read_fds)) {
-			rb = read(serial_port, buf, BUFFER_SIZE - 1);
-			if (rb > 0) {
-				buf[rb] = 0;
-				msg = buf;
-				std::memset(buf, 0, sizeof(buf));
-				if (!msg.empty())
-					std::cout << msg << std::endl;
-				}
-			else if (rb < 0) {
-				std::cerr << "Error reading from serial." << std::endl;
-			}
-		}
-
-		auto currentTime = std::chrono::steady_clock::now();
-		if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-			const char* ping = "0{\"ping\"}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
-			wb = write(serial_port, ping, strlen(ping));
-			if (wb < 0) {
-				std::cerr << "Failed to send serial data to transmitter." << std::endl;
-			} else {
-				std::cout << "Pinged the receiver" << std::endl;
-				send_to_ws(ping);
-			}
-			lastSendTime = currentTime; // Update the last send time
-		}
-		
 		usleep(500);
-		wb = 0;
+		if (serial_port < 0) continue;
+		rb = read(serial_port, buf, BUFFER_SIZE - 1);
+		if (rb > 0) {
+			buf[rb] = 0;
+			msg = buf;
+			std::memset(buf, 0, sizeof(buf));
+			if (!msg.empty())
+				std::cout << msg << std::endl;
+		}
+		else if (rb < 0) {
+			std::cerr << "Error reading from serial." << std::endl;
+		}
 	}
 }
 
-int SerialHandler::createNamedPipe(std::string namePipe) {
-	if (mkfifo(namePipe.c_str(), 0660) != 0 && errno != EEXIST) return -1;
-	return open(namePipe.c_str(), O_RDONLY | O_NONBLOCK);
-}
+int SerialHandler::send(std::string const &msg) {
 
-int SerialHandler::getSerialPort() {
-	return serial_port;
+	std::lock_guard<std::mutex> guardSerial(serialMutex);
+	int serial_rt = write(serial_port, msg.c_str(), msg.length());
+
+	// FOR NOW JUST ECHO ANY SERIAL SEND TO THE FRONT
+	std::lock_guard<std::mutex> guardWs(wsServer.wsMutex);
+	if (wsServer.wsConn)
+		wsServer.wsConn->send_text(msg.c_str());
+	return (serial_rt);
 }

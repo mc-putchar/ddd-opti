@@ -1,3 +1,5 @@
+#pragma once
+
 #include <csignal>
 #include <errno.h>
 #include <fcntl.h>
@@ -8,13 +10,12 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
-#include "crow_all.h"
-#include <chrono>
 #include <iostream>
 #include <string>
 #include <cstring>
 #include <mutex>
 #include "DroneState.hpp"
+#include "WsServer.hpp"
 
 // #define VERSION 0.1 // acted out when compiling with crow ???
 
@@ -35,22 +36,20 @@
 class SerialHandler {
 public:
 	SerialHandler() = delete;
-	SerialHandler(std::mutex & mutex, crow::websocket::connection*& wsConn);
+	SerialHandler(WsServer & ref);
 	~SerialHandler();
 
 	bool	setup();
-	void	cleanup();
-	void	transmit(int pipe, int pipeKey);
-	int		createNamedPipe(std::string namePipe);
-	int		getSerialPort();
+	void	monitorIncoming();
+	int		send(std::string const &msg);
+	WsServer & wsServer;
 
 private:
 	volatile std::sig_atomic_t	g_stopped;
 	int							serial_port;
 	int							fifo;
 	int							fifoKey;
-	std::mutex & 				wsMutex;
-	crow::websocket::connection*& wsConn;
+	std::mutex					serialMutex;
 
 	void send_to_ws(std::string msg);
 	int setup_serial();

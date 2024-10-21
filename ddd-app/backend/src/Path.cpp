@@ -54,10 +54,10 @@ int Path::getLenght() {
 	return lenght;
 }
 
-int Path::sendFrameByFrame(crow::websocket::connection*& wsConn, std::mutex & wsMutex) {
+int Path::sendFrameByFrame() {
 	
 	std::cout << "about the send frames" << std::endl;
-	std::thread sendAllFrames ([this, wsConn, &wsMutex]() { // threading this part so it doesnt block other operations
+	std::thread sendAllFrames ([this]() { // threading this part so it doesnt block other operations
 		std::vector<FrameData>& frames = getFrames();
 		for (size_t i = 0; i < lenght; i++) {
 			
@@ -67,17 +67,10 @@ int Path::sendFrameByFrame(crow::websocket::connection*& wsConn, std::mutex & ws
 					<< "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
 					<< "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]"
 					<< "}";
-			{
-				std::lock_guard<std::mutex> guardSerial(drone.serialMutex);
-				drone.send(ssSerial.str().c_str());
-			}
-			std::stringstream ssfront;
-			ssfront << drone.index << ssSerial.str();
-			{
-				std::lock_guard<std::mutex> guard(wsMutex);
-				if (wsConn)
-					wsConn->send_text(ssfront.str().c_str());
-			}
+
+			if ( drone.send(ssSerial.str().c_str()) < 0)
+				std::cout << "serial send failed " << i << std::endl;
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 	});

@@ -65,15 +65,10 @@ make
 
 
 
-open_terminal "./ddd-controller $NEW_PORT" &
+open_terminal "./ddd-backend $NEW_PORT" &
 CONTROLLER_PID=$!
 echo -e "Controller running with PID: $CONTROLLER_PID\n"
 sleep 1
-
-# Usage example: run a command in a new terminal
-open_terminal "./ddd-clientkey" &
-key_PID=$!
-echo -e "ClientKey running with PID: $key_PID\n"
 
 # # Define a cleanup function to stop the server when the script stops
 # cleanup() {

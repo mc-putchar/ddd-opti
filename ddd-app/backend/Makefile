@@ -1,7 +1,5 @@
 # Define the targets
-CLIENT := ddd-client
-CLIENTKEY := ddd-clientkey
-CONTROLLER := ddd-controller
+CONTROLLER := ddd-backend
 
 # Define directories
 SRCDIR := src
@@ -9,9 +7,8 @@ INCDIR := include
 BINDIR := build
 
 # Source files for each target
-CLIENT_SRCS := client DroneState
-CLIENTKEY_SRCS := clientKeyHook DroneState
-CONTROLLER_SRCS = main DroneState Path SerialHandler
+
+CONTROLLER_SRCS = main DroneState Path SerialHandler WsServer
 
 # Compiler settings
 CXX := c++
@@ -27,15 +24,12 @@ COLOUR_MAG := \033[0;35m
 COLOUR_MAGB := \033[1;35m
 COLOUR_CYN := \033[0;36m
 COLOUR_CYNB := \033[1;36m
-.PHONY: all client controller clientkey run clean fclean re help
+.PHONY: all controller run clean fclean re help
 
 # Compile all targets
-# all: $(CONTROLLER) $(CLIENT) $(CLIENTKEY)
 all: $(CONTROLLER)
 
 # Compile individual targets
-client: $(CLIENT)
-clientkey: $(CLIENTKEY)
 controller: $(CONTROLLER)
 
 
@@ -68,9 +62,7 @@ clean:
 
 fclean: clean
 	rm -f $(CONTROLLER)
-	rm -f $(CLIENT)
-	rm -f $(CLIENTKEY)
-	rm -fr tmp
+
 
 re: fclean all
 

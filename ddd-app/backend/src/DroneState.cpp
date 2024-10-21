@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "DroneState.hpp"
+
 #define INCREMENTATION 0.3
 #define TRIM_INCREMENTATION 25
 
@@ -19,27 +20,25 @@
 // 		{}
 
 
-DroneState::DroneState(int idx, int serialport, std::mutex & ref)
+DroneState::DroneState(int idx, SerialHandler & ref)
 	: path(nullptr),
-		serialMutex(ref),
 		index(idx),
-		serialPort(serialport),
 		armed(false),
 		position{0, 0, 0, 0},
 		trim{0, 0, 0, 0},
-		light{0, 0}
+		light{0, 0},
+		serialHandler(ref)
 		{}
 
 
 DroneState::DroneState(DroneState const &cpy)
 	: path(nullptr),
-		serialMutex(cpy.serialMutex),
 		index(cpy.index),
-		serialPort(cpy.serialPort),
 		armed(cpy.armed),
 		position{cpy.position.x, cpy.position.y, cpy.position.z, cpy.position.yaw},
 		trim{cpy.trim.x, cpy.trim.y, cpy.trim.z, cpy.trim.yaw},
-		light{cpy.light.power, cpy.light.angle}
+		light{cpy.light.power, cpy.light.angle},
+		serialHandler(cpy.serialHandler)
 		{}
 
 
@@ -65,10 +64,14 @@ bool DroneState::is_armed() const { return this->armed; }
 
 
 ssize_t DroneState::send(std::string const &msg) {
+
+	// TODO imPLEMENT DEKAY COUNTER OF 2 SEC
+
 	std::ostringstream oss;
 	oss << this->index << msg;  // Append index and message in a single step.
 	std::string output = oss.str();
-	return write(serialPort, output.c_str(), output.length());
+
+	return (serialHandler.send(output));
 }
 
 
@@ -217,3 +220,18 @@ std::string DroneState::adjustlight(std::string var, std::string change) {
 	ss << "[" << light.angle << "," << light.power << "]";
 	return std::string("{\"light\":" + ss.str() + "}");
 }
+
+
+
+		// auto currentTime = std::chrono::steady_clock::now();
+		// if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
+		// 	const char* ping = "0{\"ping\"}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
+		// 	wb = write(serial_port, ping, strlen(ping));
+		// 	if (wb < 0) {
+		// 		std::cerr << "Failed to send serial data to transmitter." << std::endl;
+		// 	} else {
+		// 		std::cout << "Pinged the receiver" << std::endl;
+		// 		send_to_ws(ping);
+		// 	}
+		// 	lastSendTime = currentTime; // Update the last send time
+		// }

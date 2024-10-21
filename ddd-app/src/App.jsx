@@ -32,7 +32,7 @@ function FloatInputForm({ ws }) {
         <Form onSubmit={handleSubmit}>
             <Form.Group as={Row} controlId="formFloatValues">
 
-                <Col sm={8}>
+                <Col sm={12}>
                     <Form.Control
                         type="text"
                         placeholder="Setpoints (x, y, z)"
@@ -153,13 +153,15 @@ function Live3dview({ dronePositions }) {
 function App() {
 	const [message, setMessage] = useState('');
 	const [messages, setMessages] = useState([]);
-	const [wsState, setWsState] = useState('disconnected to backend');
+	const [wsState, setWsState] = useState('disconnected');
+	const [wsStateColor, setWsStateColor] = useState('text-success');
 	const [ws, setWs] = useState(null);
 	const [wsPort, setWsPort] = useState(8080); // Default port
 	const [dronePositions, setDronePositions] = useState({
-		0: [-6, 1, -2],  // Initial positions for drone 0
-		1: [-6, 1, 0],  // Initial positions for drone 1	
-		2: [-6, 1, 2],  // Initial positions for drone 2
+		0: [-6, 1, -3],  // Initial positions for drone 0
+		1: [-6, 1, -1],  // Initial positions for drone 1	
+		2: [-6, 1, 1],  // Initial positions for drone 2
+		3: [-6, 1, 3],  // Initial positions for drone 2
 	  });
 
 	// Function to fetch the port from JSON and initialize the WebSocket
@@ -180,7 +182,8 @@ function App() {
 
 			socket.onopen = () => {
 				console.log('Connected to WebSocket server');
-				setWsState('connected to backend');
+				setWsState('connected');
+				setWsStateColor('text-success');
 				socket.send('7{"front":"hello"}');
 			};
 
@@ -244,7 +247,8 @@ function App() {
 				}
 			  };
 			socket.onclose = () => {
-				setWsState('disconnected to backend !');
+				setWsState('diconnected');
+				setWsStateColor('text-danger');
 				console.log('WebSocket connection closed');
 			  };
 
@@ -261,39 +265,86 @@ function App() {
 	}, []);
 
 	return (
-		<>
-		<Container fluid>
-			<Row className=" p-3">
-				<h3 className=" mb-1">DDD liveView</h3>
-				<span > {wsState}</span>
-				{/* <Card className="shadow-sm p-3 h-100" > */}
-					<Row style={{ height: "400px" }}>
-						<Live3dview dronePositions={dronePositions} />
-					</Row>
-				{/* </Card> */}
-				<Col className="p-3">
-					<h4>Trim</h4>
-					<Slider index={0} name="trim" axis={'x'} ws={ws} />
-					<Slider index={0} name="trim" axis={'y'} ws={ws} />
-					<Slider index={0} name="trim" axis={'z'} ws={ws} />
-					<Slider index={0} name="trim" axis={'yaw'} ws={ws} />
-					<h4>light</h4>
-					<Slider index={0} name="light" axis={'yaw'} ws={ws} />
-					<Slider index={0} name="light" axis={'yaw'} ws={ws} />
-					<FloatInputForm ws={ws} />
-					<Arm  index={0} name="arm" ws={ws} />
-				</Col>
-				<Col className="p-3">
-				<div className="overflow-auto" style={{ lineHeight: '0.4', maxHeight: '300px' }}>
-						{messages.map((msg, index) => (
-							<p key={index}>{msg}</p>
-						))}
-					</div>
-				</Col>
-			</Row>
-		</Container>
-		</>
+	<>
+	<Container fluid>
+	<Row className="p-4">
+
+		<Row className="px-0 mb-2 align-items-end">
+			<Col className="px-0" xs="auto">
+				<h3 className="mb-0">DDD_liveView</h3>	
+			</Col>
+			<Col xs="auto">
+				<span className={wsStateColor}>{wsState}</span>
+			</Col>
+		</Row>
+
+		<Row className="p-0" style={{ height: "400px" }}>
+			<Live3dview dronePositions={dronePositions} />
+		</Row>
+
+		<Row>
+			<Col className="p-3">
+				<Row>
+					<Col>
+					<DroneControll index ={0} ws ={ws} />
+					</Col>
+					<Col>
+					<DroneControll index ={1} ws ={ws} />
+					</Col>
+				</Row>
+				<Row>
+					<Col>
+					<DroneControll index ={2} ws ={ws} />
+					</Col>
+					<Col>
+					<DroneControll index ={3} ws ={ws} />
+					</Col>
+				</Row>
+			</Col>
+
+			<Col className="p-3">
+				<div className="overflow-auto" style={{ lineHeight: '1.2', maxHeight: '300px' }}>
+					{messages.map((msg, index) => (
+						<p className="m-0 mt-1" key={index}>{msg}</p>
+					))}
+				</div>
+			</Col>
+		</Row>
+
+	</Row>
+	</Container>
+	</>
 	);
+}
+
+function DroneControll({index, ws}) {
+
+	function sendPath() {
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(`${index}{"path":"send"}`);
+		}
+	}
+
+	return (
+	<Row className="mb-4">
+		<h4 className="mb-0">Drone_{index}</h4>
+		<Col className="p">
+			<h5>Trim</h5>
+			<Slider index={index} name="trim" axis={'x'} ws={ws} />
+			<Slider index={index} name="trim" axis={'y'} ws={ws} />
+			<Slider index={index} name="trim" axis={'z'} ws={ws} />
+			<Slider index={index} name="trim" axis={'yaw'} ws={ws} />
+		</Col>
+		<Col className="p">
+			<h5>Light</h5>
+			<Slider index={index} name="light" axis={'angle'} ws={ws} />
+			<Slider index={index} name="light" axis={'power'} ws={ws} />
+			<Arm index={index} name="arm" ws={ws} />
+			<Button className="my-0" onClick={sendPath}>Send Path</Button>
+		</Col>
+		<FloatInputForm ws={ws}/>
+	</Row>
+	)
 }
 
 function Arm({name, index, ws}) {
@@ -312,8 +363,8 @@ function Arm({name, index, ws}) {
 
 	return (
 	<>
-		<Button className="m-0" onClick={arm} >Arm</Button>
-		<Button className="m-1" onClick={disarm} >Disarm</Button>
+		<Button className="m-0" onClick={arm} variant="secondary" >Arm</Button>
+		<Button className="m-1" onClick={disarm} variant="secondary">Disarm</Button>
 	</>
 	)
 }
