@@ -1,0 +1,9 @@
+@import '../node_modules/bootstrap/scss/bootstrap';
+@import './bootstrapOverrides.scss';
+
+
+html, body {
+  background-color: rgb(213, 211, 221);
+  font-size: 0.85em;
+  font-family: 'Apple System', monospace;
+}
