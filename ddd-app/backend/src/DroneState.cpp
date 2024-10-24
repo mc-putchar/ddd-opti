@@ -68,9 +68,9 @@ ssize_t DroneState::send(std::string const &msg) {
 	// TODO imPLEMENT DEKAY COUNTER OF 2 SEC
 
 	std::ostringstream oss;
-	oss << this->index << msg;  // Append index and message in a single step.
+	oss << this->index << "{" << msg << "}";  // Append index and message in a single step.
 	std::string output = oss.str();
-
+	
 	return (serialHandler.send(output));
 }
 
@@ -100,14 +100,14 @@ bool DroneState::startup() {
 std::string DroneState::arm() {
 	std::lock_guard<std::mutex> guard(droneDataMutex);
 	this->armed = true;
-	return std::string("{\"armed\":true}");
+	return std::string("\"armed\":true");
 }
 
 
-std::string DroneState::disarm() {
+void DroneState::disarm() {
 	std::lock_guard<std::mutex> guard(droneDataMutex);
 	this->armed = false;
-	return std::string("{\"armed\":false}");
+	this->send("\"armed\":false");
 }
 
 
@@ -115,7 +115,7 @@ std::string DroneState::setpoint(float x, float y, float z, float yaw) {
 	std::stringstream ss;
 	(void)yaw;
 	ss << "[" << x << "," << y << "," << z << "]";
-	return std::string("{\"setpoint\":" + ss.str() + "}");
+	return std::string("\"setpoint\":" + ss.str());
 }
 
 
@@ -127,100 +127,37 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	position.yaw = yaw;
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
-	return std::string("{\"pos\":" + ss.str() + "}");
+	return std::string("\"pos\":" + ss.str());
 }
 
 
 std::string DroneState::settrim(float x, float y, float z, float yaw) {
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
-	return std::string("{\"trim\":" + ss.str() + "}");
+	return std::string("\"trim\":" + ss.str());
 }
 
 
-std::string DroneState::adjustpos(std::string var, std::string change) {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	if (var == "x") {
-		if (change == "+") 
-			position.x += INCREMENTATION;
-		if (change == "-") 
-			position.x -= INCREMENTATION;
-	}
-	if (var == "y") {
-		if (change == "+") 
-			position.y += INCREMENTATION;
-		if (change == "-") 
-			position.y -= INCREMENTATION;
-	}
-	if (var == "z") {
-		if (change == "+") 
-			position.z += INCREMENTATION;
-		if (change == "-") 
-			position.z -= INCREMENTATION;
-	}
-	if (var == "yaw") {
-		if (change == "+") 
-			position.yaw += INCREMENTATION;
-		if (change == "-") 
-			position.yaw -= INCREMENTATION;
-	}
-	std::stringstream ss;
-	ss << "[" << position.x << "," << position.y << "," << position.z << "," << position.yaw << "]";
-	return std::string("{\"pos\":" + ss.str() + "}");
-}
-
-
-std::string DroneState::adjusttrim(std::string var, std::string change) {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	if (var == "x") {
-		if (change == "+") 
-			trim.x -= TRIM_INCREMENTATION;
-		if (change == "-") 
-			trim.x += TRIM_INCREMENTATION;
-	}
-	if (var == "y") {
-		if (change == "+") 
-			trim.y -= TRIM_INCREMENTATION;
-		if (change == "-") 
-			trim.y += TRIM_INCREMENTATION;
-	}
-	if (var == "z") {
-		if (change == "+") 
-			trim.z -= TRIM_INCREMENTATION;
-		if (change == "-") 
-			trim.z += TRIM_INCREMENTATION;
-	}
-	if (var == "yaw") {
-		if (change == "+") 
-			trim.yaw -= TRIM_INCREMENTATION;
-		if (change == "-") 
-			trim.yaw += TRIM_INCREMENTATION;
-	}
-	std::stringstream ss;
-	ss << "[" << trim.x << "," << trim.y << "," << trim.z << "," << trim.yaw << "]";
-	return std::string("{\"trim\":" + ss.str() + "}");
-}
-
-
-std::string DroneState::adjustlight(std::string var, std::string change) {
+std::string DroneState::setlight(float angle, float power) {
 	std::lock_guard<std::mutex> guard(droneDataMutex);
 	std::stringstream ss;
-	if (var == "angle") {
-		if (change == "+") 
-			light.angle += 5;
-		if (change == "-") 
-			light.angle -= 5;
-	}
-	if (var == "power") {
-		if (change == "+") 
-			light.power += 5;
-		if (change == "-") 
-			light.power -= 5;
-	}
+
+	light.angle = angle;
+	light.power = power;
 	ss << "[" << light.angle << "," << light.power << "]";
-	return std::string("{\"light\":" + ss.str() + "}");
+	return std::string("\"light\":" + ss.str());
 }
 
+int DroneState::sendAll() {
+	std::stringstream ss;
+
+	ss << "\"armed\":" << armed << "," 
+		<< setpos(position.x, position.y, position.z, position.yaw) << ","
+		<< settrim(trim.x, trim.y, trim.z, trim.yaw) << ","
+		<< setlight(light.angle, light.power);
+
+	return (this->send(ss.str()));
+}
 
 
 		// auto currentTime = std::chrono::steady_clock::now();

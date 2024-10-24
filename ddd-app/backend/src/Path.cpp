@@ -63,10 +63,8 @@ int Path::sendFrameByFrame() {
 			
 			std::cout << "about the send frame " << i << std::endl;
 			std::stringstream ssSerial;
-			ssSerial << "{" 
-					<< "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
-					<< "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]"
-					<< "}";
+			ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
+					<< "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
 
 			if ( drone.send(ssSerial.str().c_str()) < 0)
 				std::cout << "serial send failed " << i << std::endl;

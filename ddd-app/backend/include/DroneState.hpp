@@ -58,15 +58,16 @@ public:
 
 	ssize_t send(std::string const &msg);
 
-	bool startup();
-	std::string arm();
-	std::string disarm();
+	bool		startup();
+	int			sendAll();
+	std::string	arm();
+	void		disarm();
 	std::string setpoint(float x, float y, float z, float yaw);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
 	std::string adjustpos(std::string var, std::string change);
 	std::string adjusttrim(std::string var, std::string change);
-	std::string adjustlight(std::string var, std::string change);
+	std::string setlight(float angle, float power);
 	void		setPath(std::unique_ptr<Path> p);
 
 	std::unique_ptr<Path>	path; 

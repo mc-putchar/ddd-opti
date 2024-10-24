@@ -92,8 +92,9 @@ int SerialHandler::send(std::string const &msg) {
 	int serial_rt = write(serial_port, msg.c_str(), msg.length());
 
 	// FOR NOW JUST ECHO ANY SERIAL SEND TO THE FRONT
-	std::lock_guard<std::mutex> guardWs(wsServer.wsMutex);
-	if (wsServer.wsConn)
+	// std::lock_guard<std::mutex> guardWs(wsServer.wsMutex); // TODO look into the mutex.
+	if (wsServer.wsConn) {
 		wsServer.wsConn->send_text(msg.c_str());
+	}
 	return (serial_rt);
 }

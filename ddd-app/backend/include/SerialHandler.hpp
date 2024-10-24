@@ -33,6 +33,8 @@
 	#error "Unsupported platform"
 #endif
 
+class WsServer;
+
 class SerialHandler {
 public:
 	SerialHandler() = delete;

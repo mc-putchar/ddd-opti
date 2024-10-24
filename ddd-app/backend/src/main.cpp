@@ -8,7 +8,9 @@
 
 int main(int argc, char ** argv) {
 
-	WsServer wsServer;
+	std::vector<DroneState> drones;
+
+	WsServer wsServer(drones);
 
 	if (argc == 2)
 		wsServer.settingWsPort(argv[1]);
@@ -24,18 +26,19 @@ int main(int argc, char ** argv) {
 		serialHandler.monitorIncoming(); // Could come off a thread and added after each send if not setting too much latency.
 	});
 
-	std::vector<DroneState> drones;
 	drones.emplace_back(0, serialHandler); //push back a drone instance with move semantic. the arg is the index;
 	drones.emplace_back(1, serialHandler);
 	drones.emplace_back(2, serialHandler);
 	drones.emplace_back(3, serialHandler);
+
+	std::cout << "drones array size  " << drones.size() << std::endl;
 
 	auto path = std::make_unique<Path>("animation.json", drones[0]); // TODO might not need the whole move semantic anymore
 	drones[0].setPath(std::move(path));
 
 	std::this_thread::sleep_for(std::chrono::seconds(10));
 
-	drones[0].path->sendFrameByFrame();
+	// drones[0].path->sendFrameByFrame();
 
 	int i = 0;
 	while (true) {

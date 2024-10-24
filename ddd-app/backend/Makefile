@@ -41,7 +41,6 @@ run: client controller
 # Link and create executables
 $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER)
-	mkdir -p tmp
 
 $(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT)
