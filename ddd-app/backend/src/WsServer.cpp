@@ -72,9 +72,14 @@ void WsServer::settingWsConnection() {
 			}
 
 			if (data.contains("path")) {
-				std::cout << "Parameter 'path' exists: " << data["path"] << std::endl;
-				if (data["path"] == "send")
-					drones[index].path->sendFrameByFrame();
+				if (data["path"] == "send") {
+					// Check if the unique pointer is not null
+					if (drones[index].path != nullptr) {
+						drones[index].path->sendFrameByFrame();
+					} else {
+						std::cerr << "Error: Path is null for drone " << index << std::endl;
+					}
+				}
 			}
 		} catch (nlohmann::json::parse_error& e) {
 			std::cerr << "Parse error: " << e.what() << std::endl;

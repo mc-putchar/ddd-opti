@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <mutex>
+#include <chrono>
 
 #include "Path.hpp"
 #include "SerialHandler.hpp"
@@ -69,6 +70,7 @@ public:
 	std::string adjusttrim(std::string var, std::string change);
 	std::string setlight(float angle, float power);
 	void		setPath(std::unique_ptr<Path> p);
+	void keepAlive();
 
 	std::unique_ptr<Path>	path; 
 	const int				index;
@@ -80,6 +82,7 @@ private:
 	DLight					light;
 	SerialHandler &			serialHandler;
 	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
+	std::chrono::steady_clock::time_point lastTimestamp;
 };
 
 #endif // DRONESTATE_HPP

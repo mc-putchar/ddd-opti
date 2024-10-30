@@ -2,7 +2,7 @@
 
 // Path::~Path() {}
 
-Path::Path(std::string file_path, DroneState & ref) : drone(ref)
+Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
 {
 	std::ifstream inputFile(file_path);
 	std::string str((std::istreambuf_iterator<char>(inputFile)),
@@ -18,7 +18,7 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref)
 	try {
 		json data = json::parse(jsonStr);
 		this->name = data["path_name"];
-		this->lenght = data["length"];
+		this->length = data["length"];
 		this->fps = data["fps"];
 		for (const auto& frame : data["frames"]) {
 			FrameData f;
@@ -29,12 +29,13 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref)
 				frame["location"]["z"]
 			};
 			f.rotation = {
-				frame["rotation"]["x"],
-				frame["rotation"]["y"],
-				frame["rotation"]["z"]
+				0.0, // Default to 0.0 for x
+				0.0, // Default to 0.0 for y
+				frame["rotation"]["z"] // Only use z from the JSON
 			};
+			float power = frame["light"]["power"];
 			f.light = {
-				frame["light"]["power"],
+				power / 10,
 				frame["light"]["angle"]
 			};
 			frames.push_back(f);
@@ -42,7 +43,7 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref)
 	} catch (nlohmann::json::parse_error& e) {
 		std::cerr << "Parse error: " << e.what() << std::endl;
 	}
-	std::cout << "JSON Parsing sucesfull!" << std::endl;
+
 
 }
 
@@ -50,32 +51,32 @@ std::vector<FrameData> & Path::getFrames() {
 	return frames;
 }
 
-int Path::getLenght() {
-	return lenght;
-}
-
 int Path::sendFrameByFrame() {
-	
-	std::cout << "about the send frames" << std::endl;
-	std::thread sendAllFrames ([this]() { // threading this part so it doesnt block other operations
-		std::vector<FrameData>& frames = getFrames();
-		for (size_t i = 0; i < lenght; i++) {
-			
-			std::cout << "about the send frame " << i << std::endl;
-			std::stringstream ssSerial;
-			ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
-					<< "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
+	if (sending) {
+		std::cout << "sending already" << std::endl;
+		return 0;
+	}
 
-			if ( drone.send(ssSerial.str().c_str()) < 0)
-				std::cout << "serial send failed " << i << std::endl;
+    // Create a new thread for sending frames
+     std::thread sendAllFrames([this]() {
+            std::vector<FrameData>& frames = getFrames();
+            for (size_t i = 0; i < length; i++) {
+                std::cout << "about the send frame " << i << std::endl;
+                std::stringstream ssSerial;
+                ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
+                          << "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(50));
-		}
-	});
-	sendAllFrames.join();
+                if (drone.send(ssSerial.str().c_str()) < 0)
+                    std::cout << "serial send failed " << i << std::endl;
 
-	return 0;
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            }
+		sending = false;
+        });
+    sendAllFrames.detach(); // Detach the thread
+    return 0;
 }
+
 
 Path::Path(Path const &cpy) : drone(cpy.drone){
 	(void)cpy;

@@ -51,11 +51,12 @@ public:
 	DroneState &			drone;
 
 private:
-	size_t					lenght;
+	size_t					length;
 	int						fps;
 	std::string 			name;
 	std::vector<FrameData>	frames;
 	std::string				jsonStr;
+	bool					sending;
 
 };
 

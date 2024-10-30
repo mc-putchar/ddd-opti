@@ -28,7 +28,10 @@ DroneState::DroneState(int idx, SerialHandler & ref)
 		trim{0, 0, 0, 0},
 		light{0, 0},
 		serialHandler(ref)
-		{}
+		{
+			lastTimestamp = std::chrono::steady_clock::now();
+			keepAlive();
+		}
 
 
 DroneState::DroneState(DroneState const &cpy)
@@ -70,6 +73,7 @@ ssize_t DroneState::send(std::string const &msg) {
 	std::ostringstream oss;
 	oss << this->index << "{" << msg << "}";  // Append index and message in a single step.
 	std::string output = oss.str();
+	lastTimestamp = std::chrono::steady_clock::now();
 	
 	return (serialHandler.send(output));
 }
@@ -79,18 +83,15 @@ ssize_t DroneState::send(std::string const &msg) {
 // to allow arming the drone
 bool DroneState::startup() {
 	// NOTE: hardcoded roll trim value for current test drone
-	if (this->send(this->settrim(0, 64, -800, 0)) < 0) {
-		std::cerr << "Failed to send throttle down signal" << std::endl;
-		return false;
-	}
+	int a, b, c;
+	a = this->send(this->settrim(0, 64, -800, 0));
 	sleep(1);
-	if (this->send(this->arm()) < 0) {
-		std::cerr << "Failed to send arming signal" << std::endl;
-		return false;
-	}
+	b = this->send(this->arm());
 	sleep(1);
-	if (this->send(this->settrim(0, 64, 0, 0)) < 0) {
-		std::cerr << "Failed to reset throttle" << std::endl;
+	c = this->send(this->settrim(0, 64, 0, 0));
+	
+	if (a == 0 || b == 0 || c == 0) {
+		std::cerr << "Failed to send startup" << std::endl;
 		return false;
 	}
 	return true;
@@ -160,15 +161,19 @@ int DroneState::sendAll() {
 }
 
 
-		// auto currentTime = std::chrono::steady_clock::now();
-		// if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-		// 	const char* ping = "0{\"ping\"}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
-		// 	wb = write(serial_port, ping, strlen(ping));
-		// 	if (wb < 0) {
-		// 		std::cerr << "Failed to send serial data to transmitter." << std::endl;
-		// 	} else {
-		// 		std::cout << "Pinged the receiver" << std::endl;
-		// 		send_to_ws(ping);
-		// 	}
-		// 	lastSendTime = currentTime; // Update the last send time
-		// }
+void DroneState::keepAlive() {
+	std::thread stayingAlive([this]() {
+		while (1) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every second and half
+			if (armed == true) {
+				auto now = std::chrono::steady_clock::now();
+				std::chrono::duration<double> elapsed = now - lastTimestamp; // Calculate elapsed time.
+				
+				if (elapsed.count() > 1.5) { // More than 1 second has passed.
+					this->send("\"ping\": true");
+				};
+			}
+		}
+	});
+	stayingAlive.detach();
+}
