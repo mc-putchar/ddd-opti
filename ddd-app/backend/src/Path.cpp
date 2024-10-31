@@ -26,17 +26,13 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
 			f.location = {
 				frame["location"]["x"],
 				frame["location"]["y"],
-				frame["location"]["z"]
-			};
-			f.rotation = {
-				0.0, // Default to 0.0 for x
-				0.0, // Default to 0.0 for y
-				frame["rotation"]["z"] // Only use z from the JSON
+				frame["location"]["z"],
+				frame["rotation"]["z"] // TODO ADD THE YAW TRANSFOMATION MAGIC FORMULA
 			};
 			float power = frame["light"]["power"];
 			f.light = {
-				power / 10,
-				frame["light"]["angle"]
+				frame["light"]["angle"],
+				static_cast<float>(static_cast<int>(power) / 10)
 			};
 			frames.push_back(f);
 		}
@@ -63,7 +59,7 @@ int Path::sendFrameByFrame() {
             for (size_t i = 0; i < length; i++) {
                 std::cout << "about the send frame " << i << std::endl;
                 std::stringstream ssSerial;
-                ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "],"
+                ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"
                           << "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
 
                 if (drone.send(ssSerial.str().c_str()) < 0)

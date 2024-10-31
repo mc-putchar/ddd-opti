@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef} from 'react';
 import {FloatInputForm, Slider, Arm} from './Input';
 import { Col, Card, Row, Form, Container, Button} from 'react-bootstrap';
 import { Canvas } from '@react-three/fiber';
@@ -6,22 +6,42 @@ import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box } from '@react-three/
 
 
 function Drone({ position, light }) {
+	const lightTarget = useRef();
+	const zRotation = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
+
+	// Calculate the target position based on the light[0] angle
+	const lightAngle = light[0]; // angle in degrees
+	const radians = lightAngle * (Math.PI / 180); // convert to radians
+
+	// Calculate new target position based on the angle
+	const targetHeight = Math.sin(radians); // height adjustment based on angle
+	const targetDistance = Math.cos(radians); // distance adjustment based on angle
+
+	// Set the target position relative to the spotlight
+	const targetPosition = [0, -1 + targetHeight, 1 + targetDistance];
+	console.log("taregt post =", targetPosition)
+
 	return (
-	  <group position={position}>
+	  <group position={position} rotation={[0,zRotation,0]}>
 		{/* Drone Box */}
 		<Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color="yellow" />
 		</Box>
 		{/* Spotlight above the drone */}
 		<spotLight
-		  position={[0, 0.5, 0]} // Slightly above the drone within the group
+		  position={[0, -0.1, 0]} // Slightly above the drone within the group
 		  angle={0.25}
 		  penumbra={1}
 		  intensity={light[1]}
 		  castShadow
 		  shadow-mapSize-width={1024}
 		  shadow-mapSize-height={1024}
+		  target={lightTarget.current} // Point spotlight at the target
 		/>
+		 <mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
+		 <Sphere args={[0.05, 16, 16]} position={targetPosition}>
+				<meshStandardMaterial attach="material" color="red" />
+			</Sphere>
 	  </group>
 	);
   }

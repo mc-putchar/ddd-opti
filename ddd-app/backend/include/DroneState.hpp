@@ -82,6 +82,7 @@ private:
 	DLight					light;
 	SerialHandler &			serialHandler;
 	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
+	std::mutex				timestampMutex;
 	std::chrono::steady_clock::time_point lastTimestamp;
 };
 

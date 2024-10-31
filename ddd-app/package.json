@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "concurrently \"npm run start-frontend\" \"npm run start-backend\"",
-    "start-frontend": "vite",
+    "start-frontend": "sleep 1 && vite",
     "start-backend": "./start-backend.sh",
     "dev": "vite",
     "build": "vite build",

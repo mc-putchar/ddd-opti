@@ -33,10 +33,10 @@ int main(int argc, char ** argv) {
 
 	std::cout << "drones array size  " << drones.size() << std::endl;
 
-	auto path = std::make_unique<Path>("animation.json", drones[0]); // TODO might not need the whole move semantic anymore
+	auto path = std::make_unique<Path>("Path01.json", drones[0]); // TODO might not need the whole move semantic anymore
 	drones[0].setPath(std::move(path));
 
-	// auto path1 = std::make_unique<Path>("Path01.json", drones[1]); // TODO might not need the whole move semantic anymore
+	// auto path1 = std::make_unique<Path>("animation.json", drones[1]); // TODO might not need the whole move semantic anymore
 	// drones[1].setPath(std::move(path1));
 
 

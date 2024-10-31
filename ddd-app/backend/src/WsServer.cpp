@@ -17,10 +17,10 @@ void WsServer::settingWsConnection() {
 	.websocket(&app)
 	.onopen([this](crow::websocket::connection& conn) {
 		(void)conn;
-		if (wsConn != nullptr) {
-			std::cerr << "A WebSocket connection is already active. Not opening another connection." << std::endl;
-			return;
-		}
+		// if (wsConn != nullptr) {
+		// 	std::cerr << "A WebSocket connection is already active. Not opening another connection." << std::endl;
+		// 	return;
+		// }
 		std::cout << "WebSocket connection opened" << std::endl;
 		std::lock_guard<std::mutex> guard(wsMutex); // Lock to protect access
 		wsConn = &conn; 	// Store the connection in the shared pointer
@@ -43,7 +43,11 @@ void WsServer::settingWsConnection() {
 		// Parse message
 		std::string number_str;
 		number_str += message[0];
-		int index = std::stoi(number_str);
+		size_t index = std::stoi(number_str);
+		if (index >= drones.size()) {
+			std::cerr << "Error: Drone requested inexistant" << std::endl;
+			return;
+		}
 		std::string wihtoutIndex = message.substr(1);
 		std::cout << wihtoutIndex << std::endl;
 

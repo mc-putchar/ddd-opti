@@ -59,10 +59,10 @@ function App() {
 	const [ws, setWs] = useState(null);
 	const [wsPort, setWsPort] = useState(8080); // Default port
 	const [position, setPosition] = useState({
-		0: [-6, 1, -3],
-		1: [-6, 1, -1],
-		2: [-6, 1, 1],
-		3: [-6, 1, 3]
+		0: [-6, 1, -3, 0],
+		1: [-6, 1, -1, 0],
+		2: [-6, 1, 1, 0],
+		3: [-6, 1, 3, 0]
 	});
 	const [trim, setTrim] = useState({
 		0: [1, 1, 1, 1],

@@ -19,21 +19,16 @@ using json = nlohmann::json;
 class DroneState;
 
 struct Location {
-	float x, y, z;
-};
-
-struct Rotation {
-	float x, y, z;
+	float x, y, z, yaw;
 };
 
 struct Light {
-	float power, angle;
+	float angle, power;
 };
 
 struct FrameData {
 	int frame;
 	Location location;
-	Rotation rotation;
 	Light light;
 };
 

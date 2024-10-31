@@ -12,7 +12,6 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
-
 #define DRONE_INDEX 0
 
 // #define EEPROM_SIZE 4

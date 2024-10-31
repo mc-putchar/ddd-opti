@@ -73,7 +73,10 @@ ssize_t DroneState::send(std::string const &msg) {
 	std::ostringstream oss;
 	oss << this->index << "{" << msg << "}";  // Append index and message in a single step.
 	std::string output = oss.str();
-	lastTimestamp = std::chrono::steady_clock::now();
+	{
+		std::lock_guard<std::mutex> guard(timestampMutex);
+		this->lastTimestamp = std::chrono::steady_clock::now();
+	}
 	
 	return (serialHandler.send(output));
 }
@@ -167,7 +170,13 @@ void DroneState::keepAlive() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every second and half
 			if (armed == true) {
 				auto now = std::chrono::steady_clock::now();
-				std::chrono::duration<double> elapsed = now - lastTimestamp; // Calculate elapsed time.
+				std::chrono::steady_clock::time_point copylastTimestamp;
+				std::chrono::duration<double> elapsed;
+				{
+					std::lock_guard<std::mutex> guard(timestampMutex);
+					copylastTimestamp = lastTimestamp;
+					elapsed = now - copylastTimestamp; // Calculate elapsed time.
+				}
 				
 				if (elapsed.count() > 1.5) { // More than 1 second has passed.
 					this->send("\"ping\": true");

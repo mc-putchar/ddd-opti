@@ -59,7 +59,7 @@ function parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setM
 					jsonData.setpoint[0],  // x value
 					jsonData.setpoint[2],  // z value (reordered as needed)
 					jsonData.setpoint[1],  // y value (reordered as needed)
-					0
+					jsonData.setpoint[3] // yaw value or rotation 
 				];
 				return updatedPosition; // Return the updated state
 			});
