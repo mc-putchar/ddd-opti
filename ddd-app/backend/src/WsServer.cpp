@@ -60,7 +60,7 @@ void WsServer::settingWsConnection() {
 
 			if (data.contains("light")) {
 				std::cout << "Parameter 'light' exists: " << data["light"] << std::endl;
-				// Add your logic for handling 'light'
+				drones[index]->send(drones[index]->setlight(data["light"][0], data["light"][1]));
 			}
 
 			if (data.contains("setpoint")) {
