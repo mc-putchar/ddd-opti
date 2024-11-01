@@ -18,7 +18,7 @@ function Drone({ position, light }) {
 	const targetDistance = Math.cos(radians); // distance adjustment based on angle
 
 	// Set the target position relative to the spotlight
-	const targetPosition = [0, -1 + targetHeight, 1 + targetDistance];
+	const targetPosition = [0, -1 + targetHeight, 1+ targetDistance];
 	console.log("taregt post =", targetPosition)
 
 	return (
@@ -29,7 +29,7 @@ function Drone({ position, light }) {
 		</Box>
 		{/* Spotlight above the drone */}
 		<spotLight
-		  position={[0, -0.1, 0]} // Slightly above the drone within the group
+		  position={[0, 0, 0]} // Slightly above the drone within the group
 		  angle={0.25}
 		  penumbra={1}
 		  intensity={light[1]}
@@ -48,7 +48,7 @@ function Drone({ position, light }) {
 
 function DroneControllerView({position, setpoint, light, trim, setSetpoint, setPosition, setTrim, setLight, ws}) {
 	return (
-		<Col className="p-3">
+		<Col xs="7" className="p-3">
 				<Row>
 					<Col>
 					<DroneControll index={0} position={position} setpoint={setpoint} light={light} trim={trim} setSetpoint={setSetpoint} setPosition={setPosition} setLight={setLight} setTrim={setTrim} ws={ws} />
@@ -78,79 +78,109 @@ function DroneControll({index, position, setpoint, light, trim, setPosition, set
 	}
 
 	return (
-	<Row className="mb-4">
-		<h4 className="mb-0">Drone_{index}</h4>
-		<Col className="p">
-			<h5>Trim</h5>
-			<Slider
-			param="trim"
-			index={index}  // Drone index
-			name="trim"  // To identify trim values
-			axis="x"
-			arg={0}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={trim}  // Pass the trims state
-			setStateArray={setTrim}  // Pass the setter for trims
-			/>
-			<Slider
-			param="trim"
-			index={index}  // Drone index
-			name="trim"  // To identify trim values
-			axis="y"
-			arg={1}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={trim}  // Pass the trims state
-			setStateArray={setTrim}  // Pass the setter for trims
-			/>
-			<Slider
-			param="trim"
-			index={index}  // Drone index
-			name="trim"  // To identify trim values
-			axis="z"
-			arg={2}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={trim}  // Pass the trims state
-			setStateArray={setTrim}  // Pass the setter for trims
-			/>
-			<Slider
-			param="trim"
-			index={index}  // Drone index
-			name="trim"  // To identify trim values
-			axis="yaw"
-			arg={3}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={trim}  // Pass the trims state
-			setStateArray={setTrim}  // Pass the setter for trims
-			/>
-		</Col>
-		<Col className="p">
-			<h5>Light</h5>
-			<Slider
-			param="light"
-			index={index}  // Drone index
-			name="light"  // To identify trim values
-			axis="angle"
-			arg={0}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={light}  // Pass the trims state
-			setStateArray={setLight}  // Pass the setter for trims
-			/>
-			<Slider
-			param="light"
-			index={index}  // Drone index
-			name="light"  // To identify trim values
-			axis="power"
-			arg={1}  // This will update the first value of trim
-			ws={ws}  // WebSocket connection
-			stateArray={light}  // Pass the trims state
-			setStateArray={setLight}  // Pass the setter for trims
-			/>
-			<Arm index={index} ws={ws} />
-			<Button className="my-0" onClick={sendPath}>Send Path</Button>
-		</Col>
-		<FloatInputForm param={setpoint} index={index} ws={ws}/>
-	</Row>
-	)
+		<Row className="mb-4">
+			<Row>
+				<Col xs="4" >
+				<h4 className="mb-0">Drone_{index}</h4>
+				</Col>
+				<Col className="p-2">
+						<Arm index={index} ws={ws} />
+						<Button className="my-1" onClick={sendPath}>Send_Path</Button>
+						{/* Add any additional buttons here */}
+				</Col>
+			</Row>
+				<Row className="mb-3">
+					{/* Trim Block */}
+					<Col className="p-0">
+						<h5>Trim</h5>
+						<div className="d-flex flex-row">
+							<Slider
+								param="trim"
+								index={index}
+								name="trim"
+								axis="x"
+								arg={0}
+								ws={ws}
+								stateArray={trim}
+								setStateArray={setTrim}
+							/>
+							<Slider
+								param="trim"
+								index={index}
+								name="trim"
+								axis="y"
+								arg={1}
+								ws={ws}
+								stateArray={trim}
+								setStateArray={setTrim}
+							/>
+							<Slider
+								param="trim"
+								index={index}
+								name="trim"
+								axis="z"
+								arg={2}
+								ws={ws}
+								stateArray={trim}
+								setStateArray={setTrim}
+							/>
+							<Slider
+								param="trim"
+								index={index}
+								name="trim"
+								axis="yaw"
+								arg={3}
+								ws={ws}
+								stateArray={trim}
+								setStateArray={setTrim}
+							/>
+						</div>
+					</Col>
+	
+					{/* Light Block */}
+					<Col className="p-0">
+						<h5>Light</h5>
+						<div className="d-flex flex-row">
+							<Slider
+								param="light"
+								index={index}
+								name="light"
+								axis="angle"
+								arg={0}
+								ws={ws}
+								stateArray={light}
+								setStateArray={setLight}
+							/>
+							<Slider
+								param="light"
+								index={index}
+								name="light"
+								axis="power"
+								arg={1}
+								ws={ws}
+								stateArray={light}
+								setStateArray={setLight}
+							/>
+						</div>
+					</Col>
+	
+					{/* Buttons Block */}
+					{/* <Col className="d-flex flex-column justify-content-center p-2">
+						<Arm index={index} ws={ws} />
+						<Button className="my-1" onClick={sendPath}>Send_Path</Button>
+					</Col> */}
+				</Row>
+			<FloatInputForm param={setpoint} index={index} ws={ws} />
+		</Row>
+	);
+	
+	
+	
+	
+	
+	
+	
+	
 } 
 
 export {Drone, DroneControll, DroneControllerView};

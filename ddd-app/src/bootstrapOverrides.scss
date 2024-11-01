@@ -17,4 +17,20 @@ $btn-padding-y: 0.0rem; // Adjust vertical padding
 $btn-padding-x: 0.5rem; // Adjust horizontal padding
 $btn-font-size: 1;
 
+// Targeting the spinner arrows within a specific class
+.always-visible-spinner {
+    // For WebKit browsers (Chrome, Safari, Edge)
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        opacity: 1; // Ensure arrows are always visible
+        display: inline-block; // Show arrows inline
+    }
+
+    // Optional: Additional styling for cross-browser consistency
+    appearance: textfield; // Remove default styling that hides arrows
+    -moz-appearance: textfield; // Firefox
+    -webkit-appearance: textfield; // Chrome/Safari
+}
+
+
 @import '../node_modules/bootstrap/scss/bootstrap';

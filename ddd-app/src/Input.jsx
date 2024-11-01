@@ -3,6 +3,8 @@ import {Drone, DroneControll} from './Drone';
 import { Col, Card, Row, Form, Container, Button} from 'react-bootstrap';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sphere, Plane, Cylinder, Box } from '@react-three/drei';
+import RcSlider from 'rc-slider'; // Importing the default Slider component from rc-slider
+import 'rc-slider/assets/index.css'; // Import the CSS for rc-slider
 
 function FloatInputForm({ setpoint, index, ws }) {
     const [input, setInput] = useState('');
@@ -49,57 +51,85 @@ function FloatInputForm({ setpoint, index, ws }) {
         </Form>
     );
 }
+function Slider({ index, name, axis, arg, ws, stateArray, setStateArray }) {
+    // Initialize inputValue with the value from stateArray
+    const [inputValue, setInputValue] = useState(stateArray[index][arg]);
 
+    // Sync inputValue with stateArray when stateArray updates
+    useEffect(() => {
+        setInputValue(stateArray[index][arg]);
+    }, [stateArray, index, arg]);
 
+    // Handle value update
+    const updateValue = (newValue) => {
+        setInputValue(newValue);
 
-function Slider({ param, index, name, axis, arg, ws, stateArray, setStateArray }) {
-	// Increment function
-	const increment = () => {
-		const newValue = stateArray[index][arg] + 5; // Get the current value and increment by 5
-		updateValue(newValue);
-	};
+        // Update the specific value in the state array
+        setStateArray((prevArray) => {
+            const updatedArray = [...prevArray[index]]; // Copy the array for the specific drone
+            updatedArray[arg] = newValue; // Update the argument value
+            const updatedState = { ...prevArray, [index]: updatedArray };
+            return updatedState; // Return the updated state
+        });
 
-	// Decrement function
-	const decrement = () => {
-		const newValue = stateArray[index][arg] - 5; // Get the current value and decrement by 5
-		updateValue(newValue);
-	};
+        // Update value in WebSocket
+        const wsArray = [...stateArray[index]];
+        wsArray[arg] = newValue;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(`${index}{"${name}":${JSON.stringify(wsArray)}}`);
+        }
+    };
 
-	// Function to handle value update and WebSocket message
-	const updateValue = (newValue) => {
+    // Handle number input change
+    const handleInputChange = (e) => {
+        const value = parseInt(e.target.value) || 0;
+        updateValue(value);
+    };
 
-		// Update the specific value in the state array
-		setStateArray((prevArray) => {
-			const updatedArray = [...prevArray[index]]; // Copy the current array for the drone
-			updatedArray[arg] = newValue; // Update the specific argument value
-			const updatedState = { ...prevArray, [index]: updatedArray };
-			return updatedState; // Return the updated state
-		});
+    // Handle slider change
+    const handleSliderChange = (newValue) => {
+        updateValue(newValue);
+    };
 
-		// Construct the array to send over WebSocket, placing the newValue at position `arg`
-		const wsArray = [...stateArray[index]];
-		wsArray[arg] = newValue; // Place the new value at the correct index
-
-		// Send the WebSocket message if the connection is open
-		if (ws && ws.readyState === WebSocket.OPEN) {
-			ws.send(`${index}{"${name}":${JSON.stringify(wsArray)}}`); // Send the array with the updated value over WebSocket
-		}
-	};
-
-	return (
-		<div className="mb-2">
-			<Form.Group>
-				<div>
-					<Button onClick={decrement} variant="secondary">-</Button>
-					<Button className="mx-1" onClick={increment} variant="secondary">+</Button>
-					<span className="mx-1">
-						{stateArray[index][arg]} {axis} {/* Safely display the value */}
-					</span>
-				</div>
-			</Form.Group>
-		</div>
-	);
+    return (
+        <div className="mb-2 text-center">
+            <Form.Group>
+                
+                {/* Number input positioned above the slider */}
+                <Form.Control
+                    type="number"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    step="1"
+                    style={{
+						width: '60px',
+                        margin: '10px auto',
+                        padding: '5px 5px',
+                        appearance: 'textfield',
+						fontSize: '0.8rem'
+                    }}
+                    className="always-visible-spinner"
+                />
+                
+                {/* Vertical slider using rc-slider */}
+                <div style={{ height: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <RcSlider
+                        vertical
+                        min={0} // Adjust min as needed
+                        max={255} // Adjust max as needed
+                        value={inputValue}
+                        onChange={handleSliderChange}
+                        style={{ height: '100px' }}
+                    />
+                </div>
+				<div className="mt-3 axis-label" style={{ fontWeight: 'bold', marginBottom: '6px' }}>{axis}</div>
+                {/* <span style={{ marginTop: '8px' }}>{inputValue} {axis}</span> */}
+            </Form.Group>
+        </div>
+    );
 }
+
+
 
 
 function Arm({index, ws}) {
