@@ -114,14 +114,15 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
     yawPos = json["pos"][3];
     } else if (json.containsKey("light")) {
     // lightAngle = json["light"][0];
-	lightPower = json["light"][1];
+	//   lightPower = json["light"][1];
+    //   Serial.printf("Light power recevied : ", lightPower);
 	// myServo.write(servoAngle);
 
 	// Modulate brightness based on lightPower
-    int brightness = map(lightPower, 0, 100, 0, 255);  // Map lightPower (0-1) to PWM duty cycle (0-255)
-    if (ledcWrite(ledPin, brightness))
+    int brightness = map(lightPower, 0, 255, 0, 255);  // Map lightPower (0-1) to PWM duty cycle (0-255)
+	if (ledcWrite(ledPin, brightness))
 	{
-		Serial.printf("Led succesfully set to ", brightness);
+		Serial.printf("LED successfully set to %d\n", brightness);  // %d is used to print the integer value of brightness
 	}
 
   } if (json.containsKey("armed")) {
@@ -176,19 +177,18 @@ void readMacAddress(){
 void setup() {
 
   // servo control
-//   myServo.attach(servoPin);
-
-  //light control
-
-   // Configure the PWM channel
-   if ( ledcAttach(ledPin, freq, resolution))
-   {
-		Serial.printf("LEDc attach sucess");
-   }
-	
-
+  // myServo.attach(servoPin);
   // Initialize Serial Monitor
   Serial.begin(115200);
+
+  //light control
+  Serial.printf("Print test setup");
+   // Configure the PWM channel
+  if ( ledcAttach(ledPin, freq, resolution)) {
+		Serial.printf("LEDc attach sucess");
+  }
+	
+
 
   sbus_tx.Begin();
   data.failsafe = false;
@@ -199,7 +199,7 @@ void setup() {
     for (int j = 0; j < 16; j++) {
       data.ch[j] = i;
     }
-    Serial.println(i);
+    // Serial.println(i);
     sbus_tx.data(data);
     sbus_tx.Write();
   }
@@ -213,7 +213,7 @@ void setup() {
   esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
   esp_wifi_set_storage(WIFI_STORAGE_RAM);
   esp_wifi_set_ps(WIFI_PS_NONE);
-  //esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
   esp_wifi_start();
 
   // Init ESP-NOW
@@ -319,7 +319,7 @@ void loop() {
 
   if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
     lastSbusSend = micros();
-    Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
     sbus_tx.data(data);
     sbus_tx.Write();
   }

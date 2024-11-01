@@ -38,11 +38,6 @@ void setup() {
   esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_24M);
   esp_wifi_start();
 
-  // Init ESP-NOW
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
-  }
 
   // Once ESPNow is successfully Init, we will register for Send CB to
   // get the status of Trasnmitted packet

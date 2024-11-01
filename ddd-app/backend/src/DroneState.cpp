@@ -78,14 +78,14 @@ bool DroneState::startup() {
 
 std::string DroneState::arm() {
 	armed.store(true);
-	keepAlive();
+	// keepAlive();	
 	return std::string("\"armed\":true");
 }
 
 
 void DroneState::disarm() {
 	armed.store(false);
-	stopKeepAlive();
+	// stopKeepAlive();
 	this->send("\"armed\":false");
 }
 
