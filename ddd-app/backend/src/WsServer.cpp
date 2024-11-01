@@ -1,7 +1,7 @@
 #include "WsServer.hpp"
 
 
-WsServer::WsServer(std::vector<DroneState> &ref) : port(8080), drones(ref) {}
+WsServer::WsServer(std::vector<std::shared_ptr<DroneState>> &ref) : port(8080), drones(ref) {}
 
 WsServer::~WsServer() {}
 
@@ -25,7 +25,7 @@ void WsServer::settingWsConnection() {
 		std::lock_guard<std::mutex> guard(wsMutex); // Lock to protect access
 		wsConn = &conn; 	// Store the connection in the shared pointer
 		for (size_t i = 0; i < drones.size(); i++) {
-			drones[i].sendAll();
+			drones[i]->sendAll();
 		}
 		
 	})
@@ -70,16 +70,16 @@ void WsServer::settingWsConnection() {
 
 			if (data.contains("armed")) {
 				if (data["armed"].get<bool>()) 
-					drones[index].startup();
+					drones[index]->startup();
 				else
-					drones[index].disarm();
+					drones[index]->disarm();
 			}
 
 			if (data.contains("path")) {
 				if (data["path"] == "send") {
 					// Check if the unique pointer is not null
-					if (drones[index].path != nullptr) {
-						drones[index].path->sendFrameByFrame();
+					if (drones[index]->path != nullptr) {
+						drones[index]->path->sendFrameByFrame();
 					} else {
 						std::cerr << "Error: Path is null for drone " << index << std::endl;
 					}

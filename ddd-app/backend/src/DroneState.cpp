@@ -1,65 +1,40 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include <unistd.h>
 
 #include "DroneState.hpp"
 
-#define INCREMENTATION 0.3
-#define TRIM_INCREMENTATION 25
-
-// DroneState::DroneState() 
-// 	: path(nullptr),
-// 		index(0),
-// 		serialPort(0),
-// 		armed(false),
-// 		position{0, 0, 0, 0},
-// 		trim{0, 0, 0, 0},
-// 		light{0, 0}
-// 		{}
-
 
 DroneState::DroneState(int idx, SerialHandler & ref)
-	: path(nullptr),
+	: path(NULL),
 		index(idx),
 		armed(false),
 		position{0, 0, 0, 0},
 		trim{0, 0, 0, 0},
 		light{0, 0},
-		serialHandler(ref)
-		{
-			lastTimestamp = std::chrono::steady_clock::now();
-			keepAlive();
-		}
-
-
-DroneState::DroneState(DroneState const &cpy)
-	: path(nullptr),
-		index(cpy.index),
-		armed(cpy.armed),
-		position{cpy.position.x, cpy.position.y, cpy.position.z, cpy.position.yaw},
-		trim{cpy.trim.x, cpy.trim.y, cpy.trim.z, cpy.trim.yaw},
-		light{cpy.light.power, cpy.light.angle},
-		serialHandler(cpy.serialHandler)
+		serialHandler(ref),
+		lastTimestamp(std::chrono::steady_clock::now())
 		{}
 
+DroneState::DroneState(DroneState const &cpy)
+	: path(cpy.path),
+	  index(cpy.index),
+	  armed(cpy.armed.load()),
+	  position(cpy.position),
+	  trim(cpy.trim),
+	  light(cpy.light),
+	  serialHandler(cpy.serialHandler)
+	{ }
 
-DroneState &DroneState::operator=(DroneState const &rhs) {
-	if (this == &rhs)
-		return *this;
-	this->armed = rhs.armed;
-	this->position = rhs.position;
-	this->trim = rhs.trim;
-	this->light = rhs.light;
-	return *this;
+
+
+DroneState::~DroneState() {
+	std::cout << "drone " << index << " went out of scope" << std::endl;
 }
 
-
-DroneState::~DroneState() {}
-
-void DroneState::setPath(std::unique_ptr<Path> p) {
-	path = std::move(p);
+void DroneState::setPath(Path * p) {
+	path = p;
 }
 
 
@@ -102,15 +77,15 @@ bool DroneState::startup() {
 
 
 std::string DroneState::arm() {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	this->armed = true;
+	armed.store(true);
+	keepAlive();
 	return std::string("\"armed\":true");
 }
 
 
 void DroneState::disarm() {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	this->armed = false;
+	armed.store(false);
+	stopKeepAlive();
 	this->send("\"armed\":false");
 }
 
@@ -163,26 +138,32 @@ int DroneState::sendAll() {
 	return (this->send(ss.str()));
 }
 
-
 void DroneState::keepAlive() {
-	std::thread stayingAlive([this]() {
-		while (1) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every second and half
-			if (armed == true) {
-				auto now = std::chrono::steady_clock::now();
-				std::chrono::steady_clock::time_point copylastTimestamp;
-				std::chrono::duration<double> elapsed;
-				{
-					std::lock_guard<std::mutex> guard(timestampMutex);
-					copylastTimestamp = lastTimestamp;
-					elapsed = now - copylastTimestamp; // Calculate elapsed time.
-				}
-				
-				if (elapsed.count() > 1.5) { // More than 1 second has passed.
-					this->send("\"ping\": true");
-				};
+	stopKeepAlive();
+	keepAliveThread = std::thread([this]() {
+		while (true) {
+			if (!armed.load()) { // Check armed status within the thread
+				break; // Exit the loop if armed is false
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every 1.5 seconds
+			auto now = std::chrono::steady_clock::now();
+			std::chrono::steady_clock::time_point copylastTimestamp;
+			std::chrono::duration<double> elapsed;
+			{
+				std::lock_guard<std::mutex> guard(timestampMutex);
+				copylastTimestamp = lastTimestamp;
+				elapsed = now - copylastTimestamp; // Calculate elapsed time.
+			}
+			if (elapsed.count() > 1.5) { // More than 1.5 seconds have passed
+				send("\"ping\":true");
 			}
 		}
 	});
-	stayingAlive.detach();
+}
+
+void DroneState::stopKeepAlive() {
+	if (keepAliveThread.joinable()) {
+		armed.store(false); // Set armed to false to break the loop
+		keepAliveThread.join(); // Wait for the thread to finish
+	}
 }
