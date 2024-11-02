@@ -54,12 +54,11 @@ void WsServer::settingWsConnection() {
 		try {
 			json data = json::parse(wihtoutIndex);
 			if (data.contains("trim")) {
-				std::cout << "Parameter 'trim' exists: " << data["trim"] << std::endl;
-				// Add your logic for handling 'trim'
+				drones[index]->send(drones[index]->settrim(
+					data["trim"][0], data["trim"][1], data["trim"][2], data["trim"][3]));
 			}
 
 			if (data.contains("light")) {
-				std::cout << "Parameter 'light' exists: " << data["light"] << std::endl;
 				drones[index]->send(drones[index]->setlight(data["light"][0], data["light"][1]));
 			}
 

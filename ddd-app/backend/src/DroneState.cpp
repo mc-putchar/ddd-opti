@@ -99,11 +99,13 @@ std::string DroneState::setpoint(float x, float y, float z, float yaw) {
 
 
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	position.x = x;
-	position.y = y;
-	position.z = z;
-	position.yaw = yaw;
+	{
+		std::lock_guard<std::mutex> guard(droneDataMutex);
+		position.x = x;
+		position.y = y;
+		position.z = z;
+		position.yaw = yaw;
+	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
 	return std::string("\"pos\":" + ss.str());
@@ -111,6 +113,13 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 
 
 std::string DroneState::settrim(float x, float y, float z, float yaw) {
+	{
+		std::lock_guard<std::mutex> guard(droneDataMutex);
+		trim.x = x;
+		trim.y = z;
+		trim.z = z;
+		trim.yaw = yaw;
+	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
 	return std::string("\"trim\":" + ss.str());

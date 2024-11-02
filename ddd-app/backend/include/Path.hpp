@@ -38,7 +38,7 @@ public:
 	Path() = delete;
 	Path(Path const &cpy);
 	Path &operator=(Path const &rhs);
-	~Path(){}
+	~Path();
 
 	std::vector<FrameData> &	getFrames();
 	int							getLenght();

@@ -73,6 +73,9 @@ int Path::sendFrameByFrame() {
     return 0;
 }
 
+Path::~Path() {
+	std::cout << "path " << " went out of scope" << std::endl;
+}
 
 Path::Path(Path const &cpy) : drone(cpy.drone){
 	(void)cpy;
