@@ -1,6 +1,5 @@
 #include "Path.hpp"
 
-// Path::~Path() {}
 
 Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
 {
@@ -53,24 +52,24 @@ int Path::sendFrameByFrame() {
 		return 0;
 	}
 
-    // Create a new thread for sending frames
-     std::thread sendAllFrames([this]() {
-            std::vector<FrameData>& frames = getFrames();
-            for (size_t i = 0; i < length; i++) {
-                std::cout << "about the send frame " << i << std::endl;
-                std::stringstream ssSerial;
-                ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"
-                          << "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
+	// Create a new thread for sending frames
+	 std::thread sendAllFrames([this]() {
+			std::vector<FrameData>& frames = getFrames();
+			for (size_t i = 0; i < length; i++) {
+				std::cout << "about the send frame " << i << std::endl;
+				std::stringstream ssSerial;
+				ssSerial << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"
+						  << "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]";
 
-                if (drone.send(ssSerial.str().c_str()) < 0)
-                    std::cout << "serial send failed " << i << std::endl;
+				if (drone.send(ssSerial.str().c_str()) < 0)
+					std::cout << "serial send failed " << i << std::endl;
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-            }
+				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			}
 		sending = false;
-        });
-    sendAllFrames.detach(); // Detach the thread
-    return 0;
+		});
+	sendAllFrames.detach(); // Detach the thread
+	return 0;
 }
 
 Path::~Path() {
