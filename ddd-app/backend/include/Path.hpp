@@ -42,6 +42,7 @@ public:
 	int							getLenght();
 	int							sendFrameByFrame();
 	DroneState &			drone;
+	std::atomic<bool>		paused;
 
 private:
 	size_t					length;
