@@ -42,12 +42,6 @@ run: client controller
 $(CONTROLLER): $(CONTROLLER_SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(CONTROLLER_SRCS:%=$(BINDIR)/%.o) -o $(CONTROLLER)
 
-$(CLIENT): $(CLIENT_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(CLIENT_SRCS:%=$(BINDIR)/%.o) -o $(CLIENT)
-
-$(CLIENTKEY): $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o)
-	$(CXX) $(CPPFLAGS) $(CLIENTKEY_SRCS:%=$(BINDIR)/%.o) -o $(CLIENTKEY)
-
 # Compile object files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
@@ -61,7 +55,6 @@ clean:
 
 fclean: clean
 	rm -f $(CONTROLLER)
-
 
 re: fclean all
 

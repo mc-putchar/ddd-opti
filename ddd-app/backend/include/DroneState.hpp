@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <mutex>
+#include <chrono>
 
 #include "Path.hpp"
 #include "SerialHandler.hpp"
@@ -51,7 +52,6 @@ public:
 	DroneState() = delete;
 	DroneState(int idx, SerialHandler & ref);
 	DroneState(DroneState const &cpy);
-	DroneState &operator=(DroneState const &rhs);
 	~DroneState();
 
 	bool is_armed() const;
@@ -65,21 +65,24 @@ public:
 	std::string setpoint(float x, float y, float z, float yaw);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
-	std::string adjustpos(std::string var, std::string change);
-	std::string adjusttrim(std::string var, std::string change);
 	std::string setlight(float angle, float power);
-	void		setPath(std::unique_ptr<Path> p);
+	void		setPath(Path *p);
+	void		keepAlive();
+	void		stopKeepAlive();
 
-	std::unique_ptr<Path>	path; 
+	Path *					path; 
 	const int				index;
 
 private:
-	bool					armed;
+	std::atomic<bool>		armed; // Use atomic for thread-safe access
 	Position				position;
 	Trim					trim;
 	DLight					light;
 	SerialHandler &			serialHandler;
 	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
+	std::mutex				timestampMutex;
+	std::thread				keepAliveThread;
+	std::chrono::steady_clock::time_point lastTimestamp;
 };
 
 #endif // DRONESTATE_HPP

@@ -1,62 +1,40 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include <unistd.h>
 
 #include "DroneState.hpp"
 
-#define INCREMENTATION 0.3
-#define TRIM_INCREMENTATION 25
-
-// DroneState::DroneState() 
-// 	: path(nullptr),
-// 		index(0),
-// 		serialPort(0),
-// 		armed(false),
-// 		position{0, 0, 0, 0},
-// 		trim{0, 0, 0, 0},
-// 		light{0, 0}
-// 		{}
-
 
 DroneState::DroneState(int idx, SerialHandler & ref)
-	: path(nullptr),
+	: path(NULL),
 		index(idx),
 		armed(false),
 		position{0, 0, 0, 0},
 		trim{0, 0, 0, 0},
 		light{0, 0},
-		serialHandler(ref)
+		serialHandler(ref),
+		lastTimestamp(std::chrono::steady_clock::now())
 		{}
-
 
 DroneState::DroneState(DroneState const &cpy)
-	: path(nullptr),
-		index(cpy.index),
-		armed(cpy.armed),
-		position{cpy.position.x, cpy.position.y, cpy.position.z, cpy.position.yaw},
-		trim{cpy.trim.x, cpy.trim.y, cpy.trim.z, cpy.trim.yaw},
-		light{cpy.light.power, cpy.light.angle},
-		serialHandler(cpy.serialHandler)
-		{}
+	: path(cpy.path),
+	  index(cpy.index),
+	  armed(cpy.armed.load()),
+	  position(cpy.position),
+	  trim(cpy.trim),
+	  light(cpy.light),
+	  serialHandler(cpy.serialHandler)
+	{ }
 
 
-DroneState &DroneState::operator=(DroneState const &rhs) {
-	if (this == &rhs)
-		return *this;
-	this->armed = rhs.armed;
-	this->position = rhs.position;
-	this->trim = rhs.trim;
-	this->light = rhs.light;
-	return *this;
+
+DroneState::~DroneState() {
+	std::cout << "drone " << index << " went out of scope" << std::endl;
 }
 
-
-DroneState::~DroneState() {}
-
-void DroneState::setPath(std::unique_ptr<Path> p) {
-	path = std::move(p);
+void DroneState::setPath(Path * p) {
+	path = p;
 }
 
 
@@ -70,6 +48,10 @@ ssize_t DroneState::send(std::string const &msg) {
 	std::ostringstream oss;
 	oss << this->index << "{" << msg << "}";  // Append index and message in a single step.
 	std::string output = oss.str();
+	{
+		std::lock_guard<std::mutex> guard(timestampMutex);
+		this->lastTimestamp = std::chrono::steady_clock::now();
+	}
 	
 	return (serialHandler.send(output));
 }
@@ -79,18 +61,15 @@ ssize_t DroneState::send(std::string const &msg) {
 // to allow arming the drone
 bool DroneState::startup() {
 	// NOTE: hardcoded roll trim value for current test drone
-	if (this->send(this->settrim(0, 64, -800, 0)) < 0) {
-		std::cerr << "Failed to send throttle down signal" << std::endl;
-		return false;
-	}
+	int a, b, c;
+	a = this->send(this->settrim(0, 64, -800, 0));
 	sleep(1);
-	if (this->send(this->arm()) < 0) {
-		std::cerr << "Failed to send arming signal" << std::endl;
-		return false;
-	}
+	b = this->send(this->arm());
 	sleep(1);
-	if (this->send(this->settrim(0, 64, 0, 0)) < 0) {
-		std::cerr << "Failed to reset throttle" << std::endl;
+	c = this->send(this->settrim(0, 64, 0, 0));
+	
+	if (a == 0 || b == 0 || c == 0) {
+		std::cerr << "Failed to send startup" << std::endl;
 		return false;
 	}
 	return true;
@@ -98,15 +77,15 @@ bool DroneState::startup() {
 
 
 std::string DroneState::arm() {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	this->armed = true;
+	armed.store(true);
+	// keepAlive();	
 	return std::string("\"armed\":true");
 }
 
 
 void DroneState::disarm() {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	this->armed = false;
+	armed.store(false);
+	// stopKeepAlive();
 	this->send("\"armed\":false");
 }
 
@@ -120,11 +99,13 @@ std::string DroneState::setpoint(float x, float y, float z, float yaw) {
 
 
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
-	std::lock_guard<std::mutex> guard(droneDataMutex);
-	position.x = x;
-	position.y = y;
-	position.z = z;
-	position.yaw = yaw;
+	{
+		std::lock_guard<std::mutex> guard(droneDataMutex);
+		position.x = x;
+		position.y = y;
+		position.z = z;
+		position.yaw = yaw;
+	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
 	return std::string("\"pos\":" + ss.str());
@@ -132,6 +113,13 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 
 
 std::string DroneState::settrim(float x, float y, float z, float yaw) {
+	{
+		std::lock_guard<std::mutex> guard(droneDataMutex);
+		trim.x = x;
+		trim.y = z;
+		trim.z = z;
+		trim.yaw = yaw;
+	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
 	return std::string("\"trim\":" + ss.str());
@@ -159,16 +147,32 @@ int DroneState::sendAll() {
 	return (this->send(ss.str()));
 }
 
+void DroneState::keepAlive() {
+	stopKeepAlive();
+	keepAliveThread = std::thread([this]() {
+		while (true) {
+			if (!armed.load()) { // Check armed status within the thread
+				break; // Exit the loop if armed is false
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every 1.5 seconds
+			auto now = std::chrono::steady_clock::now();
+			std::chrono::steady_clock::time_point copylastTimestamp;
+			std::chrono::duration<double> elapsed;
+			{
+				std::lock_guard<std::mutex> guard(timestampMutex);
+				copylastTimestamp = lastTimestamp;
+				elapsed = now - copylastTimestamp; // Calculate elapsed time.
+			}
+			if (elapsed.count() > 1.5) { // More than 1.5 seconds have passed
+				send("\"ping\":true");
+			}
+		}
+	});
+}
 
-		// auto currentTime = std::chrono::steady_clock::now();
-		// if (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastSendTime).count() >= MIN_INTER_SEND) {
-		// 	const char* ping = "0{\"ping\"}"; // HOW WILL WE HANDLE MULTIPLE PING DRONES MONITORING?
-		// 	wb = write(serial_port, ping, strlen(ping));
-		// 	if (wb < 0) {
-		// 		std::cerr << "Failed to send serial data to transmitter." << std::endl;
-		// 	} else {
-		// 		std::cout << "Pinged the receiver" << std::endl;
-		// 		send_to_ws(ping);
-		// 	}
-		// 	lastSendTime = currentTime; // Update the last send time
-		// }
+void DroneState::stopKeepAlive() {
+	if (keepAliveThread.joinable()) {
+		armed.store(false); // Set armed to false to break the loop
+		keepAliveThread.join(); // Wait for the thread to finish
+	}
+}

@@ -16,7 +16,7 @@ class WsServer {
 public:
 
 	WsServer() = delete;
-	WsServer(std::vector<DroneState> &ref);
+	WsServer(std::vector<std::shared_ptr<DroneState>>&ref);
 	~WsServer();
 
 	void settingWsPort(char* arg);
@@ -26,7 +26,7 @@ public:
 	int	port;
 	std::mutex wsMutex;
 	crow::websocket::connection* wsConn = nullptr;
-	std::vector<DroneState> &drones;
+	std::vector<std::shared_ptr<DroneState>> &drones;
 
 private:
 

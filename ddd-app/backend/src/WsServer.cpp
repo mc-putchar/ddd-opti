@@ -1,7 +1,7 @@
 #include "WsServer.hpp"
 
 
-WsServer::WsServer(std::vector<DroneState> &ref) : port(8080), drones(ref) {}
+WsServer::WsServer(std::vector<std::shared_ptr<DroneState>> &ref) : port(8080), drones(ref) {}
 
 WsServer::~WsServer() {}
 
@@ -17,15 +17,15 @@ void WsServer::settingWsConnection() {
 	.websocket(&app)
 	.onopen([this](crow::websocket::connection& conn) {
 		(void)conn;
-		if (wsConn != nullptr) {
-			std::cerr << "A WebSocket connection is already active. Not opening another connection." << std::endl;
-			return;
-		}
+		// if (wsConn != nullptr) {
+		// 	std::cerr << "A WebSocket connection is already active. Not opening another connection." << std::endl;
+		// 	return;
+		// }
 		std::cout << "WebSocket connection opened" << std::endl;
 		std::lock_guard<std::mutex> guard(wsMutex); // Lock to protect access
 		wsConn = &conn; 	// Store the connection in the shared pointer
 		for (size_t i = 0; i < drones.size(); i++) {
-			drones[i].sendAll();
+			drones[i]->sendAll();
 		}
 		
 	})
@@ -43,38 +43,55 @@ void WsServer::settingWsConnection() {
 		// Parse message
 		std::string number_str;
 		number_str += message[0];
-		int index = std::stoi(number_str);
+		size_t index = std::stoi(number_str);
+		if (index >= drones.size()) {
+			std::cerr << "Error: Drone requested inexistant" << std::endl;
+			return;
+		}
 		std::string wihtoutIndex = message.substr(1);
 		std::cout << wihtoutIndex << std::endl;
 
 		try {
 			json data = json::parse(wihtoutIndex);
 			if (data.contains("trim")) {
-				std::cout << "Parameter 'trim' exists: " << data["trim"] << std::endl;
-				// Add your logic for handling 'trim'
+				drones[index]->send(drones[index]->settrim(
+					data["trim"][0], data["trim"][1], data["trim"][2], data["trim"][3]));
 			}
 
 			if (data.contains("light")) {
-				std::cout << "Parameter 'light' exists: " << data["light"] << std::endl;
-				// Add your logic for handling 'light'
+				drones[index]->send(drones[index]->setlight(data["light"][0], data["light"][1]));
 			}
 
 			if (data.contains("setpoint")) {
-				std::cout << "Parameter 'setpoint' exists: " << data["setpoint"] << std::endl;
-				// Add your logic for handling 'setpoint'
+				drones[index]->send(drones[index]->setpoint(data["setpoint"][0], data["setpoint"][1],
+															data["setpoint"][2], data["setpoint"][3]));
 			}
 
 			if (data.contains("armed")) {
 				if (data["armed"].get<bool>()) 
-					drones[index].startup();
+					drones[index]->startup();
 				else
-					drones[index].disarm();
+					drones[index]->disarm();
 			}
 
 			if (data.contains("path")) {
-				std::cout << "Parameter 'path' exists: " << data["path"] << std::endl;
-				if (data["path"] == "send")
-					drones[index].path->sendFrameByFrame();
+				if (data["path"] == "send") {
+					// Check if the unique pointer is not null
+					if (drones[index]->path != nullptr) {
+						drones[index]->path->sendFrameByFrame();
+					} else {
+						std::cerr << "Error: Path is null for drone " << index << std::endl;
+					}
+				}
+				if (data["path"] == "pause") {
+					drones[index]->path->paused.store(true);
+				}
+				if (data["path"] == "pause") {
+					drones[index]->path->paused.store(false);
+				}
+				if (data["path"] == "stop") {
+					
+				}
 			}
 		} catch (nlohmann::json::parse_error& e) {
 			std::cerr << "Parse error: " << e.what() << std::endl;

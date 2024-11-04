@@ -6,11 +6,9 @@
 #include <fstream>
 #include <mutex>
 #include "json.hpp"
-#include "crow_all.h"
 
 #include <thread>  // For std::this_thread::sleep_for
 #include <chrono>  // For std::chrono::seconds
-#include <unistd.h>
 
 #include "DroneState.hpp"
 
@@ -19,21 +17,16 @@ using json = nlohmann::json;
 class DroneState;
 
 struct Location {
-	float x, y, z;
-};
-
-struct Rotation {
-	float x, y, z;
+	float x, y, z, yaw;
 };
 
 struct Light {
-	float power, angle;
+	float angle, power;
 };
 
 struct FrameData {
 	int frame;
 	Location location;
-	Rotation rotation;
 	Light light;
 };
 
@@ -43,19 +36,21 @@ public:
 	Path() = delete;
 	Path(Path const &cpy);
 	Path &operator=(Path const &rhs);
-	~Path(){}
+	~Path();
 
 	std::vector<FrameData> &	getFrames();
 	int							getLenght();
 	int							sendFrameByFrame();
 	DroneState &			drone;
+	std::atomic<bool>		paused;
 
 private:
-	size_t					lenght;
+	size_t					length;
 	int						fps;
 	std::string 			name;
 	std::vector<FrameData>	frames;
 	std::string				jsonStr;
+	bool					sending;
 
 };
 
