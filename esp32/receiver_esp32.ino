@@ -5,8 +5,14 @@
 #include <ArduinoJson.h>
 #include <PID_v1.h>
 #include <stdint.h>
+#include <MAVLink.h>
 #include "sbus.h"
 // #include <EEPROM.h>
+// UART2 pins for telemetry data
+#define RX2_PIN 33
+
+HardwareSerial TelemetrySerial(2);
+
 
 #define batVoltagePin 34
 #define MAX_VEL 100
@@ -29,7 +35,7 @@
 #endif
 
 StaticJsonDocument<1024> json;
-bfs::SbusTx		sbus_tx(&Serial1, 33, 32, false, false);
+bfs::SbusTx		sbus_tx(&Serial1, 16, 32, false, false);
 bfs::SbusData	data;
 
 bool			armed = false;
@@ -160,6 +166,9 @@ void readMacAddress(){
 
 void setup() {
 	Serial.begin(115200); // Initialize Serial Monitor
+  Serial.println("starting up");
+
+	TelemetrySerial.begin(115200, SERIAL_8N1, RX2_PIN);
 	
 	// myServo.attach(servoPin); // servo control
 	if ( ledcAttach(LEDPIN, LEDPMWFREQ, LEDPMWRES)) { // Configure the PWM channel
@@ -232,61 +241,119 @@ void setup() {
 	lastPing = micros();
 	lastLoopTime = micros();
 	lastSbusSend = micros();
+
+}
+
+void readTelemetry() {
+    static uint8_t buf[MAVLINK_MAX_PACKET_LEN]; // Buffer for the received message
+    static mavlink_message_t msg;
+    static mavlink_status_t status;
+
+    while (TelemetrySerial.available() > 0) {
+        // Read byte by byte
+        uint8_t c = TelemetrySerial.read();
+        // Parse the MAVLink message
+        if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
+            // Print the entire MAVLink message in raw byte form
+            uint8_t message_length = mavlink_msg_to_send_buffer(buf, &msg); // Use this to determine the length of the message
+            // printMessage((uint8_t*)&msg, message_length); // Print the parsed message
+
+            // Process the message as before
+            switch (msg.msgid) {
+                // case MAVLINK_MSG_ID_HEARTBEAT: {
+                //     mavlink_heartbeat_t heartbeat;
+                //     mavlink_msg_heartbeat_decode(&msg, &heartbeat);
+                //     Serial.println("Heartbeat received!");
+                //     break;
+                // }
+                case MAVLINK_MSG_ID_SYS_STATUS: {
+                    mavlink_sys_status_t sys_status;
+                    mavlink_msg_sys_status_decode(&msg, &sys_status);
+                    Serial.printf("Battery Voltage: %.2fV\n", sys_status.voltage_battery * 0.001); // Example conversion
+                    Serial.printf("Battery remaining: %.2fV\n", sys_status.battery_remaining);
+                    Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
+                    break;
+                }
+                case MAVLINK_MSG_ID_ATTITUDE: {
+                    mavlink_attitude_t attitude;
+                    mavlink_msg_attitude_decode(&msg, &attitude);
+                    
+                    // Print roll, pitch, and yaw in radians
+                    Serial.printf("Pitch: %.2f rad\n", attitude.pitch);
+                    Serial.printf("Roll: %.2f rad\n", attitude.roll);
+                    Serial.printf("Yaw: %.2f rad\n", attitude.yaw);
+
+                    break;
+                }
+                case MAVLINK_MSG_ID_RC_CHANNELS: { // Assuming aux1 might be part of RC channels
+                    mavlink_rc_channels_t rc_channels;
+                    mavlink_msg_rc_channels_decode(&msg, &rc_channels);
+                    
+                    // Assuming AUX1 corresponds to a specific channel (e.g., channel 5)
+                    Serial.printf("Aux1 RC: %d\n", rc_channels.chan5_raw); // Adjust the channel as needed
+                    
+                    break;
+                }
+                // Add additional cases for other message types you are interested in
+            }
+        }
+    }
 }
 
 void loop() {
-	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
-	lastLoopTime = micros();
+	// while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
+	// lastLoopTime = micros();
 
-	if (micros() - lastPing > 2e6) { // safety timmed killswitch 
-		armed = false;
-	}
+	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
+	// 	armed = false;
+	// }
+	readTelemetry();
 
-	if (armed) {
-		data.ch[4] = 1800;
-	} else {
-		data.ch[4] = 172;
-		resetPid(xPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(yPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(zPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(yawPosPID, -1, 1);
-		resetPid(xVelPID, -1, 1);
-		resetPid(yVelPID, -1, 1);
-		resetPid(zVelPID, -1, 1);
-	}
-
-	xPosPID.Compute();
-	yPosPID.Compute();
-	zPosPID.Compute();
-	yawPosPID.Compute();
-
-	xVelPID.Compute();
-	yVelPID.Compute();
-	zVelPID.Compute();
-
-	int xPWM = 992 + (xVelOutput * 811) + xTrim;
-	int yPWM = 992 + (yVelOutput * 811) + yTrim;
-	int zPWM = 992 + (Z_GAIN * zVelOutput * 811) + zTrim;
-	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
-	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
-	// zPWM *= max(0., groundEffectMultiplier);
-	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
-	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 220);
-
-	data.ch[0] = -yPWM;
-	data.ch[1] = xPWM;
-	data.ch[2] = zPWM;
-	data.ch[3] = yawPWM;
-
-	// for (int i = 0; i < 5; ++i) {
-	//   if (rep_data[i])
-	//     data.ch[i] = rep_data[i];
+	// if (armed) {
+	// 	data.ch[4] = 1800;
+	// } else {
+	// 	data.ch[4] = 172;
+	// 	resetPid(xPosPID, -MAX_VEL, MAX_VEL);
+	// 	resetPid(yPosPID, -MAX_VEL, MAX_VEL);
+	// 	resetPid(zPosPID, -MAX_VEL, MAX_VEL);
+	// 	resetPid(yawPosPID, -1, 1);
+	// 	resetPid(xVelPID, -1, 1);
+	// 	resetPid(yVelPID, -1, 1);
+	// 	resetPid(zVelPID, -1, 1);
 	// }
 
-	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
-	}
+	// xPosPID.Compute();
+	// yPosPID.Compute();
+	// zPosPID.Compute();
+	// yawPosPID.Compute();
+
+	// xVelPID.Compute();
+	// yVelPID.Compute();
+	// zVelPID.Compute();
+
+	// int xPWM = 992 + (xVelOutput * 811) + xTrim;
+	// int yPWM = 992 + (yVelOutput * 811) + yTrim;
+	// int zPWM = 992 + (Z_GAIN * zVelOutput * 811) + zTrim;
+	// int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
+	// // double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
+	// // zPWM *= max(0., groundEffectMultiplier);
+	// zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
+	// zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 220);
+
+	// data.ch[0] = -yPWM;
+	// data.ch[1] = xPWM;
+	// data.ch[2] = zPWM;
+	// data.ch[3] = yawPWM;
+
+	// // for (int i = 0; i < 5; ++i) {
+	// //   if (rep_data[i])
+	// //     data.ch[i] = rep_data[i];
+	// // }
+
+	// if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
+	// 	lastSbusSend = micros();
+	// 	sbus_tx.data(data);
+	// 	sbus_tx.Write();
+	// 	// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+	// }
 }
