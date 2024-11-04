@@ -36,7 +36,7 @@ bool			armed = false;
 unsigned long	timeArmed = 0;
 unsigned long	lastPing;
 int				xTrim = 0, yTrim = 0, zTrim = 0, yawTrim = 0;
-double			groundEffectCoef = 28; groundEffectOffset = -0.035;
+double			groundEffectCoef = 28, groundEffectOffset = -0.035;
 
 // nested pid loops
 // outer: position pid loop
@@ -105,8 +105,8 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		lightAngle = json["light"][0];
 		lightPower = json["light"][1];
 		// myServo.write(servoAngle);
-		if (ledcWrite(LEDPIN, brightness)) {
-			Serial.printf("LED successfully set to %d\n", brightness);
+		if (ledcWrite(LEDPIN, lightPower)) {
+			Serial.printf("LED successfully set to %d\n", lightPower);
 		}
 	}
 	if (json.containsKey("armed")) {
