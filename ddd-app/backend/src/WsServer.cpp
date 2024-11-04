@@ -63,8 +63,8 @@ void WsServer::settingWsConnection() {
 			}
 
 			if (data.contains("setpoint")) {
-				std::cout << "Parameter 'setpoint' exists: " << data["setpoint"] << std::endl;
-				// Add your logic for handling 'setpoint'
+				drones[index]->send(drones[index]->setpoint(data["setpoint"][0], data["setpoint"][1],
+															data["setpoint"][2], data["setpoint"][3]));
 			}
 
 			if (data.contains("armed")) {
@@ -82,6 +82,15 @@ void WsServer::settingWsConnection() {
 					} else {
 						std::cerr << "Error: Path is null for drone " << index << std::endl;
 					}
+				}
+				if (data["path"] == "pause") {
+					drones[index]->path->paused.store(true);
+				}
+				if (data["path"] == "pause") {
+					drones[index]->path->paused.store(false);
+				}
+				if (data["path"] == "stop") {
+					
 				}
 			}
 		} catch (nlohmann::json::parse_error& e) {
