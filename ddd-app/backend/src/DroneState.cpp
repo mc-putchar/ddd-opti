@@ -78,7 +78,7 @@ bool DroneState::startup() {
 
 std::string DroneState::arm() {
 	armed.store(true);
-	// keepAlive();	
+	keepAlive();	
 	return std::string("\"armed\":true");
 }
 
@@ -139,11 +139,16 @@ std::string DroneState::setlight(float angle, float power) {
 int DroneState::sendAll() {
 	std::stringstream ss;
 
-	ss << "\"armed\":" << armed << "," 
+	ss << "\"armed\":" << armed << ","
 		<< setpos(position.x, position.y, position.z, position.yaw) << ","
 		<< settrim(trim.x, trim.y, trim.z, trim.yaw) << ","
 		<< setlight(light.angle, light.power);
 
+	if (path){
+		std::cerr << "path error" << std::endl;
+		ss << "," << "\"length\":" << path->length << ","
+		<< "\"frame\":" << path->currframe;
+	}
 	return (this->send(ss.str()));
 }
 

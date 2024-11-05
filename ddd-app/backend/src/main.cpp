@@ -36,9 +36,8 @@ int main(int argc, char ** argv) {
 	Path path("Path01.json", *drones[0]); // Create path on the stack
 	drones[0]->setPath(&path);
 
-	// auto path1 = std::make_unique<Path>("animation.json", drones[1]); // TODO might not need the whole move semantic anymore
-	// drones[1].setPath(std::move(path1));
-
+	Path path1("animation.json", *drones[1]); // Create path on the stack
+	drones[1]->setPath(&path1);
 
 	int i = 0;
 	while (true) {
