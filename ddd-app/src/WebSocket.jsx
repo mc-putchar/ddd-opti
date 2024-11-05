@@ -1,5 +1,5 @@
 
-function parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setMessages) {
+function parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages) {
 
 	// Extract drone index and JSON part
 	const droneIndex = parseInt(event.data[0], 10);  // Get drone index (0, 1, 2...)
@@ -15,8 +15,8 @@ function parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setM
 				// Update the specific drone's trim values (keeping the array structure intact)
 				updatedTrims[droneIndex] = [
 					jsonData.trim[0],  // x value
-					jsonData.trim[2],  // z value (reordered as needed)
-					jsonData.trim[1],  // y value (reordered as needed)
+					jsonData.trim[1],  // z value (reordered as needed)
+					jsonData.trim[2],  // y value (reordered as needed)
 					jsonData.trim[3]   // any additional value (if applicable)
 				];
 				return updatedTrims; // Return the updated state
@@ -64,6 +64,30 @@ function parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setM
 				return updatedPosition; // Return the updated state
 			});
 		}
+		if (jsonData.length) {
+			setPathLen(prevPosition => {
+				// Copy the current trim state for all drones
+				const updatedPosition = { ...prevPosition };
+			
+				// Update the specific drone's trim values (keeping the array structure intact)
+				updatedPosition[droneIndex] = [
+					jsonData.length
+				];
+				return updatedPosition; // Return the updated state
+			});
+		}
+		if (jsonData.frame) {
+			setFrame(prevPosition => {
+				// Copy the current trim state for all drones
+				const updatedPosition = { ...prevPosition };
+			
+				// Update the specific drone's trim values (keeping the array structure intact)
+				updatedPosition[droneIndex] = [
+					jsonData.frame
+				];
+				return updatedPosition; // Return the updated state
+			});
+		}
 
 	  if (jsonData.arm) {
 	  }
@@ -82,35 +106,31 @@ function parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setM
 }
 
 // Function to fetch the port from JSON and initialize the WebSocket
-	const fetchConfigAndInitializeWebSocket = async (setWs, setWsState, setWsStateColor, setMessages, setWsPort, setTrim, setLight, setPosition, setSetpoint) => {
+	const fetchConfigAndInitializeWebSocket = async (setWs, setPathLen, setFrame, setWsState, setWsStateColor, setMessages, setTrim, setLight, setPosition, setSetpoint) => {
 		try {
-			const response = await fetch('/port.json'); // Adjust the path if needed
+			const response = await fetch('/port.json'); // Fetch shared port with backend ina config file
 			if (!response.ok) {
 				throw new Error('Network response was not ok');
 			}
 			const config = await response.json();
-			const newWsPort = config.wsPort; // Update wsPort with the value from config
-			console.log('wsPort from json =', newWsPort);
-			setWsPort(newWsPort); // Update state with the new port
-
-			// Initialize the WebSocket connection with the new port
-			const socket = new WebSocket(`ws://localhost:${newWsPort}/ws`);
+			console.log('wsPort from json =', config.wsPort);
+			const socket = new WebSocket(`ws://localhost:${config.wsPort}/ws`);
 			setWs(socket);
 
 			socket.onopen = () => {
 				console.log('Connected to WebSocket server');
 				setWsState('connected');
-				setWsStateColor('text-success');
+				setWsStateColor('text-green-600');
 			};
 
 			socket.onmessage = (event) => {
 				console.log('Message from server:', event.data);
-				parseWsMessage(event, setTrim, setLight, setPosition, setSetpoint, setMessages);
+				parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages);
 				
 			  };
 			socket.onclose = () => {
 				setWsState('diconnected');
-				setWsStateColor('text-danger');
+				setWsStateColor('text-red-600');
 				console.log('WebSocket connection closed');
 			  };
 

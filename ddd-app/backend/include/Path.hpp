@@ -30,7 +30,8 @@ struct FrameData {
 	Light light;
 };
 
-class Path {
+class Path { 
+
 public:
 	Path(std::string file, DroneState & drone);
 	Path() = delete;
@@ -41,16 +42,19 @@ public:
 	std::vector<FrameData> &	getFrames();
 	int							getLenght();
 	int							sendFrameByFrame();
+	std::stringstream 			getCurrentFrame(size_t frame);
+
 	DroneState &			drone;
 	std::atomic<bool>		paused;
+	size_t					currframe;
+	bool					sending;
+	size_t					length;
 
 private:
-	size_t					length;
 	int						fps;
 	std::string 			name;
 	std::vector<FrameData>	frames;
 	std::string				jsonStr;
-	bool					sending;
 
 };
 

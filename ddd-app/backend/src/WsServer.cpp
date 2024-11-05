@@ -75,7 +75,7 @@ void WsServer::settingWsConnection() {
 			}
 
 			if (data.contains("path")) {
-				if (data["path"] == "send") {
+				if (data["path"] == "play") {
 					// Check if the unique pointer is not null
 					if (drones[index]->path != nullptr) {
 						drones[index]->path->sendFrameByFrame();
@@ -86,11 +86,15 @@ void WsServer::settingWsConnection() {
 				if (data["path"] == "pause") {
 					drones[index]->path->paused.store(true);
 				}
-				if (data["path"] == "pause") {
-					drones[index]->path->paused.store(false);
-				}
 				if (data["path"] == "stop") {
-					
+					drones[index]->path->sending=false;
+				}
+			}
+			if (data.contains("frame")) {
+				if (drones[index]->path != nullptr) {
+					drones[index]->send(drones[index]->path->getCurrentFrame(data["frame"]).str().c_str());
+				} else {
+					std::cerr << "Error: Path is null for drone " << index << std::endl;
 				}
 			}
 		} catch (nlohmann::json::parse_error& e) {
