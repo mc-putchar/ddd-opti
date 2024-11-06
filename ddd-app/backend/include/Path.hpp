@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <mutex>
+#include <atomic>
 #include "json.hpp"
 
 #include <thread>  // For std::this_thread::sleep_for
@@ -39,7 +40,6 @@ public:
 	Path &operator=(Path const &rhs);
 	~Path();
 
-	std::vector<FrameData> &	getFrames();
 	int							getLenght();
 	int							sendFrameByFrame();
 	std::stringstream 			getCurrentFrame(size_t frame);
