@@ -5,8 +5,6 @@
 int main() // to lunch → c++ mainInput.cpp InputOptiMock.cpp  
 {
 	InputOptiMock myFakeOpti;
-
-
 }
 
 

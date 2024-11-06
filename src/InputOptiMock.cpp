@@ -36,7 +36,7 @@ InputOptiMock::InputOptiMock() : rbIndex(0), Sx(1.0f), Sy(1.0f), Sz(1.0f),
 
         // Calculate x using sine wave oscillation
         x = (std::sin(frequency * elapsedSeconds) + 1) / 2;
-
+        y = (std::sin(frequency * elapsedSeconds) + 1) / 2;
         // Increment value
 		// y += 0.01;
 		// z += 0.01;
