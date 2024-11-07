@@ -12,7 +12,7 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
-#define DRONE_INDEX 0
+#define DRONE_INDEX 1
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
 #define LEDPMWCHANNEL 0  // PWM channel
@@ -133,12 +133,19 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 	//Serial.write(incomingData, len);
 	//Serial.println();
 
-	DeserializationError err = deserializeJson(json, (const char *)incomingData);
+  int index = incomingData[0] - '0';
+  if(index != DRONE_INDEX) {
+    return;
+  }
+  const uint8_t* message = &incomingData[1];
+	DeserializationError err = deserializeJson(json, (const char *)message);
 	if (err) {
 		Serial.println("failed to parse json");
 		return;
 	}
 	serializeJsonPretty(json, Serial);
+
+
 
 	if (json.containsKey("vel") ) {
 		xVel = json["vel"][0];
@@ -416,6 +423,7 @@ void loop() {
 	data.ch[1] = xPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
+  //Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
 		lastSbusSend = micros();
@@ -424,3 +432,4 @@ void loop() {
 		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
 	}
 }
+
