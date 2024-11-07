@@ -5,13 +5,22 @@
 esp_now_peer_info_t peerInfo;
 char buffer[1024];
 
+uint8_t senderMacAdd[6] = {
+  0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9A
+};
+
 uint8_t broadcastAddresses[][6] = {
   { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9B },
   { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9C },
 };
 
+void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
+	// Serial.println("data received");
+	Serial.write(incomingData, len);
+}
+
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) { // callback when data is sent
-	Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
 void registerPeer(size_t drone) {
@@ -20,6 +29,18 @@ void registerPeer(size_t drone) {
 	peerInfo.encrypt = false;
 	if (esp_now_add_peer(&peerInfo) != ESP_OK) {
 		Serial.println("Failed to add peer");
+	}
+}
+
+void readMacAddress(){
+	uint8_t baseMac[6];
+	esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+	if (ret == ESP_OK) {
+		Serial.printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+					baseMac[0], baseMac[1], baseMac[2],
+					baseMac[3], baseMac[4], baseMac[5]);
+	} else {
+		Serial.println("Failed to read MAC address");
 	}
 }
 
@@ -32,6 +53,7 @@ void setup() {
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg);
 	esp_wifi_set_mode(WIFI_MODE_STA);
+	esp_wifi_set_mac(WIFI_IF_STA, senderMacAdd);
 	esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
 	esp_wifi_set_storage(WIFI_STORAGE_RAM);
 	esp_wifi_set_ps(WIFI_PS_NONE);
@@ -44,11 +66,13 @@ void setup() {
 	esp_wifi_config_espnow_rate(WIFI_IF_STA, WIFI_PHY_RATE_24M);
 	esp_wifi_start();
 	esp_now_register_send_cb(OnDataSent); // reguster the call Back for on Data sent.
+	esp_now_register_recv_cb(data_recv_cb);
 
 	// Register peer drone 00
 	registerPeer(0);
 	// Register peer drone 01
 	registerPeer(1);
+	readMacAddress();
 }
 
 void loop() {

@@ -60,20 +60,25 @@ ssize_t DroneState::send(std::string const &msg) {
 // Startup sequence requires throttling down to safe margin
 // to allow arming the drone
 bool DroneState::startup() {
-	// NOTE: hardcoded roll trim value for current test drone
-	int a, b, c;
-	a = this->send(this->settrim(0, 64, -800, 0));
-	sleep(1);
-	b = this->send(this->arm());
-	sleep(1);
-	c = this->send(this->settrim(0, 64, 0, 0));
-	
-	if (a == 0 || b == 0 || c == 0) {
-		std::cerr << "Failed to send startup" << std::endl;
-		return false;
-	}
-	return true;
+    bool success = true;  // Variable to track success
+
+    std::thread sendAllFrames([this, &success]() {
+        int a, b, c;
+        a = this->send(this->settrim(0, 64, -800, 0));
+        sleep(1);
+        b = this->send(this->arm());
+        sleep(1);
+        c = this->send(this->settrim(0, 64, 0, 0));
+        
+        if (a == 0 || b == 0 || c == 0) {
+            std::cerr << "Failed to send startup" << std::endl;
+            success = false;  // Set success to false if any send fails
+        }
+    });
+    sendAllFrames.join();  // Ensure the thread completes before returning
+    return success;  // Return the result of the thread operation
 }
+
 
 
 std::string DroneState::arm() {

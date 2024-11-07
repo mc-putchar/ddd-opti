@@ -51,22 +51,36 @@ function FloatInputForm({ setpoint, index, ws }) {
 	);
 }
 
-function Progression() {
+function Progression({ rc, index, arg, color = "blue" }) {
+	const bgColorClass = `bg-${color}-900`;
+	const overlayColorClass = `bg-${color}-600`;
+	const maxvalue = 3000;
+  
+	console.log()
+	// Calculate the width proportionally based on rc[index][arg]
+	const value = rc[index][arg];
+	const width = Math.min(Math.max((value / maxvalue) * 100, 0), 100); // Ensure it's between 0 and 100
+	// safe is 988, and 2011
+
+  
 	return (
-	<div className="relative w-full h-5 mb-2">
-				{/* <!-- Background div (full width) --> */}
-				<div className="absolute inset-0 bg-blue-900"></div>
-
-				{/* <!-- Half-width overlay (darker) --> */}
-				<div className="absolute inset-0 w-1/4 bg-blue-600"></div>
-
-				{/* <!-- Centered text --> */}
-				<div className="absolute inset-0 flex items-center justify-center text-white font-bold">
-					998
-				</div>
-			</div>
+	  <div className="relative w-full h-5 mb-2">
+		{/* Background div (full width) */}
+		<div className={`absolute inset-0 ${bgColorClass}`}></div>
+		{/* Half-width overlay, proportionally sized */}
+		<div
+		  className={`absolute inset-0 ${overlayColorClass}`}
+		  style={{ width: `${width}%` }}
+		></div>
+		{/* Centered text */}
+		<div className="absolute inset-0 flex items-center justify-center text-white font-bold">
+		  {rc[index][arg]}
+		</div>
+	  </div>
 	);
-}
+  }
+  
+
 
 
 function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, max }) {

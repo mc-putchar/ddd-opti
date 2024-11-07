@@ -80,11 +80,32 @@ function App() {
 		[1, 1],
 		[1, 1]
 	]);
+
+	const [bat, setBat] = useState([
+		[1, 1],
+		[1, 1],
+		[1, 1],
+		[1, 1]
+	]);
+	const [rc, setRc] = useState([
+		[1, 1, 1, 1, 1],
+		[1, 1, 1, 1, 1],
+		[1, 1, 1, 1, 1],
+		[1, 1, 1, 1, 1]
+	]);
+	const [ati, setAti] = useState([
+		[1, 1, 1],
+		[1, 1, 1],
+		[1, 1, 1],
+		[1, 1, 1]
+	]);
+
+
 	const [pathLen, setPathLen] = useState([ [1], [1], [1], [1]]);
 	const [frame, setFrame] = useState([ [0], [0], [0], [0]]);
 	
 	useEffect(() => {
-		fetchConfigAndInitializeWebSocket(setWs, setPathLen, setFrame, setWsState, setWsStateColor, setMessages, setTrim, setLight, setPosition, setSetpoint);
+		fetchConfigAndInitializeWebSocket(bat, setBat, rc, setRc, ati, setAti, setWs, setPathLen, setFrame, setWsState, setWsStateColor, setMessages, setTrim, setLight, setPosition, setSetpoint);
 	}, []);
 
 	useEffect(() => {
@@ -122,10 +143,11 @@ function App() {
 		</div>
 
 		{/* Drone controller */}
-			<DroneControll index={0} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
-			<DroneControll index={1} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
-			<DroneControll index={2} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
-			<DroneControll index={3} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
+
+			<DroneControll bat={bat} setBat={setBat} rc={rc} setRc={setRc} index={0} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
+			<DroneControll bat={bat} setBat={setBat} rc={rc} setRc={setRc} index={1} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
+			<DroneControll bat={bat} setBat={setBat} rc={rc} setRc={setRc} index={2} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
+			<DroneControll bat={bat} setBat={setBat} rc={rc} setRc={setRc} index={3} setpoint={setpoint} light={light} trim={trim} frame={frame} setFrame={setFrame} pathLen={pathLen} setSetpoint={setSetpoint} setLight={setLight} setTrim={setTrim} ws={ws} />
 	</div>
 	);
 }

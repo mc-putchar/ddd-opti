@@ -47,7 +47,25 @@ function Drone({ position, light }) {
 	);
   }
 
-function DroneControll({index, setpoint, light, trim, setLight, setPoint, setTrim, ws, frame, setFrame, pathLen}) {
+  
+  function DroneControll({bat, setBat, rc, setRc, index, setpoint, light, trim, setLight, setPoint, setTrim, ws, frame, setFrame, pathLen}) {
+	  
+
+	function estimateBatteryPercentage(voltage_battery) {
+		// Define the min and max voltage thresholds for a 3S LiPo battery
+		const min_voltage = 300; // 3.0V * 3 cells = 9.0V
+		const max_voltage = 4200; // 4.2V * 3 cells = 12.6V
+	
+		// Check if the voltage is within the expected range
+		if (voltage_battery < min_voltage) {
+			return 0; // Battery is empty
+		} else if (voltage_battery > max_voltage) {
+			return 100; // Battery is fully charged
+		} else {
+			// Scale the voltage to percentage and convert to int
+			return Math.floor((voltage_battery - min_voltage) * 100 / (max_voltage - min_voltage));
+		}
+	}
 
 	return (
 	<>
@@ -58,9 +76,9 @@ function DroneControll({index, setpoint, light, trim, setLight, setPoint, setTri
 					<Arm index={index} ws={ws} />
 			</div>
 			<div className="col-span-1 bg-gray-700 p-2 pt-3 gap-4 flex">
-				<span> 4.5V </span>
-				<span> 4.5V </span>
-				<span> 86% </span>
+				<span> {parseFloat((bat[index][0] * 0.001).toFixed(1))} V </span>
+				<span> {parseFloat((bat[index][1] * 0.001).toFixed(1))} V </span>
+				<span> {estimateBatteryPercentage(bat[index][0])} % </span>
 			</div>
 			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
 				<h4 className="font-bold"> Path </h4>
@@ -74,55 +92,56 @@ function DroneControll({index, setpoint, light, trim, setLight, setPoint, setTri
 				<Slider
 					index={index}  // Drone index
 					name="trim"  // To identify trim values
-					vari="x"
-					arg={0}  // This will update the first value of trim
-					ws={ws}  // WebSocket connection
-					stateArray={trim}  // Pass the trims state
-					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
-				/>
-				<Slider
-					index={index}  // Drone index
-					name="trim"  // To identify trim values
-					vari="y"
+					vari="Roll"
 					arg={1}  // This will update the first value of trim
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
+					min={-400}
+					max={400}
 				/>
 				<Slider
 					index={index}  // Drone index
 					name="trim"  // To identify trim values
-					vari="z"
+					vari="Pitch"
+					arg={0}  // This will update the first value of trim
+					ws={ws}  // WebSocket connection
+					stateArray={trim}  // Pass the trims state
+					setStateArray={setTrim}  // Pass the setter for trims
+					min={-400}
+					max={400}
+				/>
+				<Slider
+					index={index}  // Drone index
+					name="trim"  // To identify trim values
+					vari="Yaw"
 					arg={2}  // This will update the first value of trim
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
+					min={-400}
+					max={400}
 				/>
 				<Slider
 					index={index}  // Drone index
 					name="trim"  // To identify trim values
-					vari="yaw"
+					vari="Throttle"
 					arg={3}  // This will update the first value of trim
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
+					min={-400}
+					max={400}
 				/>
 			</div>
 
 			{/* Trim telemetry */}
 			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
-				<Progression/>
-				<Progression/>
-				<Progression/>
-				<Progression/>
+				<Progression rc={rc} index={index} arg={0} color={"red"}/>
+				<Progression rc={rc} index={index} arg={1} color={"purple"}/>
+				<Progression rc={rc} index={index} arg={2} color={"blue"}/>
+				<Progression rc={rc} index={index} arg={3} color={"cyan"}/> 
+				<Progression rc={rc} index={index} arg={4} color={"green"}/>
 
 			</div>
 

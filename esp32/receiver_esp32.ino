@@ -97,7 +97,7 @@ typedef struct __attribute__((packed)) s_tel_bat
   uint16_t Bat_volt;
   uint16_t Bat_rema;
   uint16_t Bat_cur;
-}t__tel_bat;
+}t_tel_bat;
 
 typedef struct __attribute__((packed)) s_tel_atitu
 {
@@ -119,7 +119,7 @@ typedef struct __attribute__((packed)) s_tel_rc
   uint16_t aux1;
 }t_tel_rc;
 
-t__tel_bat bat;
+t_tel_bat bat;
 t_tel_atitu ati;
 t_tel_rc rc;
 

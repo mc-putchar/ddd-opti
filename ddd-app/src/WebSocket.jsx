@@ -1,5 +1,5 @@
 
-function parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages) {
+function parseWsMessage(bat, setBat, rc, setRc, ati, setAti, event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages) {
 
 	// Extract drone index and JSON part
 	const droneIndex = parseInt(event.data[0], 10);  // Get drone index (0, 1, 2...)
@@ -88,6 +88,50 @@ function parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosit
 				return updatedPosition; // Return the updated state
 			});
 		}
+		if (jsonData.bat) {
+			setBat(prevPosition => {
+				// Copy the current trim state for all drones
+				const updatedPosition = { ...prevPosition };
+			
+				// Update the specific drone's trim values (keeping the array structure intact)
+				updatedPosition[droneIndex] = [
+					jsonData.bat[0],
+					jsonData.bat[1], 
+					jsonData.bat[2]
+				];
+				return updatedPosition; // Return the updated state
+			});
+		}
+		if (jsonData.rc) {
+			setRc(prevPosition => {
+				// Copy the current trim state for all drones
+				const updatedPosition = { ...prevPosition };
+			
+				// Update the specific drone's trim values (keeping the array structure intact)
+				updatedPosition[droneIndex] = [
+					jsonData.rc[0],
+					jsonData.rc[1], 
+					jsonData.rc[2],
+					jsonData.rc[3],
+					jsonData.rc[4]
+				];
+				return updatedPosition; // Return the updated state
+			});
+		}
+		if (jsonData.ati) {
+			setAti(prevPosition => {
+				// Copy the current trim state for all drones
+				const updatedPosition = { ...prevPosition };
+			
+				// Update the specific drone's trim values (keeping the array structure intact)
+				updatedPosition[droneIndex] = [
+					jsonData.ati[0],
+					jsonData.ati[1], 
+					jsonData.ati[2]
+				];
+				return updatedPosition; // Return the updated state
+			});
+		}
 
 	  if (jsonData.arm) {
 	  }
@@ -106,7 +150,7 @@ function parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosit
 }
 
 // Function to fetch the port from JSON and initialize the WebSocket
-	const fetchConfigAndInitializeWebSocket = async (setWs, setPathLen, setFrame, setWsState, setWsStateColor, setMessages, setTrim, setLight, setPosition, setSetpoint) => {
+	const fetchConfigAndInitializeWebSocket = async (bat, setBat, rc, setRc, ati, setAti, setWs, setPathLen, setFrame, setWsState, setWsStateColor, setMessages, setTrim, setLight, setPosition, setSetpoint) => {
 		try {
 			const response = await fetch('/port.json'); // Fetch shared port with backend ina config file
 			if (!response.ok) {
@@ -125,7 +169,7 @@ function parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosit
 
 			socket.onmessage = (event) => {
 				console.log('Message from server:', event.data);
-				parseWsMessage(event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages);
+				parseWsMessage(bat, setBat, rc, setRc, ati, setAti, event, setPathLen, setFrame, setTrim, setLight, setPosition, setSetpoint, setMessages);
 				
 			  };
 			socket.onclose = () => {
