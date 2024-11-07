@@ -7,19 +7,38 @@
 #include <stdint.h>
 #include <MAVLink.h>
 #include "sbus.h"
-// #include <EEPROM.h>
-// UART2 pins for telemetry data
+
+#define batVoltagePin 34
+#define MAX_VEL 100
+#define ROTOR_RADIUS 0.0225
+#define Z_GAIN 0.7
+#define DRONE_INDEX 1
+#define SERVOPIN 99
+#define LEDPIN 26  // GPIO pin to control the LED
+#define LEDPMWCHANNEL 0  // PWM channel
+#define LEDPMWFREQ 5000  // Frequency of the PWM signal
+#define LEDPMWRES 8
+
+#define TX2_PIN 32
 #define RX2_PIN 33
 
 #if DRONE_INDEX == 0
   uint8_t mac_addr[6] = { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9B };
 #elif DRONE_INDEX == 1
   uint8_t mac_addr[6] = { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9C };
+#elif DRONE_INDEX == 2
+  uint8_t mac_addr[6] = { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9D };
+#elif DRONE_INDEX == 3
+  uint8_t mac_addr[6] = { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9E };
 #endif
+
+uint8_t senderMacAdd[6] = {
+ 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9A
+};
 
 HardwareSerial TelemetrySerial(2);
 
-bfs::SbusTx		sbus_tx(&Serial1, 16, 32, false, false);
+bfs::SbusTx		sbus_tx(&Serial1, 16, TX2_PIN, false, false);
 bfs::SbusData	data;
 StaticJsonDocument<1024> json;
 
@@ -63,21 +82,7 @@ unsigned long	lastSbusSend = micros();
 float			loopFrequency = 2000.0;
 float			sbusFrequency = 50.0;
 
-#define batVoltagePin 34
-#define MAX_VEL 100
-#define ROTOR_RADIUS 0.0225
-#define Z_GAIN 0.7
-#define DRONE_INDEX 7
-#define SERVOPIN 99
-#define LEDPIN 26  // GPIO pin to control the LED
-#define LEDPMWCHANNEL 0  // PWM channel
-#define LEDPMWFREQ 5000  // Frequency of the PWM signal
-#define LEDPMWRES 8
-// #define EEPROM_SIZE 4
 
-uint8_t senderMacAdd[6] = {
- 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9A
-};
 
 esp_now_peer_info_t peerInfo;
 
@@ -95,9 +100,8 @@ typedef struct __attribute__((packed)) s_tel_bat
   uint8_t id;
   uint8_t index;
   uint16_t Bat_volt;
-  uint16_t Bat_rema;
-  uint16_t Bat_cur;
-}t_tel_bat;
+  int16_t Bat_cur;
+}t__tel_bat;
 
 typedef struct __attribute__((packed)) s_tel_atitu
 {
@@ -112,11 +116,11 @@ typedef struct __attribute__((packed)) s_tel_rc
 {
   uint8_t id;
   uint8_t index;
-  uint16_t ch_pitch;
-  uint16_t ch_roll;
-  uint16_t ch_yaw;
-  uint16_t ch_tr;
-  uint16_t aux1;
+  uint16_t ch_1;
+  uint16_t ch_2;
+  uint16_t ch_3;
+  uint16_t ch_4;
+  uint16_t ch_5;
 }t_tel_rc;
 
 t_tel_bat bat;
@@ -125,16 +129,23 @@ t_tel_rc rc;
 
 
 void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
-	Serial.printf("Recv %d data: ", len);
-	Serial.write(incomingData, len);
-	Serial.println();
+	//Serial.printf("Recv %d data: ", len);
+	//Serial.write(incomingData, len);
+	//Serial.println();
 
-	DeserializationError err = deserializeJson(json, (const char *)incomingData);
+  int index = incomingData[0] - '0';
+  if(index != DRONE_INDEX) {
+    return;
+  }
+  const uint8_t* message = &incomingData[1];
+	DeserializationError err = deserializeJson(json, (const char *)message);
 	if (err) {
 		Serial.println("failed to parse json");
 		return;
 	}
 	serializeJsonPretty(json, Serial);
+
+
 
 	if (json.containsKey("vel") ) {
 		xVel = json["vel"][0];
@@ -291,7 +302,6 @@ void readTelemetry() {
             // Print the entire MAVLink message in raw byte form
             uint8_t message_length = mavlink_msg_to_send_buffer(buf, &msg); // Use this to determine the length of the message
             // printMessage((uint8_t*)&msg, message_length); // Print the parsed message
-
             // Process the message as before
             switch (msg.msgid) {
                 // case MAVLINK_MSG_ID_HEARTBEAT: {
@@ -303,18 +313,17 @@ void readTelemetry() {
                 case MAVLINK_MSG_ID_SYS_STATUS: {
                     mavlink_sys_status_t sys_status;
                     mavlink_msg_sys_status_decode(&msg, &sys_status);
-                    // Serial.printf("Battery Voltage: %.2fV\n", sys_status.voltage_battery * 0.001); // Example conversion
+
                     bat.id = 1;
                     bat.index = DRONE_INDEX;
+                    //Serial.printf("Battery Voltage: %fV\n", sys_status.voltage_battery * 0.001); // Example conversion
                     bat.Bat_volt = sys_status.voltage_battery;
-                    Serial.printf("Battery remaining: %.2fV\n", sys_status.battery_remaining);
-                    bat.Bat_rema = sys_status.battery_remaining;
-                    // Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
+                    //Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
                     bat.Bat_cur = sys_status.current_battery;
                     esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&bat, sizeof(t__tel_bat));
                     if (result) {
 			                      Serial.println(esp_err_to_name(result));
-		                }
+		                  }
                     break;
                 }
                 case MAVLINK_MSG_ID_ATTITUDE: {
@@ -322,14 +331,15 @@ void readTelemetry() {
                     mavlink_msg_attitude_decode(&msg, &attitude);
                     
                     // Print roll, pitch, and yaw in radians
-                    // Serial.printf("Pitch: %.2f rad\n", attitude.pitch);
                     ati.id = 2;
                     ati.index = DRONE_INDEX;
+                    //Serial.printf("Pitch: %.2f rad\n", attitude.pitch);
                     ati.pitch = attitude.pitch;
                     // Serial.printf("Roll: %.2f rad\n", attitude.roll);
                     ati.roll = attitude.roll;
                     // Serial.printf("Yaw: %.2f rad\n", attitude.yaw);
                     ati.yaw = attitude.yaw;
+
 
                     esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&ati, sizeof(t_tel_atitu));
                     if (result) {
@@ -347,15 +357,15 @@ void readTelemetry() {
                     
                     // Assuming AUX1 corresponds to a specific channel (e.g., channel 5)
                     // Serial.printf("Aux1 RC: %d\n", rc_channels.chan1_raw); // Adjust the channel as needed
-                    rc.ch_pitch = rc_channels.chan1_raw;
-                    // Serial.printf("Aux1 RC: %d\n", rc_channels.chan2_raw); // Adjust the channel as needed
-                    rc.ch_roll = rc_channels.chan2_raw;
-                    // Serial.printf("Aux1 RC: %d\n", rc_channels.chan3_raw); // Adjust the channel as needed
-                    rc.ch_yaw = rc_channels.chan3_raw;
-                    // Serial.printf("Aux1 RC: %d\n", rc_channels.chan4_raw); // Adjust the channel as needed
-                    rc.ch_tr = rc_channels.chan4_raw;
-                    // Serial.printf("Aux1 RC: %d\n", rc_channels.chan5_raw); // Adjust the channel as needed
-                    rc.aux1 = rc_channels.chan5_raw;
+                    rc.ch_1 = rc_channels.chan1_raw;
+                    // Serial.printf("Aux2 RC: %d\n", rc_channels.chan2_raw); // Adjust the channel as needed
+                    rc.ch_2 = rc_channels.chan2_raw;
+                    //Serial.printf("Aux3 RC: %d\n", rc_channels.chan3_raw); // Adjust the channel as needed
+                    rc.ch_3 = rc_channels.chan3_raw;
+                    // Serial.printf("Aux14 RC: %d\n", rc_channels.chan4_raw); // Adjust the channel as needed
+                    rc.ch_4 = rc_channels.chan4_raw;
+                    // Serial.printf("Aux5 RC: %d\n", rc_channels.chan5_raw); // Adjust the channel as needed
+                    rc.ch_5 = rc_channels.chan5_raw;
 
                     esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&rc, sizeof(t_tel_rc));
                     if (result) {
@@ -413,6 +423,7 @@ void loop() {
 	data.ch[1] = xPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
+  //Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
 		lastSbusSend = micros();
@@ -421,3 +432,4 @@ void loop() {
 		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
 	}
 }
+
