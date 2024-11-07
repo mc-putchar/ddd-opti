@@ -2,7 +2,7 @@
 #include <esp_wifi.h>
 #include <WiFi.h>
 
-esp_now_peer_info_t peerInfo;
+esp_now_peer_info_t peerInfo0, peerInfo1;
 char buffer[1024];
 
 uint8_t senderMacAdd[6] = {
@@ -12,6 +12,8 @@ uint8_t senderMacAdd[6] = {
 uint8_t broadcastAddresses[][6] = {
   { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9B },
   { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9C },
+  { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9D },
+  { 0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9E },
 };
 
 void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
@@ -23,10 +25,14 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) { // call
 	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
-void registerPeer(size_t drone) {
-	memcpy(peerInfo.peer_addr, broadcastAddresses[drone], 6);
+void registerPeer(uint8_t* address, esp_now_peer_info_t& peerInfo) {
+	memcpy(peerInfo.peer_addr, address, 6);
 	peerInfo.channel = 0;
 	peerInfo.encrypt = false;
+
+	// Unregister previous peer if already added
+	esp_now_del_peer(address);
+
 	if (esp_now_add_peer(&peerInfo) != ESP_OK) {
 		Serial.println("Failed to add peer");
 	}
@@ -69,22 +75,24 @@ void setup() {
 	esp_now_register_recv_cb(data_recv_cb);
 
 	// Register peer drone 00
-	registerPeer(0);
-	// Register peer drone 01
-	registerPeer(1);
+	registerPeer(broadcastAddresses[0], peerInfo0);
+	registerPeer(broadcastAddresses[1], peerInfo1);
 	readMacAddress();
 }
 
 void loop() {
 	int availableBytes = Serial.available();
 	if (availableBytes) {
-		int droneIndex = Serial.read() - '0';
-		Serial.readBytes(buffer, availableBytes-1);
-		buffer[availableBytes-1] = '\0';
-		//Serial.printf("\n drone index %d: ", droneIndex);
+		// int droneIndex = Serial.read() - '0';
+		Serial.readBytes(buffer, availableBytes);
+		buffer[availableBytes] = '\0';
 		// Serial.print(buffer);
-		esp_err_t result = esp_now_send(broadcastAddresses[droneIndex], (uint8_t *)&buffer, strlen(buffer) + 1);
+		esp_err_t result = esp_now_send(broadcastAddresses[0], (uint8_t *)&buffer, strlen(buffer) + 1);
 		if (result) {
+			Serial.println(esp_err_to_name(result));
+		}
+		esp_err_t result2 = esp_now_send(broadcastAddresses[1], (uint8_t *)&buffer, strlen(buffer) + 1);
+		if (result2) {
 			Serial.println(esp_err_to_name(result));
 		}
 	}

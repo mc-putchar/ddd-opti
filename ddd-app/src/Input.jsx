@@ -33,7 +33,6 @@ function FloatInputForm({ setpoint, index, ws }) {
 
 		// Clear the input field and error after successful submission
 		setInput('');
-		setError('');
 	};
 
 	return (
@@ -56,9 +55,8 @@ function Progression({ rc, index, arg, color = "blue" }) {
 	const overlayColorClass = `bg-${color}-600`;
 	const maxvalue = 3000;
   
-	console.log()
 	// Calculate the width proportionally based on rc[index][arg]
-	const value = rc[index][arg];
+	const value = rc[arg];
 	const width = Math.min(Math.max((value / maxvalue) * 100, 0), 100); // Ensure it's between 0 and 100
 	// safe is 988, and 2011
 
@@ -74,7 +72,7 @@ function Progression({ rc, index, arg, color = "blue" }) {
 		></div>
 		{/* Centered text */}
 		<div className="absolute inset-0 flex items-center justify-center text-white font-bold">
-		  {rc[index][arg]}
+		  {rc[arg]}
 		</div>
 	  </div>
 	);
@@ -85,13 +83,13 @@ function Progression({ rc, index, arg, color = "blue" }) {
 
 function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, max }) {
 	// Initialize inputValue based on the stateArray
-	const [inputValue, setInputValue] = useState(stateArray[index][arg]);
+	const [inputValue, setInputValue] = useState(stateArray[arg]);
 	const [isEditing, setIsEditing] = useState(false); // State to track if in edit mode
 
 	// Sync inputValue with stateArray when stateArray updates
 	useEffect(() => {
-		setInputValue(stateArray[index][arg]);
-	}, [stateArray, index, arg]);
+		setInputValue(stateArray[arg]);
+	}, [stateArray, arg]);
 
 	// Function to handle value update and WebSocket message
 	const updateValue = (newValue) => {
@@ -99,21 +97,13 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 
 		// Update the specific value in the state array
 		setStateArray((prevArray) => {
-			// Ensure prevArray is an array before using it
-			if (!Array.isArray(prevArray)) {
-				console.error("prevArray is not an array", prevArray);
-				return prevArray; // or handle as needed
-			}
-
-			const updatedArray = [...prevArray[index]]; // Copy the array for the specific drone
-			updatedArray[arg] = newValue; // Update the argument value
-			const updatedState = [...prevArray]; // Create a new reference for the array
-			updatedState[index] = updatedArray; // Update the specific drone array
+			const updatedState = [...prevArray]; // Copy the array for the specific drone
+			updatedState[arg] = newValue; // Update the argument value
 			return updatedState; // Return the updated state
 		});
 
 		// Update value in WebSocket
-		const wsArray = [...stateArray[index]];
+		const wsArray = [...stateArray];
 		wsArray[arg] = newValue;
 		if (ws && ws.readyState === WebSocket.OPEN) {
 			ws.send(`${index}{"${name}":${JSON.stringify(wsArray)}}`);
@@ -214,31 +204,10 @@ function Arm({index, ws}) {
 
 function Path({index, ws, frame, setFrame, pathLen }) {
 
-	const [inputValue, setInputValue] = useState(frame[index]);
-
-	useEffect(() => {
-		setInputValue(frame[index]);
-	}, [frame, index]);
-
 	const updateValue = (newValue) => {
-		setInputValue(newValue);
-
-		// Update the specific value in the state array
-		setFrame((prevArray) => {
-			// Ensure prevArray is an array before using it
-			if (!Array.isArray(prevArray)) {
-				console.error("prevArray is not an array", prevArray);
-				return prevArray; // or handle as needed
-			}
-
-			const updatedArray = [...prevArray]; // Copy the entire array
-			updatedArray[index] = newValue; // Update the value at the specified index
-			return updatedArray; // Return the updated state
-		});
-
+		setFrame(newValue);
 		if (ws && ws.readyState === WebSocket.OPEN) {
-		// Since we are now dealing with a 1D array, we send the array directly
-		ws.send(`${index}{"frame":${newValue}}`);
+			ws.send(`${index}{"frame":${newValue}}`);
 		}
 	};
 	
@@ -268,16 +237,16 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 	return (
 		<>
 		<div className="flex items-center mt-2 mb-4 w-full">
-			<span>{inputValue}</span>
+			<span>{frame}</span>
 				<ShadcnSlider 
-					value={[inputValue]} // Slider expects an array
+					value={frame} // Slider expects an array
 					onValueChange={handleSliderChange} // Update on value change
 					min={0} // Adjust min value as needed
-					max={pathLen[index]} // Adjust max value as needed
+					max={pathLen} // Adjust max value as needed
 					step={1} // Step size for the slider
 					className="flex-grow bg-gray-900" // Allow the slider to take up available space and set a height
 				/>
-			<span>{pathLen[index]}</span>
+			<span>{pathLen}</span>
 		</div>
 		<div className="flex space-x-2">
 		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={playPath}>

@@ -78,15 +78,12 @@ void SerialHandler::parseTeleMsg(char* msg) {
 	if (id == 1) {
 		t_tel_bat bat = *reinterpret_cast<t_tel_bat*>(&msg[0]);
 
-		std::cout << bat.Bat_volt << " " << bat.Bat_cur << std::endl; 
 		std::stringstream ss;
 
 		ss << index << "{\"bat\":[" << bat.Bat_volt << "," 
 					<< bat.Bat_cur << "]}";
 
 		sendFront(ss.str().c_str());
-
-		std::cout << "Bat_volt (hex): 0x" << std::hex << bat.Bat_volt << std::dec << std::endl;
 
     	// std::cout << "id = " << id
         //       << "  index = " << index
@@ -107,11 +104,14 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		std::stringstream ss;
 
-		ss << index << "{\"rc\":[" << rc.ch_pitch << "," << rc.ch_roll << "," 
-					<< rc.ch_yaw << "," << rc.ch_tr << "," << rc.aux1 << "]}";
+		ss << index << "{\"rc\":[" << rc.ch_1 << "," << rc.ch_2 << "," 
+					<< rc.ch_3 << "," << rc.ch_4 << "," << rc.ch_5 << "]}";
 
 		sendFront(ss.str().c_str());
 	}
+	else 
+				std::cout << msg << std::endl;
+	{}
 
 }
 
@@ -129,7 +129,6 @@ void SerialHandler::monitorIncoming() {
 			msg = buf;
 			if (!msg.empty())
 				parseTeleMsg(buf);
-				// std::cout << msg << std::endl;
 			std::memset(buf, 0, sizeof(buf));
 		}
 		else if (rb < 0) {

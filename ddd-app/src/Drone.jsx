@@ -6,7 +6,7 @@ import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box } from '@react-three/
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 
 
-function Drone({ position, light }) {
+const Drone = React.memo(({ position, light, setpoint }) => {
 	const lightTarget = useRef();
 	const zRotation = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
 
@@ -28,6 +28,9 @@ function Drone({ position, light }) {
 		<Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color="yellow" />
 		</Box>
+		<Box args={[0.65, 0.45, 0.65]}>
+	<meshStandardMaterial attach="material" color="yellow" wireframe={true} />
+	</Box>
 		{/* Spotlight above the drone */}
 		<spotLight
 		  position={[0, -0.1, 0]} // Slightly above the drone within the group
@@ -45,17 +48,19 @@ function Drone({ position, light }) {
 			</Sphere>
 	  </group>
 	);
-  }
+  });
 
   
-  function DroneControll({bat, setBat, rc, setRc, index, setpoint, light, trim, setLight, setPoint, setTrim, ws, frame, setFrame, pathLen}) {
-	  
-
-	function estimateBatteryPercentage(voltage_battery) {
-		// Define the min and max voltage thresholds for a 3S LiPo battery
-		const min_voltage = 300; // 3.0V * 3 cells = 9.0V
-		const max_voltage = 4200; // 4.2V * 3 cells = 12.6V
+function DroneControll({
+	bat, setBat, rc, setRc, index,
+	setpoint, light, trim, setLight, setPoint, setTrim,
+	ws, frame, setFrame, pathLen
+  }) {
 	
+	function estimateBatteryPercentage(voltage_battery) { // Define the min and max voltage thresholds for a 3S LiPo battery
+		const min_voltage = 3000; // 3.0V * 3 cells = 9.0V
+		const max_voltage = 4200; // 4.2V * 3 cells = 12.6V
+		
 		// Check if the voltage is within the expected range
 		if (voltage_battery < min_voltage) {
 			return 0; // Battery is empty
@@ -76,9 +81,9 @@ function Drone({ position, light }) {
 					<Arm index={index} ws={ws} />
 			</div>
 			<div className="col-span-1 bg-gray-700 p-2 pt-3 gap-4 flex">
-				<span> {parseFloat((bat[index][0] * 0.001).toFixed(1))} V </span>
-				<span> {parseFloat((bat[index][1] * 0.001).toFixed(1))} V </span>
-				<span> {estimateBatteryPercentage(bat[index][0])} % </span>
+				<span> {parseFloat((bat[0] * 0.001).toFixed(1))} V </span>
+				<span> {parseFloat((bat[1] * 0.001).toFixed(1))} V </span>
+				<span> {estimateBatteryPercentage(bat[0])} % </span>
 			</div>
 			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
 				<h4 className="font-bold"> Path </h4>
@@ -97,8 +102,8 @@ function Drone({ position, light }) {
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={-400}
-					max={400}
+					min={0}
+					max={800}
 				/>
 				<Slider
 					index={index}  // Drone index
@@ -108,30 +113,30 @@ function Drone({ position, light }) {
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={-400}
-					max={400}
+					min={0}
+					max={800}
 				/>
 				<Slider
 					index={index}  // Drone index
 					name="trim"  // To identify trim values
 					vari="Yaw"
-					arg={2}  // This will update the first value of trim
+					arg={3}  // This will update the first value of trim
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={-400}
-					max={400}
+					min={0}
+					max={800}
 				/>
 				<Slider
 					index={index}  // Drone index
 					name="trim"  // To identify trim values
 					vari="Throttle"
-					arg={3}  // This will update the first value of trim
+					arg={2}  // This will update the first value of trim
 					ws={ws}  // WebSocket connection
 					stateArray={trim}  // Pass the trims state
 					setStateArray={setTrim}  // Pass the setter for trims
-					min={-400}
-					max={400}
+					min={0}
+					max={800}
 				/>
 			</div>
 

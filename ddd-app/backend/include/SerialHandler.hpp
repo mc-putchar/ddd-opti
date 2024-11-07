@@ -56,11 +56,11 @@ typedef struct __attribute__((packed)) s_tel_rc
 {
   uint8_t id;
   uint8_t index;
-  uint16_t ch_pitch;
-  uint16_t ch_roll;
-  uint16_t ch_yaw;
-  uint16_t ch_tr;
-  uint16_t aux1;
+  uint16_t ch_1;
+  uint16_t ch_2;
+  uint16_t ch_3;
+  uint16_t ch_4;
+  uint16_t ch_5;
 }t_tel_rc;
 
 class SerialHandler {
