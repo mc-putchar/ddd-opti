@@ -28,9 +28,9 @@ const Drone = React.memo(({ position, light, setpoint }) => {
 		<Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color="yellow" />
 		</Box>
-		<Box args={[0.65, 0.45, 0.65]}>
-	<meshStandardMaterial attach="material" color="yellow" wireframe={true} />
-	</Box>
+		<Box args={[0.85, 0.65, 0.85]}>
+			<meshStandardMaterial attach="material" color="yellow" wireframe={true} />
+		</Box>
 		{/* Spotlight above the drone */}
 		<spotLight
 		  position={[0, -0.1, 0]} // Slightly above the drone within the group
