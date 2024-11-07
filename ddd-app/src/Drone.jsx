@@ -15,12 +15,12 @@ function Drone({ position, light }) {
 	const radians = lightAngle * (Math.PI / 180); // convert to radians
 
 	// Calculate new target position based on the angle
-	const targetHeight = Math.sin(radians); // height adjustment based on angle
-	const targetDistance = Math.cos(radians); // distance adjustment based on angle
+	const targetHeight = -Math.cos(radians); // height adjustment based on angle
+	const targetDistance = Math.sin(radians); // distance adjustment based on angle
 
 	// Set the target position relative to the spotlight
-	const targetPosition = [0, -1 + targetHeight, 1 + targetDistance];
-	console.log("taregt post =", targetPosition)
+	const targetPosition = [0, targetHeight, targetDistance];
+	console.log("taregt post =", targetPosition);
 
 	return (
 	  <group position={position} rotation={[0,zRotation,0]}>
