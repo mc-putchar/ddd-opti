@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {Drone, DroneControll} from './Drone';
 import { Col, Card, Row, Form, Container} from 'react-bootstrap';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Sphere, Plane, Cylinder, Box } from '@react-three/drei';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 import { Input as ShadcnInput } from "@/components/ui/input";
 
@@ -13,25 +10,15 @@ function FloatInputForm({ setpoint, index, ws }) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		const values = input.split(',').map(val => parseFloat(val.trim()));
-
-		// Check if the input is in the correct format
 		if (values.length !== 3 || values.some(isNaN)) {
 			setError('Please enter 3 valid float values separated by commas.');
 			return;
 		}
-
-		// Format values to a specific number of decimal places, e.g., 5 decimal places
 		const formattedValues = values.map(val => val.toFixed(5));
-
-		 // Construct the message in the desired format
 		 const message = `${index}{"setpoint":[${formattedValues.join(',')},-837.593]}`;
-
-		 // Send the message through WebSocket
 		 if (ws && ws.readyState === WebSocket.OPEN) {
 			 ws.send(message);
 		 }
-
-		// Clear the input field and error after successful submission
 		setInput('');
 	};
 
@@ -76,10 +63,7 @@ function Progression({ rc, index, arg, color = "blue" }) {
 		</div>
 	  </div>
 	);
-  }
-  
-
-
+}
 
 function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, max }) {
 	// Initialize inputValue based on the stateArray
@@ -178,8 +162,6 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 	);
 }
 
-
-
 function Arm({index, ws}) {
 
 	function arm() {
@@ -235,7 +217,7 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 	};
 
 	return (
-		<>
+	<>
 		<div className="flex items-center mt-2 mb-4 w-full">
 			<span>{frame}</span>
 				<ShadcnSlider 
@@ -259,8 +241,8 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 			Stop
 		  </div>
 		</div>
-					</>
-	  )
+	</>
+	)
 }
 
 export {FloatInputForm, Slider, Arm, Path, Progression};
