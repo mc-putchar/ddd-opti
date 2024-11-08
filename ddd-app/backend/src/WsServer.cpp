@@ -1,6 +1,5 @@
 #include "WsServer.hpp"
 
-
 WsServer::WsServer(std::vector<std::shared_ptr<DroneState>> &ref) : port(8080), drones(ref) {}
 
 WsServer::~WsServer() {}
@@ -9,7 +8,6 @@ void WsServer::settingWsPort(char* arg) {
 	port = std::atoi(arg);
 	std::cout << "WebSocket port = " << port << std::endl;
 }
-
 
 void WsServer::settingWsConnection() {
 

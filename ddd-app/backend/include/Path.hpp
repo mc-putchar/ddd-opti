@@ -1,15 +1,16 @@
 #pragma once
 
-#include <vector>
-#include <iostream>
+#include <atomic>
 #include <string>
+#include <vector>
 #include <fstream>
+#include <iostream>
 #include <mutex>
-#include "json.hpp"
 
-#include <thread>  // For std::this_thread::sleep_for
 #include <chrono>  // For std::chrono::seconds
+#include <thread>  // For std::this_thread::sleep_for
 
+#include "json.hpp"
 #include "DroneState.hpp"
 
 using json = nlohmann::json;

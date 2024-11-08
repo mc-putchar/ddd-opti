@@ -1,5 +1,8 @@
 #pragma once
 
+#ifdef _WIN32
+# include "WinSerialHandler.hpp"
+#else
 #include <csignal>
 #include <errno.h>
 #include <fcntl.h>
@@ -57,3 +60,4 @@ private:
 	int setup_serial();
 
 };
+#endif
