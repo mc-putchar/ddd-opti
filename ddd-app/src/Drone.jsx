@@ -3,7 +3,7 @@ import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box } from '@react-three/
 import * as THREE from 'three';
 
 
-const Drone = React.memo(({ position, light, setpoint }) => {
+const Drone = React.memo(({ position, light, setpoint, color }) => {
 	const lightTarget = useRef();
 	const zRotation = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
   
@@ -25,11 +25,11 @@ const Drone = React.memo(({ position, light, setpoint }) => {
 	<group position={position} rotation={[0, zRotation, 0]}>
 		{/* Drone Box */}
 		<Box args={[0.35, 0.15, 0.35]}>
-		  <meshStandardMaterial attach="material" color="yellow" />
+		  <meshStandardMaterial attach="material" color={color} />
 		</Box>
 		
 		<Box args={[0.85, 0.65, 0.85]}>
-		  <meshStandardMaterial attach="material" color="yellow" wireframe={true} />
+		  <meshStandardMaterial attach="material" color={color} wireframe={true} />
 		</Box>
 		
 		{/* Cone for the drone */}

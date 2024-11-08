@@ -11,10 +11,10 @@ function App() {
 	const [ws, setWs] = useState(null);
 	const messagesEndRef = useRef(null);
 
-	const [position0, setPosition0] = useState([-6, 1, -3, 0]);
-	const [position1, setPosition1] = useState([-6, 1, -1, 0]);
-	const [position2, setPosition2] = useState([-6, 1, 1, 0]);
-	const [position3, setPosition3] = useState([-6, 1, 3, 0]);
+	const [position0, setPosition0] = useState([-4.5, 0.12, -3, 0]);
+	const [position1, setPosition1] = useState([-4.5, 0.12, -1, 0]);
+	const [position2, setPosition2] = useState([-4.5, 0.12, 1, 0]);
+	const [position3, setPosition3] = useState([-4.5, 0.12, 3, 0]);
 	const [setpoint0, setSetpoint0] = useState([1, 1, 1]);
 	const [setpoint1, setSetpoint1] = useState([1, 1, 1]);
 	const [setpoint2, setSetpoint2] = useState([1, 1, 1]);
