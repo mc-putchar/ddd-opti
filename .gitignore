@@ -1,7 +1,13 @@
 build/
+*.o
+*.a
+*.exe
+*.log
 ddd-client
 ddd-controller
 ddd-clientkey
 .cache/
+.vscode/
+.DS_Store
 compile_commands.json
 tmp/
