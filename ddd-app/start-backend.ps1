@@ -4,6 +4,7 @@ $exePath = ".\backend\ddd-backend.exe"
 $backendDir = ".\backend"
 # Path to the make command (ensure it's available in the system's PATH or provide full path to the executable)
 $makeCommand = "make"
+$portFilePath = ".\last_port.txt"
 
 # Get the absolute path of the executable
 $exeFullPath = Join-Path (Get-Location) $exePath
@@ -24,10 +25,18 @@ if (Test-Path $exeFullPath) {
     }
     Set-Location -Path (Get-Location)
     $exeFullPath = Join-Path (Get-Location) $exePath
+    timeout /T 1
 }
 
+
 if (Test-Path $exeFullPath) {
-    $process = Start-Process $exeFullPath -PassThru
+    $portArgument = Get-Content -Path $portFilePath -Raw
+    # Trim any extra whitespace or newlines
+    $portArgument = $portArgument.Trim()
+    # Start the process with the argument from the file
+    $process = Start-Process $exeFullPath -ArgumentList $portArgument -PassThru
+
+    # $process = Start-Process $exeFullPath -PassThru
     Write-Host "Controller running with PID: $($process.Id)"
     $process.WaitForExit()
     if ($process.ExitCode -eq 0) {

@@ -65,7 +65,6 @@ int Path::sendFrameByFrame() {
 	// Create a new thread for sending frames
 	 std::thread sendAllFrames([this]() {
 		paused.store(false);
-		std::vector<FrameData>& frames = getFrames();
 		for (currframe = 0; currframe < length; currframe++) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			if (!sending) break;

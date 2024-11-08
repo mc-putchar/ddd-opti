@@ -19,7 +19,7 @@ void WsServer::settingWsConnection() {
 		// 	std::cerr << "A WebSocket connection is already active. Not opening another connection." << std::endl;
 		// 	return;
 		// }
-		std::cout << "WebSocket connection opened" << std::endl;
+		std::cout << "WebSocket connection opened on port " << port << std::endl;
 		std::lock_guard<std::mutex> guard(wsMutex); // Lock to protect access
 		wsConn = &conn; 	// Store the connection in the shared pointer
 		for (size_t i = 0; i < drones.size(); i++) {
