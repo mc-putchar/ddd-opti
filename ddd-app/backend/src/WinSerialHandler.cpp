@@ -124,6 +124,57 @@ bool SerialHandler::setup() {
 	return true;
 }
 
+void SerialHandler::parseTeleMsg(char* msg) {
+	int id = static_cast<int>(msg[0]);
+    int index = static_cast<int>(msg[1]);
+
+    // Print id, index, and additional bytes
+    // std::cout << "id = " << id
+    //           << "  index = " << index
+    //           << "  byte 3 = " << static_cast<int>(msg[2])
+    //           << "  byte 4 = " << static_cast<int>(msg[3])
+    //           << std::endl;
+
+	if (id == 1) {
+		t_tel_bat bat = *reinterpret_cast<t_tel_bat*>(&msg[0]);
+
+		std::stringstream ss;
+
+		ss << index << "{\"bat\":[" << bat.Bat_volt << "," 
+					<< bat.Bat_cur << "]}";
+
+		sendFront(ss.str().c_str());
+
+    	// std::cout << "id = " << id
+        //       << "  index = " << index
+        //       << "  byte 3 = " << static_cast<int>(msg[])
+        //       << "  byte 4 = " << static_cast<int>(msg[3])
+        //       << std::endl;
+
+	}
+	else if (id == 2) {
+
+
+	}
+
+	else if (id == 3) {
+		t_tel_rc rc = *reinterpret_cast<t_tel_rc*>(&msg[0]);
+
+		// std::cout << rc.ch_pitch << " " << rc.ch_roll << " " << rc.aux1 << std::endl; 
+
+		std::stringstream ss;
+
+		ss << index << "{\"rc\":[" << rc.ch_1 << "," << rc.ch_2 << "," 
+					<< rc.ch_3 << "," << rc.ch_4 << "," << rc.ch_5 << "]}";
+
+		sendFront(ss.str().c_str());
+	}
+	else 
+				std::cout << msg << std::endl;
+	{}
+
+}
+
 void SerialHandler::monitorIncoming() {
 	char buf[BUFFER_SIZE] = {0};
 	DWORD dwBytesRead = 0;
@@ -136,9 +187,9 @@ void SerialHandler::monitorIncoming() {
 		}
 		buf[dwBytesRead] = 0;
 		msg = buf;
-		std::memset(buf, 0, sizeof(buf));
 		if (!msg.empty())
-			std::cout << msg << std::endl;
+			parseTeleMsg(buf);
+		std::memset(buf, 0, sizeof(buf));
 	}
 }
 
@@ -150,10 +201,16 @@ int SerialHandler::send(std::string const &msg) {
 			handle_error();
 		}
 	}
+	this->sendFront(msg);
+	return (dwBytesWritten);
+}
+
+int SerialHandler::sendFront(std::string const &msg) {
+
 	// FOR NOW JUST ECHO ANY SERIAL SEND TO THE FRONT
 	// std::lock_guard<std::mutex> guardWs(wsServer.wsMutex); // TODO look into the mutex.
 	if (wsServer.wsConn) {
 		wsServer.wsConn->send_text(msg.c_str());
 	}
-	return (dwBytesWritten);
+	return (1);
 }
