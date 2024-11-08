@@ -29,6 +29,9 @@ const Live3dview = React.memo(({
 		<Plane position={[0, -0.01, 0]} args={[11, 11]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
 			<meshStandardMaterial attach="material" color="darkgrey" />
 		</Plane>
+		<Box args={[15, 15, 4]} position={[0, -0.02 -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+			<meshBasicMaterial attach="material" color="#121821" />
+		</Box>
 		<Drone
 			position={position0} // Access the position of the current drone
 			light={light0} // Access the light of the current drone

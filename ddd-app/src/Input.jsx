@@ -143,7 +143,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 
 	return (
 		<div className="flex items-center mb-2 w-full">
-			<span className="mr-3 w-20">{vari}</span>
+			<span className="mr-1 w-20">{vari}</span>
 			{isEditing ? (
 				<ShadcnInput
 					type="number"
@@ -239,7 +239,7 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 		<div className="flex items-center mt-2 mb-4 w-full">
 			<span>{frame}</span>
 				<ShadcnSlider 
-					value={frame} // Slider expects an array
+					value={[frame]} // Slider expects an array
 					onValueChange={handleSliderChange} // Update on value change
 					min={0} // Adjust min value as needed
 					max={pathLen} // Adjust max value as needed

@@ -147,19 +147,19 @@ function parseWsMessage(messages, setMessages, event,
 				console.error('Invalid drone index');
 			  }
 		}
-		if (jsonData.pathLen) {
+		if (jsonData.length) {
 			switch (droneIndex) {
 			  case 0:
-				setPathLen0([jsonData.pathLen[0]]);
+				setPathLen0([jsonData.length]);
 				break;
 			  case 1:
-				setPathLen1([jsonData.pathLen[0]]);
+				setPathLen1([jsonData.length]);
 				break;
 			  case 2:
-				setPathLen2([jsonData.pathLen[0]]);
+				setPathLen2([jsonData.length]);
 				break;
 			  case 3:
-				setPathLen3([jsonData.pathLen[0]]);
+				setPathLen3([jsonData.length]);
 				break;
 			  default:
 				console.error('Invalid drone index');
@@ -167,19 +167,18 @@ function parseWsMessage(messages, setMessages, event,
 		  }
 		  
 		  if (jsonData.frame) {
-			  console.log("frame");
 			switch (droneIndex) {
 			  case 0:
-				setFrame0([jsonData.frame[0]]);
+				setFrame0([jsonData.frame]);
 				break;
 			  case 1:
-				setFrame1([jsonData.frame[0]]);
+				setFrame1([jsonData.frame]);
 				break;
 			  case 2:
-				setFrame2([jsonData.frame[0]]);
+				setFrame2([jsonData.frame]);
 				break;
 			  case 3:
-				setFrame3([jsonData.frame[0]]);
+				setFrame3([jsonData.frame]);
 				break;
 			  default:
 				console.error('Invalid drone index');
@@ -252,8 +251,6 @@ function parseWsMessage(messages, setMessages, event,
 		  // Update the state with the parsed message to display
 		  setMessages((prevMessages) => {
 			  const newMessages = [...prevMessages, event.data];
-			  console.log("*");
-			  console.log("here ", event.data);
 			  return newMessages.length > 100 ? newMessages.slice(-100) : newMessages; // Keep only the last 50 messages
 		  });
 
