@@ -123,7 +123,7 @@ typedef struct __attribute__((packed)) s_tel_rc
   uint16_t ch_5;
 }t_tel_rc;
 
-t__tel_bat bat;
+t_tel_bat bat;
 t_tel_atitu ati;
 t_tel_rc rc;
 

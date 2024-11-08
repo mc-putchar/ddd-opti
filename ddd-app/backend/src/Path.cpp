@@ -41,10 +41,6 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
 	}
 }
 
-std::vector<FrameData> & Path::getFrames() {
-	return frames;
-}
-
 std::stringstream Path::getCurrentFrame(size_t i) {
 	std::stringstream ss;
 			ss << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"
@@ -65,7 +61,6 @@ int Path::sendFrameByFrame() {
 	// Create a new thread for sending frames
 	 std::thread sendAllFrames([this]() {
 		paused.store(false);
-		std::vector<FrameData>& frames = getFrames();
 		for (currframe = 0; currframe < length; currframe++) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 			if (!sending) break;

@@ -31,7 +31,7 @@ struct Position {
 };
 
 struct Trim {
-	float x, y, z, yaw;
+	int x, y, z, yaw;
 };
 
 struct DLight {
