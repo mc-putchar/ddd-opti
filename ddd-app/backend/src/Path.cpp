@@ -41,10 +41,6 @@ Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
 	}
 }
 
-std::vector<FrameData> & Path::getFrames() {
-	return frames;
-}
-
 std::stringstream Path::getCurrentFrame(size_t i) {
 	std::stringstream ss;
 			ss << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"

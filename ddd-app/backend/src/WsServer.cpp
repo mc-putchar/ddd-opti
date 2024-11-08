@@ -31,7 +31,7 @@ void WsServer::settingWsConnection() {
 		(void)is_binary; // Ignore binary data for now
 		(void)this;
 		(void)conn;
-		std::cout << "Received message: " << message << std::endl;
+		std::cout << "Frontend: " << message << std::endl;
 
 		if (message.empty()) {
 			std::cerr << "Error: JSON input is empty!" << std::endl;

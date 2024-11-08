@@ -40,7 +40,6 @@ public:
 	Path &operator=(Path const &rhs);
 	~Path();
 
-	std::vector<FrameData> &	getFrames();
 	int							getLenght();
 	int							sendFrameByFrame();
 	std::stringstream 			getCurrentFrame(size_t frame);

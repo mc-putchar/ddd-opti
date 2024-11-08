@@ -8,6 +8,14 @@ export default {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+	safelist: [
+		'bg-blue-900', 'bg-blue-600',
+		'bg-green-900', 'bg-green-600',
+		'bg-red-900', 'bg-red-600',
+		'bg-purple-900', 'bg-purple-600',
+		'bg-cyan-900', 'bg-cyan-600',
+		// Add other colors if needed
+	],
   theme: {
     extend: {
       borderRadius: {

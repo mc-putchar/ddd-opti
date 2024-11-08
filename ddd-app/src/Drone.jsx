@@ -1,177 +1,105 @@
 import React, { useEffect, useState, useRef} from 'react';
-import {FloatInputForm, Slider, Arm, Path, Progression} from './Input';
-import { Col, Card, Row, Form, Container, Button} from 'react-bootstrap';
-import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box } from '@react-three/drei';
-import { Slider as ShadcnSlider } from "@/components/ui/slider";
+import * as THREE from 'three';
 
 
-function Drone({ position, light }) {
+const Drone = React.memo(({ position, light, setpoint, color }) => {
 	const lightTarget = useRef();
 	const zRotation = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
-
+  
 	// Calculate the target position based on the light[0] angle
 	const lightAngle = light[0]; // angle in degrees
 	const radians = lightAngle * (Math.PI / 180); // convert to radians
-
+  
 	// Calculate new target position based on the angle
-	const targetHeight = Math.sin(radians); // height adjustment based on angle
-	const targetDistance = Math.cos(radians); // distance adjustment based on angle
-
+	const targetHeight = -Math.cos(radians); // height adjustment based on angle
+	const targetDistance = Math.sin(radians); // distance adjustment based on angle
+  
 	// Set the target position relative to the spotlight
-	const targetPosition = [0, -1 + targetHeight, 1 + targetDistance];
-	console.log("taregt post =", targetPosition)
-
+	const targetPosition = new THREE.Vector3(0, 1 * targetHeight, 1 * targetDistance);
+  
+	const coneRotationAngle = -Math.atan2(targetDistance, targetHeight);
+	const conePosition = new THREE.Vector3(0, 1.8 * targetHeight, 1.8 * targetDistance);
+  
 	return (
-	  <group position={position} rotation={[0,zRotation,0]}>
+	<group position={position} rotation={[0, zRotation, 0]}>
 		{/* Drone Box */}
 		<Box args={[0.35, 0.15, 0.35]}>
-		  <meshStandardMaterial attach="material" color="yellow" />
+		  <meshStandardMaterial attach="material" color={color} />
 		</Box>
+		
+		<Box args={[0.85, 0.65, 0.85]}>
+		  <meshStandardMaterial attach="material" color={color} wireframe={true} />
+		</Box>
+		
+		{/* Cone for the drone */}
+		<LightBeam
+			args={[0.8, 3, 12]} light={light[1]} position={conePosition}
+			rotation={[Math.PI, -(Math.PI / 2), coneRotationAngle]}
+		/>
+
 		{/* Spotlight above the drone */}
 		<spotLight
-		  position={[0, -0.1, 0]} // Slightly above the drone within the group
-		  angle={0.25}
-		  penumbra={1}
-		  intensity={light[1]}
-		  castShadow
-		  shadow-mapSize-width={1024}
-		  shadow-mapSize-height={1024}
-		  target={lightTarget.current} // Point spotlight at the target
+			position={[0, -0.1, 0]} angle={0.25}
+			penumbra={1} intensity={light[1]}
+			castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}
+			target={lightTarget.current} // Point spotlight at the target
 		/>
-		 <mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
-		 <Sphere args={[0.05, 16, 16]} position={targetPosition}>
-				<meshStandardMaterial attach="material" color="red" />
-			</Sphere>
-	  </group>
+		<mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
+		<Sphere args={[0.05, 16, 16]} position={targetPosition}>
+		  <meshStandardMaterial attach="material" color="red" />
+		</Sphere>
+	</group>
 	);
-  }
+});
 
-function DroneControll({index, setpoint, light, trim, setLight, setPoint, setTrim, ws, frame, setFrame, pathLen}) {
+function LightBeam({rotation, position, light }) {
 
+	const geometry = new THREE.ConeGeometry(0.8, 3, 12);
+	geometry.computeBoundingBox();
+
+	const coneMaterial = new THREE.ShaderMaterial({
+		uniforms: {
+		  color1: { value: new THREE.Color("white") }, // Color at the tip
+		  color2: { value: new THREE.Color("white") }, // Color at the base
+		  bboxMin: { value: geometry.boundingBox.min },
+		  bboxMax: { value: geometry.boundingBox.max },
+		  opacity: { value: light / 255 }
+		},
+		vertexShader: `
+		  uniform vec3 bboxMin;
+		  uniform vec3 bboxMax;
+	  
+		  varying vec2 vUv;
+	
+		  void main() {
+			// Adjust UVs based on the y-position of the cone
+			vUv.y = (position.y - bboxMin.y) / (bboxMax.y - bboxMin.y); // Normalize based on the y-coordinate
+			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+		  }
+		`,
+		fragmentShader: `
+		  uniform vec3 color1;
+		  uniform vec3 color2;
+		  uniform float opacity;
+	  
+		  varying vec2 vUv;
+		  
+		  void main() {
+			// Mix the colors based on the normalized y-position (vUv.y)
+			gl_FragColor = vec4(mix(color1, color2, vUv.y), vUv.y * 0.5 * opacity); // Blend colors from tip to base
+		  }
+		`,
+		transparent: true, // Enable transparency
+	  });
+	
 	return (
-	<>
-	<div className="col-span-4 bg-gray-700 p-1" style={{ height: '21vh' }}>
-		<div className="grid grid-cols-4 gap-1 p-1 bg-gray-900 text-white">
-			<div className="col-span-1 bg-gray-700 p-2 items-center ap-1 gap-1 flex">
-				<h3 className="font-bold"> Drone {index} </h3>
-					<Arm index={index} ws={ws} />
-			</div>
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 gap-4 flex">
-				<span> 4.5V </span>
-				<span> 4.5V </span>
-				<span> 86% </span>
-			</div>
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
-				<h4 className="font-bold"> Path </h4>
-			</div>
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
-				<h4 className="font-bold"> Light </h4>
-			</div>
-
-			{/* Trim sliders */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
-				<Slider
-					index={index}  // Drone index
-					name="trim"  // To identify trim values
-					vari="x"
-					arg={0}  // This will update the first value of trim
-					ws={ws}  // WebSocket connection
-					stateArray={trim}  // Pass the trims state
-					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
-				/>
-				<Slider
-					index={index}  // Drone index
-					name="trim"  // To identify trim values
-					vari="y"
-					arg={1}  // This will update the first value of trim
-					ws={ws}  // WebSocket connection
-					stateArray={trim}  // Pass the trims state
-					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
-				/>
-				<Slider
-					index={index}  // Drone index
-					name="trim"  // To identify trim values
-					vari="z"
-					arg={2}  // This will update the first value of trim
-					ws={ws}  // WebSocket connection
-					stateArray={trim}  // Pass the trims state
-					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
-				/>
-				<Slider
-					index={index}  // Drone index
-					name="trim"  // To identify trim values
-					vari="yaw"
-					arg={3}  // This will update the first value of trim
-					ws={ws}  // WebSocket connection
-					stateArray={trim}  // Pass the trims state
-					setStateArray={setTrim}  // Pass the setter for trims
-					min={0}
-					max={800}
-				/>
-			</div>
-
-			{/* Trim telemetry */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
-				<Progression/>
-				<Progression/>
-				<Progression/>
-				<Progression/>
-
-			</div>
-
-			{/* Path */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
-				<Path index={index} ws={ws} frame={frame} setFrame={setFrame} pathLen={pathLen}  />
-				<FloatInputForm param={setpoint} index={index} ws={ws}/>
-			</div>
-
-			{/* Light */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
-			<Slider
-				index={index}  // Drone index
-				name="light"  // To identify trim values
-				vari="angle"
-				arg={0}  // This will update the first value of trim
-				ws={ws}  // WebSocket connection
-				stateArray={light}  // Pass the trims state
-				setStateArray={setLight}  // Pass the setter for trims
-				min={0}
-				max={90}
-				/>
-			<Slider
-				index={index}  // Drone index
-				name="light"  // To identify trim values
-				vari="power"
-				arg={1}  // This will update the first value of trim
-				ws={ws}  // WebSocket connection
-				stateArray={light}  // Pass the trims state
-				setStateArray={setLight}  // Pass the setter for trims
-				min={0}
-				max={255}
-			/>
-			<Slider
-				index={index}  // Drone index
-				name="light"  // To identify trim values
-				vari="strobe"
-				arg={1}  // This will update the first value of trim
-				ws={ws}  // WebSocket connection
-				stateArray={light}  // Pass the trims state
-				setStateArray={setLight}  // Pass the setter for trims
-				min={0}
-				max={255}
-			/>
-		</div>
-	</div>
-	</div>
-	</>
+		<>
+			<Cone args={[0.8, 3, 12]} position={position} rotation={rotation}>
+				<primitive attach="material" object={coneMaterial} />
+			</Cone>
+		</>
 	)
-} 
+}
 
-export {Drone, DroneControll};
+export {Drone};
