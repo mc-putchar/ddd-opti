@@ -31,11 +31,11 @@ struct Position {
 };
 
 struct Trim {
-	int x, y, z, yaw;
+	int16_t x, y, z, yaw;
 };
 
 struct DLight {
-	float power, angle;
+	uint8_t power, angle;
 };
 
 // NOTE: possible keys:
@@ -64,8 +64,8 @@ public:
 	void		disarm();
 	std::string setpoint(float x, float y, float z, float yaw);
 	std::string setpos(float x, float y, float z, float yaw);
-	std::string settrim(float x, float y, float z, float yaw);
-	std::string setlight(float angle, float power);
+	std::string settrim(int16_t x, int16_t y, int16_t z, int16_t yaw);
+	std::string setlight(uint8_t angle, uint8_t power);
 	void		setPath(Path *p);
 	void		keepAlive();
 	void		stopKeepAlive();

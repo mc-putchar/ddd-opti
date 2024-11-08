@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { DroneControll } from './DroneControll';
 import { fetchConfigAndInitializeWebSocket } from './WebSocket';
+import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
 
 
@@ -11,10 +12,11 @@ function App() {
 	const [ws, setWs] = useState(null);
 	const messagesEndRef = useRef(null);
 
-	const [position0, setPosition0] = useState([-4.5, 0.12, -3, 0]);
-	const [position1, setPosition1] = useState([-4.5, 0.12, -1, 0]);
-	const [position2, setPosition2] = useState([-4.5, 0.12, 1, 0]);
-	const [position3, setPosition3] = useState([-4.5, 0.12, 3, 0]);
+	const colors = ["#ff7b00", "#00e82b", "#8b00d1", "#e3054b"];
+	const [position0, setPosition0] = useState([-4.5, 0.12, 1.5, 0]);
+	const [position1, setPosition1] = useState([-4.5, 0.12, 0.5, 0]);
+	const [position2, setPosition2] = useState([-4.5, 0.12, -0.5, 0]);
+	const [position3, setPosition3] = useState([-4.5, 0.12, -1.5, 0]);
 	const [setpoint0, setSetpoint0] = useState([1, 1, 1]);
 	const [setpoint1, setSetpoint1] = useState([1, 1, 1]);
 	const [setpoint2, setSetpoint2] = useState([1, 1, 1]);
@@ -47,6 +49,11 @@ function App() {
 	const [bat1, setBat1] = useState([1, 1]);
 	const [bat2, setBat2] = useState([1, 1]);
 	const [bat3, setBat3] = useState([1, 1]);
+	const droneGlb0 = useGLTF('/src/assets/Drone0.glb');
+	const droneGlb1 = useGLTF('/src/assets/Drone1.glb');
+	const droneGlb2 = useGLTF('/src/assets/Drone2.glb');
+	const droneGlb3 = useGLTF('/src/assets/Drone3.glb');
+
 
 
 	useEffect(() => {
@@ -64,7 +71,7 @@ function App() {
 	}, [messages]);
 
 	return (
-	<div className="grid grid-cols-8 gap-2 p-3 bg-gray-900 h-screen text-white">
+	<div className="grid grid-cols-8 gap-1 p-2 bg-gray-900 h-screen text-white">
 
 		{/* Header */}
 		<div className="col-span-8 bg-gray-800 p-4 flex items-center justify-center gap-3" style={{ height: '2vh' }}>
@@ -73,7 +80,7 @@ function App() {
 		</div>
 		
 		{/* Console */}
-		<div className="col-span-3 bg-gray-800 p-3 flex" style={{ height: '49vh' }}>
+		<div className="col-span-3 bg-gray-800 p-2 flex" style={{ height: '51vh' }}>
 			<div ref={messagesEndRef} className="overflow-auto w-full" style={{ lineHeight: '1.2' }}>
 				{messages.map((msg, index) => (
 					<p className="m-0 mt-1" key={index}>{msg}</p>
@@ -83,10 +90,11 @@ function App() {
 
 		{/* Three.js view */}
 		<Live3dview 
-			position0={position0} setpoint0={setpoint0} light0={light0}
-			position1={position1} setpoint1={setpoint1} light1={light1}
-			position2={position2} setpoint2={setpoint2} light2={light2}
-			position3={position3} setpoint3={setpoint3} light3={light3}
+			position0={position0} setpoint0={setpoint0} light0={light0} droneGlb0={droneGlb0}
+			position1={position1} setpoint1={setpoint1} light1={light1} droneGlb1={droneGlb1}
+			position2={position2} setpoint2={setpoint2} light2={light2} droneGlb2={droneGlb2}
+			position3={position3} setpoint3={setpoint3} light3={light3} droneGlb3={droneGlb3}
+			colors={colors}
 		/>
 
 		{/* Drone controller */}
@@ -96,7 +104,7 @@ function App() {
 			light={light0} setLight={setLight0}
 			trim={trim0} setTrim={setTrim0}
 			frame={frame0} setFrame={setFrame0}
-			pathLen={pathLen0}
+			pathLen={pathLen0} color={colors[0]}
 		/>
 
 		<DroneControll
@@ -105,7 +113,7 @@ function App() {
 			light={light1} setLight={setLight1}
 			trim={trim1} setTrim={setTrim1}
 			frame={frame1} setFrame={setFrame1}
-			pathLen={pathLen1}
+			pathLen={pathLen1} color={colors[1]}
 		/>
 
 		<DroneControll
@@ -114,7 +122,7 @@ function App() {
 			light={light2} setLight={setLight2}
 			trim={trim2} setTrim={setTrim2}
 			frame={frame2} setFrame={setFrame2}
-			pathLen={pathLen2}
+			pathLen={pathLen2} color={colors[2]}
 		/>
 
 		<DroneControll
@@ -123,7 +131,7 @@ function App() {
 			light={light3} setLight={setLight3}
 			trim={trim3} setTrim={setTrim3}
 			frame={frame3} setFrame={setFrame3}
-			pathLen={pathLen3}
+			pathLen={pathLen3} color={colors[3]}
 		/>
 	</div>
 	);

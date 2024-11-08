@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef} from 'react';
-import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box } from '@react-three/drei';
+import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 
-const Drone = React.memo(({ position, light, setpoint, color }) => {
+const Drone = React.memo(({ position, light, setpoint, color, droneGlb }) => {
 	const lightTarget = useRef();
 	const zRotation = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
   
@@ -19,14 +19,30 @@ const Drone = React.memo(({ position, light, setpoint, color }) => {
 	const targetPosition = new THREE.Vector3(0, 1 * targetHeight, 1 * targetDistance);
   
 	const coneRotationAngle = -Math.atan2(targetDistance, targetHeight);
-	const conePosition = new THREE.Vector3(0, 1.8 * targetHeight, 1.8 * targetDistance);
+	const conePosition = new THREE.Vector3(0, 1.45 * targetHeight, 1.7 * targetDistance);
+
+
+    droneGlb.scene.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.color.set(color || 'yellow'); // Set the color dynamically
+        }
+      });
+
+	const scale = 0.0014;
   
 	return (
 	<group position={position} rotation={[0, zRotation, 0]}>
 		{/* Drone Box */}
-		<Box args={[0.35, 0.15, 0.35]}>
+		{/* <Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color={color} />
-		</Box>
+		</Box> */}
+		<primitive
+				object={droneGlb.scene}
+				position={[0, 0, 0]}
+				scale={[scale, scale, scale]} // Adjust scale as needed
+				castShadow
+				receiveShadow
+			/>
 		
 		<Box args={[0.85, 0.65, 0.85]}>
 		  <meshStandardMaterial attach="material" color={color} wireframe={true} />
@@ -46,9 +62,9 @@ const Drone = React.memo(({ position, light, setpoint, color }) => {
 			target={lightTarget.current} // Point spotlight at the target
 		/>
 		<mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
-		<Sphere args={[0.05, 16, 16]} position={targetPosition}>
+		{/* <Sphere args={[0.05, 16, 16]} position={targetPosition}>
 		  <meshStandardMaterial attach="material" color="red" />
-		</Sphere>
+		</Sphere> */}
 	</group>
 	);
 });
@@ -87,7 +103,7 @@ function LightBeam({rotation, position, light }) {
 		  
 		  void main() {
 			// Mix the colors based on the normalized y-position (vUv.y)
-			gl_FragColor = vec4(mix(color1, color2, vUv.y), vUv.y * 0.5 * opacity); // Blend colors from tip to base
+			gl_FragColor = vec4(mix(color1, color2, vUv.y), vUv.y * 0.7 * opacity); // Blend colors from tip to base
 		  }
 		`,
 		transparent: true, // Enable transparency

@@ -2,15 +2,19 @@ import {FloatInputForm, Slider, Arm, Path, Progression} from './Input';
 import { Battery } from './Battery';
 
 function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
-					setpoint, light, trim, setLight, setPoint, setTrim }) {
+					setpoint, light, trim, setLight, setPoint, setTrim, color }) {
 
 	return (
 	<>
 	<div className="col-span-4 bg-gray-700 p-1" style={{ height: '21vh' }}>
-		<div className="grid grid-cols-4 gap-1 p-1 bg-gray-900 text-white">
+		<div className="grid grid-cols-4 gap-1 p-1 bg-gray-900 text-white" >
 			<div className="col-span-1 bg-gray-700 p-2 items-center ap-1 gap-1 flex">
-				<h3 className="font-bold"> Drone {index} </h3>
-				<Arm index={index} ws={ws} />
+			<h3 className="font-bold" 
+			// style={{ color: color }}
+			>
+				Drone {index}
+			</h3>
+				<Arm index={index} ws={ws} color={color}/>
 			</div>
 
 			<div className="col-span-1 bg-gray-700 p-2 pt-3 gap-4 flex">

@@ -117,7 +117,7 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 }
 
 
-std::string DroneState::settrim(float x, float y, float z, float yaw) {
+std::string DroneState::settrim(int16_t x, int16_t y, int16_t z, int16_t yaw) {
 	{
 		std::lock_guard<std::mutex> guard(droneDataMutex);
 		trim.x = x;
@@ -131,7 +131,7 @@ std::string DroneState::settrim(float x, float y, float z, float yaw) {
 }
 
 
-std::string DroneState::setlight(float angle, float power) {
+std::string DroneState::setlight(uint8_t angle, uint8_t power) {
 	std::lock_guard<std::mutex> guard(droneDataMutex);
 	std::stringstream ss;
 
@@ -150,7 +150,6 @@ int DroneState::sendAll() {
 		<< setlight(light.angle, light.power);
 
 	if (path){
-		std::cerr << "path error" << std::endl;
 		ss << "," << "\"length\":" << path->length << ","
 		<< "\"frame\":" << path->currframe;
 	}

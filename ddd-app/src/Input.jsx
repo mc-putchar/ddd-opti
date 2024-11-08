@@ -162,7 +162,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 	);
 }
 
-function Arm({index, ws}) {
+function Arm({index, ws, color}) {
 
 	function arm() {
 		if (ws && ws.readyState === WebSocket.OPEN) {
@@ -178,7 +178,7 @@ function Arm({index, ws}) {
 
 	return (
 	<>
-		<div className="bg-gray-900 cursor-pointer mx-2 p-1" onClick={arm} >Arm</div>
+		<div className="bg-gray-900 cursor-pointer mx-2 p-1" onClick={arm} style={{ backgroundColor: color , color: "white"}}>Arm</div>
 		<div className="bg-gray-900 cursor-pointer p-1" onClick={disarm} >Disarm</div>
 	</>
 	)

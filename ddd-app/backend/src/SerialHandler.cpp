@@ -68,14 +68,7 @@ void SerialHandler::parseTeleMsg(char* msg) {
 	int id = static_cast<int>(msg[0]);
     int index = static_cast<int>(msg[1]);
 
-    // Print id, index, and additional bytes
-    // std::cout << "id = " << id
-    //           << "  index = " << index
-    //           << "  byte 3 = " << static_cast<int>(msg[2])
-    //           << "  byte 4 = " << static_cast<int>(msg[3])
-    //           << std::endl;
-
-	if (id == 1) {
+	if (id == S_TEL_BAT) {
 		t_tel_bat bat = *reinterpret_cast<t_tel_bat*>(&msg[0]);
 
 		std::stringstream ss;
@@ -85,34 +78,24 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		sendFront(ss.str().c_str());
 
-    	// std::cout << "id = " << id
-        //       << "  index = " << index
-        //       << "  byte 3 = " << static_cast<int>(msg[])
-        //       << "  byte 4 = " << static_cast<int>(msg[3])
-        //       << std::endl;
-
 	}
-	else if (id == 2) {
-
-
-	}
-
-	else if (id == 3) {
-		t_tel_rc rc = *reinterpret_cast<t_tel_rc*>(&msg[0]);
-
-		// std::cout << rc.ch_pitch << " " << rc.ch_roll << " " << rc.aux1 << std::endl; 
-
+	else if (id == S_TEL_ATITU) {
 		std::stringstream ss;
+		ss << index << "{\"ati\":[\"speedtest\"]}";
 
+		sendFront(ss.str().c_str());
+	}
+
+	else if (id == S_TEL_RC) {
+		t_tel_rc rc = *reinterpret_cast<t_tel_rc*>(&msg[0]);
+		std::stringstream ss;
 		ss << index << "{\"rc\":[" << rc.ch_1 << "," << rc.ch_2 << "," 
 					<< rc.ch_3 << "," << rc.ch_4 << "," << rc.ch_5 << "]}";
 
 		sendFront(ss.str().c_str());
 	}
 	else 
-				std::cout << msg << std::endl;
-	{}
-
+		std::cout << msg << std::endl;
 }
 
 void SerialHandler::monitorIncoming() {
