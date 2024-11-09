@@ -10,7 +10,7 @@
     "start-frontend:win32": "start /B vite",
     "start-backend": "run-script-os",
     "start-backend:darwin:linux": "./start-backend.sh",
-    "start-backend:win32": "powershell -ExecutionPolicy Bypass -File ./start-backend.ps1",
+    "start-backend:win32": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./start-backend.ps1",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

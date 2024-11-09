@@ -1,33 +1,23 @@
-# Relative path to the executable
-$exePath = ".\backend\ddd-backend.exe"
 # Path to the backend directory
 $backendDir = ".\backend"
+# Relative path to the executable
+$exePath = "$($backendDir)\ddd-backend.exe"
 # Path to the make command (ensure it's available in the system's PATH or provide full path to the executable)
 $makeCommand = "make"
+$makeArgs = "-C $($backendDir)"
 $portFilePath = ".\last_port.txt"
 
-# Get the absolute path of the executable
-$exeFullPath = Join-Path (Get-Location) $exePath
-if (Test-Path $exeFullPath) {
-    Write-Host "Executable found: $exeFullPath"
+# Set-Location -Path $backendDir
+# Run make to build the executable
+$makeProcess = Start-Process $makeCommand -ArgumentList $makeArgs -PassThru -Wait
+if ($makeProcess.ExitCode -eq 0) {
+    Write-Host "'make' completed successfully."
 } else {
-    Write-Host "Executable not found at path: $exeFullPath"
-    Write-Host "Running 'make' to build the executable..."
-
-    # Run make to build the executable
-    Set-Location -Path $backendDir
-    $makeProcess = Start-Process $makeCommand -PassThru -Wait
-    if ($makeProcess.ExitCode -eq 0) {
-        Write-Host "'make' completed successfully."
-    } else {
-        Write-Host "'make' failed with exit code: $($makeProcess.ExitCode)"
-        exit 1
-    }
-    Set-Location -Path (Get-Location)
-    $exeFullPath = Join-Path (Get-Location) $exePath
-    timeout /T 1
+    Write-Host "'make' failed with exit code: $($makeProcess.ExitCode)"
+    exit 1
 }
-
+# Set-Location -Path (Get-Location)
+$exeFullPath = Join-Path (Get-Location) $exePath
 
 if (Test-Path $exeFullPath) {
     $portArgument = Get-Content -Path $portFilePath -Raw
