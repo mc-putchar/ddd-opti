@@ -10,43 +10,50 @@
 #include "WinSerialHandler.hpp"
 
 namespace ddd {
-	volatile std::sig_atomic_t	g_stop(0);
-	void	sighandler(int sig) {
+	volatile std::sig_atomic_t g_stop(0);
+	void sighandler(int sig) {
 		(void)sig;
 		g_stop = 1;
 	}
 }
 
-std::string getSerialPort()
+#define DEVICE_MAX_PATH	5000
+static std::map<int, std::string> listSerialDevices()
 {
-	char lpTargetPath[5000]; // buffer to store the path of the COM PORTS
-	std::map<int, int> portMap;
-	int idx(0);
-	std::string str = "COM";
+	std::map<int, std::string> portMap;
+	char lpTargetPath[DEVICE_MAX_PATH];
+	std::string const str = "COM";
 	std::cout << "Connected serial ports:" << std::endl;
+	int idx(0);
 	for (int i = 0; i < 255; i++) {
-		std::string tmp = "COM" + std::to_string(i);
-		DWORD res = QueryDosDevice(tmp.c_str(), lpTargetPath, 5000);
-		if (res != 0) {
-			portMap[++idx] = i;
-			std::cout << idx << ": " << str + std::to_string(i) << ": " << lpTargetPath << std::endl;
+		std::string tmp = str + std::to_string(i);
+		DWORD res = ::QueryDosDevice(tmp.c_str(), lpTargetPath, DEVICE_MAX_PATH);
+		if (res) {
+			portMap[++idx] = tmp;
+			std::cout << "[" << idx << "]: " << tmp << std::endl;
 		}
 		if (::GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-			std::cerr << "Error listing ports" << std::endl;
-			return "";
+			std::cerr << "Error listing port: " << tmp << std::endl
+				<< "	Device full path too long." << std::endl;
 		}
 	}
-	int selection(-1);
+	return (portMap);
+}
+
+std::string getSerialPort() {
+	std::map<int, std::string> serialDevices(listSerialDevices());
+	if (serialDevices.empty())
+		return (std::string());
 	std::cout << "Select serial port with ESP32 transmitter: ";
+	int selection(0);
 	std::cin >> selection;
-	auto port = portMap.find(selection);
-	if (port == portMap.end()) {
+	auto deviceIterator = serialDevices.find(selection);
+	if (deviceIterator == serialDevices.end()) {
 		std::cerr << "Error: Selected index " << selection << " does not exist." << std::endl;
-		return "";
+		return (std::string());
 	}
-	str.append(std::to_string(port->second));
-	std::cout << "Selection: "<< selection << " >> " << str << std::endl;
-	return str;
+	std::cout << "Selection: "<< selection << " >> " << deviceIterator->second << std::endl;
+	return deviceIterator->second;
 }
 
 void handle_error()
@@ -77,6 +84,7 @@ SerialHandler::~SerialHandler() {
 }
 
 bool SerialHandler::setup() {
+	// Handle
 	hSerial = CreateFile(port.c_str(),
 		GENERIC_READ | GENERIC_WRITE,
 		0,
@@ -91,14 +99,15 @@ bool SerialHandler::setup() {
 			std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
 			return false;
 		}
-		//some other error occurred. Inform user.
+		std::cerr << "Error: some other error occurred." << std::endl;
 		return false;
 	}
 
+	// Params
 	DCB dcbSerialParams{};
 	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
 	if (!GetCommState(hSerial, &dcbSerialParams)) {
-		//error getting state
+		std::cerr << "Error: error getting state." << std::endl;
 		return false;
 	}
 	dcbSerialParams.BaudRate = BAUD_RATE;
@@ -106,10 +115,11 @@ bool SerialHandler::setup() {
 	dcbSerialParams.StopBits = ONESTOPBIT;
 	dcbSerialParams.Parity = NOPARITY;
 	if (!SetCommState(hSerial, &dcbSerialParams)) {
-		//error setting serial port state
+		std::cerr << "Error: error getting serial port state." << std::endl;
 		return false;
 	}
 
+	// Timeouts
 	COMMTIMEOUTS timeouts{};
 	timeouts.ReadIntervalTimeout = 50;
 	timeouts.ReadTotalTimeoutConstant = 50;
@@ -117,7 +127,7 @@ bool SerialHandler::setup() {
 	timeouts.WriteTotalTimeoutConstant = 50;
 	timeouts.WriteTotalTimeoutMultiplier = 10;
 	if (!SetCommTimeouts(hSerial, &timeouts)) {
-		//error occureed. Inform user
+		std::cerr << "Error: error setting timeout." << std::endl;
 		return false;
 	}
 	::signal(SIGINT, ddd::sighandler);
@@ -125,15 +135,15 @@ bool SerialHandler::setup() {
 }
 
 void SerialHandler::parseTeleMsg(char* msg) {
-	int id = static_cast<int>(msg[0]);
-    int index = static_cast<int>(msg[1]);
+	int const id = static_cast<int>(msg[0]);
+	int const index = static_cast<int>(msg[1]);
 
-    // Print id, index, and additional bytes
-    // std::cout << "id = " << id
-    //           << "  index = " << index
-    //           << "  byte 3 = " << static_cast<int>(msg[2])
-    //           << "  byte 4 = " << static_cast<int>(msg[3])
-    //           << std::endl;
+	// Print id, index, and additional bytes
+	// std::cout << "id = " << id
+	//           << "  index = " << index
+	//           << "  byte 3 = " << static_cast<int>(msg[2])
+	//           << "  byte 4 = " << static_cast<int>(msg[3])
+	//           << std::endl;
 
 	if (id == 1) {
 		t_tel_bat bat = *reinterpret_cast<t_tel_bat*>(&msg[0]);
@@ -145,11 +155,11 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		sendFront(ss.str().c_str());
 
-    	// std::cout << "id = " << id
-        //       << "  index = " << index
-        //       << "  byte 3 = " << static_cast<int>(msg[])
-        //       << "  byte 4 = " << static_cast<int>(msg[3])
-        //       << std::endl;
+		// std::cout << "id = " << id
+		//       << "  index = " << index
+		//       << "  byte 3 = " << static_cast<int>(msg[])
+		//       << "  byte 4 = " << static_cast<int>(msg[3])
+		//       << std::endl;
 
 	}
 	else if (id == 2) {
