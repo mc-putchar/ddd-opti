@@ -44,7 +44,6 @@ bool DroneState::is_armed() const { return this->armed; }
 ssize_t DroneState::send(std::string const &msg) {
 
 	// TODO imPLEMENT DEKAY COUNTER OF 2 SEC
-
 	std::ostringstream oss;
 	oss << this->index << "{" << msg << "}";  // Append index and message in a single step.
 	std::string output = oss.str();
@@ -52,7 +51,6 @@ ssize_t DroneState::send(std::string const &msg) {
 		std::lock_guard<std::mutex> guard(timestampMutex);
 		this->lastTimestamp = std::chrono::steady_clock::now();
 	}
-	
 	return (serialHandler.send(output));
 }
 
@@ -76,6 +74,24 @@ bool DroneState::startup() {
         }
     });
     sendAllFrames.join();  // Ensure the thread completes before returning
+
+	// MOKCUP POSIOTN DATA LOAD
+	// std::thread updatepos([this]() {
+	// 	float a = 3.6;
+	// 	float b = 3.2;
+	// 	float c = 4.5;
+	// 	float d = 4.5;
+	// 	while(1) {
+			
+	// 		std::this_thread::sleep_for(std::chrono::milliseconds(9)); // 120 fps
+	// 		std::stringstream ss;
+	// 	ss << "\"pos\":[" << a << "," << b << "," 
+	// 				<< c << "," << d << "]";
+	// 		send(ss.str().c_str());
+	// 	}
+	// });
+	// updatepos.detach(); // Detach the thread
+
     return success;  // Return the result of the thread operation
 }
 
@@ -131,7 +147,7 @@ std::string DroneState::settrim(int16_t x, int16_t y, int16_t z, int16_t yaw) {
 }
 
 
-std::string DroneState::setlight(uint8_t angle, uint8_t power) {
+std::string DroneState::setlight(int angle, int power) {
 	std::lock_guard<std::mutex> guard(droneDataMutex);
 	std::stringstream ss;
 
@@ -153,6 +169,7 @@ int DroneState::sendAll() {
 		ss << "," << "\"length\":" << path->length << ","
 		<< "\"frame\":" << path->currframe;
 	}
+	
 	return (this->send(ss.str()));
 }
 

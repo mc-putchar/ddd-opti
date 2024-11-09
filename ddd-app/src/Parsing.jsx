@@ -8,10 +8,10 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 	// Extract drone index and JSON part
 	const droneIndex = parseInt(event.data[0], 10);  // Get drone index (0, 1, 2...)
 	const jsonString = event.data.slice(1);  // Get everything after the first character
-
+	
 	try {
+		// console.log("json = ", jsonString);
 		const jsonData = JSON.parse(jsonString);  // Parse the cleaned JSON string
-		console.log("json = ", jsonString);
 		if (jsonData.rc) {
 			switch (droneIndex) {
 			  case 0:

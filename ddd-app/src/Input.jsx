@@ -51,7 +51,8 @@ function Progression({ rc, index, arg, color = "blue" }) {
 	return (
 	  <div className="relative w-full h-5 mb-2">
 		{/* Background div (full width) */}
-		<div className={`absolute inset-0 ${bgColorClass}`}></div>
+		{/* <div className={`absolute inset-0 ${bgColorClass}`}></div> */}
+		<div className={`absolute inset-0 bg-neutral-800`}></div>
 		{/* Half-width overlay, proportionally sized */}
 		<div
 		  className={`absolute inset-0 ${overlayColorClass}`}
@@ -178,8 +179,8 @@ function Arm({index, ws, color}) {
 
 	return (
 	<>
-		<div className="bg-gray-900 cursor-pointer mx-2 p-1" onClick={arm} style={{ backgroundColor: color , color: "white"}}>Arm</div>
-		<div className="bg-gray-900 cursor-pointer p-1" onClick={disarm} >Disarm</div>
+		<div className="bg-stone-900 cursor-pointer p-1 py-0.5 mx-2 " onClick={arm} style={{ backgroundColor: color , color: "white"}}>Arm</div>
+		<div className="bg-stone-800 cursor-pointer p-1 py-0.5" onClick={disarm} >Disarm</div>
 	</>
 	)
 }
@@ -226,18 +227,18 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 					min={0} // Adjust min value as needed
 					max={pathLen} // Adjust max value as needed
 					step={1} // Step size for the slider
-					className="flex-grow bg-gray-900" // Allow the slider to take up available space and set a height
+					className="flex-grow bg-stone-900" // Allow the slider to take up available space and set a height
 				/>
 			<span>{pathLen}</span>
 		</div>
 		<div className="flex space-x-2">
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={playPath}>
+		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={playPath}>
 			Play
 		  </div>
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={pausePath}>
+		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={pausePath}>
 			Pause
 		  </div>
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={stopPath}>
+		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={stopPath}>
 			Stop
 		  </div>
 		</div>

@@ -90,6 +90,7 @@
 		"strstream": "cpp",
 		"unordered_set": "cpp",
 		"coroutine": "cpp",
-		"*.ipp": "cpp"
+		"*.ipp": "cpp",
+		"regex": "cpp"
 	}
 }

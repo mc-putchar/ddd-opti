@@ -73,15 +73,18 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		std::stringstream ss;
 
-		ss << index << "{\"bat\":[" << bat.Bat_volt << "," 
-					<< bat.Bat_cur << "]}";
+		ss << index << "{\"bat\":[" << bat.volt << "," 
+					<< bat.cur << "]}";
 
 		sendFront(ss.str().c_str());
 
 	}
 	else if (id == S_TEL_ATITU) {
+		t_tel_atitu atitu = *reinterpret_cast<t_tel_atitu*>(&msg[0]);
 		std::stringstream ss;
-		ss << index << "{\"ati\":[\"speedtest\"]}";
+		ss << index << "{\"ati\":[" << atitu.pitch << "," 
+					<< atitu.roll << "," 
+					<< atitu.yaw << "]}";
 
 		sendFront(ss.str().c_str());
 	}

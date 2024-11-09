@@ -6,31 +6,30 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 
 	return (
 	<>
-	<div className="col-span-4 bg-gray-700 p-1" style={{ height: '21vh' }}>
-		<div className="grid grid-cols-4 gap-1 p-1 bg-gray-900 text-white" >
-			<div className="col-span-1 bg-gray-700 p-2 items-center ap-1 gap-1 flex">
-			<h3 className="font-bold" 
-			// style={{ color: color }}
-			>
-				Drone {index}
-			</h3>
+	
+	<div className="col-span-4 bg-stone-700 p-1" style={{ height: '21vh' }}>
+		<div className="grid grid-cols-4 gap-1 p-1 bg-stone-900 text-white" >
+			<div className="col-span-1 bg-neutral-700 p-2 items-center ap-1 py-0 gap-1 flex">
+				<h3 className="font-bold" >
+					Drone {index}
+				</h3>
 				<Arm index={index} ws={ws} color={color}/>
 			</div>
 
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 gap-4 flex">
+			<div className="col-span-1 bg-stone-700 p-2 pt-3 gap-4 flex">
 				<Battery bat={bat} />
 			</div>
 
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
+			<div className="col-span-1 bg-stone-700 p-2 pt-3 flex">
 				<h4 className="font-bold"> Path </h4>
 			</div>
 
-			<div className="col-span-1 bg-gray-700 p-2 pt-3 flex">
+			<div className="col-span-1 bg-stone-700 p-2 pt-3 flex">
 				<h4 className="font-bold"> Light </h4>
 			</div>
 
 			{/* Trim sliders */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
+			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Slider
 					arg={1} name="trim" vari="Roll"
 					stateArray={trim} setStateArray={setTrim}
@@ -54,7 +53,7 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			</div>
 
 			{/* Trim telemetry */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
+			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Progression rc={rc} index={index} arg={0} color={"red"}/>
 				<Progression rc={rc} index={index} arg={1} color={"purple"}/>
 				<Progression rc={rc} index={index} arg={2} color={"blue"}/>
@@ -63,13 +62,13 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			</div>
 
 			{/* Path */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
+			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Path index={index} ws={ws} frame={frame} setFrame={setFrame} pathLen={pathLen}  />
 				<FloatInputForm param={setpoint} index={index} ws={ws}/>
 			</div>
 
 			{/* Light */}
-			<div className="col-span-1 bg-gray-700 p-2 flex flex-col">
+			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Slider
 					arg={0} name="light" vari="Angle"
 					stateArray={light} setStateArray={setLight}

@@ -7,8 +7,8 @@ typedef struct __attribute__((packed)) s_tel_bat
 {
   uint8_t id; // 1 S_TEL_BAT
   uint8_t index;
-  uint16_t Bat_volt;
-  int16_t Bat_cur;
+  uint16_t volt;
+  int16_t cur;
 }t_tel_bat;
 
 #define S_TEL_ATITU 2

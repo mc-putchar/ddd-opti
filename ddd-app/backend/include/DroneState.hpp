@@ -35,7 +35,7 @@ struct Trim {
 };
 
 struct DLight {
-	uint8_t power, angle;
+	int power, angle;
 };
 
 // NOTE: possible keys:
@@ -65,7 +65,7 @@ public:
 	std::string setpoint(float x, float y, float z, float yaw);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(int16_t x, int16_t y, int16_t z, int16_t yaw);
-	std::string setlight(uint8_t angle, uint8_t power);
+	std::string setlight(int angle, int power);
 	void		setPath(Path *p);
 	void		keepAlive();
 	void		stopKeepAlive();

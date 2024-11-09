@@ -37,10 +37,10 @@ function App() {
 	const [light1, setLight1] = useState([1, 1]);
 	const [light2, setLight2] = useState([1, 1]);
 	const [light3, setLight3] = useState([1, 1]);
-	const [ati0, setAti0] = useState([1, 1, 1]);
-	const [ati1, setAti1] = useState([1, 1, 1]);
-	const [ati2, setAti2] = useState([1, 1, 1]);
-	const [ati3, setAti3] = useState([1, 1, 1]);
+	const [ati0, setAti0] = useState([0, 0, 0]);
+	const [ati1, setAti1] = useState([0, 0, 0]);
+	const [ati2, setAti2] = useState([0, 0, 0]);
+	const [ati3, setAti3] = useState([0, 0, 0]);
 	const [frame0, setFrame0] = useState([0]);
 	const [frame1, setFrame1] = useState([0]);
 	const [frame2, setFrame2] = useState([0]);
@@ -53,6 +53,8 @@ function App() {
 	const droneGlb1 = useGLTF('/src/assets/Drone1.glb');
 	const droneGlb2 = useGLTF('/src/assets/Drone2.glb');
 	const droneGlb3 = useGLTF('/src/assets/Drone3.glb');
+
+	// rotation={[0, -Math.PI / 2, 0]}
 
 
 
@@ -71,16 +73,16 @@ function App() {
 	}, [messages]);
 
 	return (
-	<div className="grid grid-cols-8 gap-1 p-2 bg-gray-900 h-screen text-white">
+	<div className="grid grid-cols-8 gap-1 p-2 bg-stone-700 h-screen text-white">
 
 		{/* Header */}
-		<div className="col-span-8 bg-gray-800 p-4 flex items-center justify-center gap-3" style={{ height: '2vh' }}>
+		<div className="col-span-8 bg-stone-800 p-4 flex items-center justify-center gap-3" style={{ height: '2vh' }}>
 			<h2> Dancing Drones Dialogue </h2>
 			<span className={wsStateColor}>{wsState}</span>
 		</div>
 		
 		{/* Console */}
-		<div className="col-span-3 bg-gray-800 p-2 flex" style={{ height: '51vh' }}>
+		<div className="col-span-2 bg-stone-800 p-2 flex tex" style={{ height: '51vh' }}>
 			<div ref={messagesEndRef} className="overflow-auto w-full" style={{ lineHeight: '1.2' }}>
 				{messages.map((msg, index) => (
 					<p className="m-0 mt-1" key={index}>{msg}</p>
@@ -90,10 +92,10 @@ function App() {
 
 		{/* Three.js view */}
 		<Live3dview 
-			position0={position0} setpoint0={setpoint0} light0={light0} droneGlb0={droneGlb0}
-			position1={position1} setpoint1={setpoint1} light1={light1} droneGlb1={droneGlb1}
-			position2={position2} setpoint2={setpoint2} light2={light2} droneGlb2={droneGlb2}
-			position3={position3} setpoint3={setpoint3} light3={light3} droneGlb3={droneGlb3}
+			position0={position0} setpoint0={setpoint0} light0={light0} droneGlb0={droneGlb0} ati0={ati0}
+			position1={position1} setpoint1={setpoint1} light1={light1} droneGlb1={droneGlb1} ati1={ati1}
+			position2={position2} setpoint2={setpoint2} light2={light2} droneGlb2={droneGlb2} ati2={ati2}
+			position3={position3} setpoint3={setpoint3} light3={light3} droneGlb3={droneGlb3} ati3={ati3}
 			colors={colors}
 		/>
 
