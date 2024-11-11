@@ -30,7 +30,7 @@ function FloatInputForm({ setpoint, index, ws }) {
 						placeholder=" Setpoints (x, y, z)"
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
-						style={{ backgroundColor: "#5b5d6e" }}
+						className="bg-stone-950"
 						/>
 		</Form>
 		</div>
@@ -38,8 +38,8 @@ function FloatInputForm({ setpoint, index, ws }) {
 }
 
 function Progression({ rc, index, arg, color = "blue" }) {
-	const bgColorClass = `bg-${color}-900`;
-	const overlayColorClass = `bg-${color}-600`;
+	const bgColorClass = `bg-${color}-950`;
+	const overlayColorClass = `bg-${color}-800`;
 	const maxvalue = 3000;
   
 	// Calculate the width proportionally based on rc[index][arg]
@@ -49,17 +49,17 @@ function Progression({ rc, index, arg, color = "blue" }) {
 
   
 	return (
-	  <div className="relative w-full h-5 mb-2">
+	  <div className="relative w-full h-4 mb-2">
 		{/* Background div (full width) */}
 		{/* <div className={`absolute inset-0 ${bgColorClass}`}></div> */}
-		<div className={`absolute inset-0 bg-neutral-800`}></div>
+		<div className={`absolute inset-0 bg-stone-950`}></div>
 		{/* Half-width overlay, proportionally sized */}
 		<div
 		  className={`absolute inset-0 ${overlayColorClass}`}
 		  style={{ width: `${width}%` }}
 		></div>
 		{/* Centered text */}
-		<div className="absolute inset-0 flex items-center justify-center text-white font-bold">
+		<div className="absolute inset-0 flex items-center justify-center font-bold">
 		  {rc[arg]}
 		</div>
 	  </div>
@@ -136,7 +136,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 					onChange={handleInputChange} // Add onChange handler
 					onBlur={handleInputBlur} // Save on blur
 					onKeyDown={handleKeyDown}
-					className="mr-3 w-16 block text-right bg-gray-800 text-white border border-gray-600 rounded" // Style as needed
+					className="mr-3 w-16 block text-right bg-stone-800 border border-stone-600 rounded" // Style as needed
 					style={{
 						WebkitAppearance: 'none', // Hide the spinner in Webkit browsers
 						MozAppearance: 'textfield', // Hide the spinner in Firefox
@@ -157,7 +157,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 				min={min} // Adjust min value as needed
 				max={max} // Adjust max value as needed
 				step={1} // Step size for the slider
-				className="flex-grow bg-gray-900" // Allow the slider to take up available space and set a height
+				className="flex-grow bg-gray-950" // Allow the slider to take up available space and set a height
 			/>
 		</div>
 	);
@@ -179,8 +179,10 @@ function Arm({index, ws, color}) {
 
 	return (
 	<>
-		<div className="bg-stone-900 cursor-pointer p-1 py-0.5 mx-2 " onClick={arm} style={{ backgroundColor: color , color: "white"}}>Arm</div>
-		<div className="bg-stone-800 cursor-pointer p-1 py-0.5" onClick={disarm} >Disarm</div>
+		<div className="bg-stone-800 border border-stone-500 cursor-pointer p-1 py-0.5 mx-2 " onClick={arm}
+			// style={{ backgroundColor: color , color: "white"}}
+			> Arm </div>
+		<div className="bg-stone-800 border border-stone-500 cursor-pointer p-1 py-0.5" onClick={disarm} >Disarm</div>
 	</>
 	)
 }
@@ -232,14 +234,15 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 			<span>{pathLen}</span>
 		</div>
 		<div className="flex space-x-2">
-		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={playPath}>
-			Play
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2" onClick={playPath}>
+		  &#9654;
 		  </div>
-		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={pausePath}>
-			Pause
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2" onClick={pausePath}>
+		  &#10074; &#10074;
 		  </div>
-		  <div className="bg-stone-900 cursor-pointer p-1 px-2" onClick={stopPath}>
-			Stop
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2 no-spacing" onClick={stopPath} style={{
+    letterSpacing: "-1px"}}>
+		  &#10074;&#10074;
 		  </div>
 		</div>
 	</>

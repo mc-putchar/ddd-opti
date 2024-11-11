@@ -6,24 +6,36 @@ import * as THREE from 'three';
 
 
 
-
 const Live3dview = React.memo(({ 
 	position0, position1, position2, position3, 
 	setpoint0, setpoint1, setpoint2, setpoint3,
-	droneGlb0, droneGlb1, droneGlb2, droneGlb3,
+	droneGlb,
 	ati0, ati1, ati2, ati3,
 	light0, light1, light2, light3, colors
   }) => {
 
 	const denise = useGLTF('/src/assets/Denise.glb');
+	const dancer = useGLTF('/src/assets/angel.glb');
+
+	dancer.scene.traverse((child) => {
+		if (child.isMesh && child.material) {
+		  // Apply a "statue-like" material
+		  child.material = new THREE.MeshStandardMaterial({
+			color: '#7d6b5c',      // Use a light gray or white for a stone-like color
+			metalness: 0.1,          // Low metalness to avoid a shiny look
+			roughness: 0.8,          // High roughness to give it a matte, textured appearance
+		  });
+		  child.castShadow = true;    // Enable shadows
+		  child.receiveShadow = true; // Enable receiving shadows
+		}
+	  });
 
 	return (
-		<div className="col-span-6 bg-gray-800 flex" style={{ height: '51vh' }}>
 
 	<Canvas
 		orthographic
 		camera={{ zoom: 60, position: [4, 4.5, 10] }}
-		style={{ background: '#1c1917' }}
+		style={{ background: '#0c0a09' }}
 		shadows
 		onCreated={({ gl }) => {
 			const globalPlane = new THREE.Plane(new THREE.Vector3(0, 0.02, 0), 1)
@@ -33,67 +45,52 @@ const Live3dview = React.memo(({
 		
 	>
 		<ambientLight intensity={0.5} />
-		{/* <Cylinder position={[0, 0.7, 0]} args={[0.25, 0.7, 1.4]} castShadow receiveShadow>
-			<meshStandardMaterial attach="material" color="#998471" />
-		</Cylinder>
-		<Sphere position={[0, 1.8, 0]} args={[0.4, 16, 16]} castShadow receiveShado>
-				<meshStandardMaterial attach="material" color="#998471" />
-			</Sphere> */}
-		<primitive
+		{/* <primitive
 				object={denise.scene}
 				position={[0, 0, 0]}
 				scale={[1.0, 1.0, 1.0]} // Adjust scale as needed
 				castShadow
 				receiveShadow
+			/> */}
+		<primitive
+				object={dancer.scene}
+				position={[0, 0, 0]}
+				scale={[0.007, 0.007, 0.007]} // Adjust scale as needed
+				castShadow
+				receiveShadow
 			/>
 		<Plane position={[0, -0.01, 0]} args={[11, 11]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-			<meshStandardMaterial attach="material" color="#73706b" />
+			<meshStandardMaterial attach="material" color="#57534e" />
 		</Plane>
 		<Drone
-			position={position0} // Access the position of the current drone
-			light={light0} // Access the light of the current drone
-			setpoint={setpoint0} // Access the setpoint of the current drone
-			color={colors[0]}
-			droneGlb={droneGlb0}
-			ati={ati0}
+			position={position0} light={light0} setpoint={setpoint0} 
+			color={colors[0]} droneGlb={droneGlb} ati={ati0}
 		/>
 		<Drone
-			position={position1} // Access the position of the current drone
-			light={light1} // Access the light of the current drone
-			setpoint={setpoint1} // Access the setpoint of the current drone
-			color={colors[1]}
-			droneGlb={droneGlb1}
-			ati={ati1}
+			position={position1} light={light1} setpoint={setpoint1} 
+			color={colors[1]} droneGlb={droneGlb} ati={ati1}
 		/>
 		<Drone
-			position={position2} // Access the position of the current drone
-			light={light2} // Access the light of the current drone
-			setpoint={setpoint2} // Access the setpoint of the current drone
-			color={colors[2]}
-			droneGlb={droneGlb2}
-			ati={ati2}
+			position={position2} light={light2} setpoint={setpoint2} 
+			color={colors[2]} droneGlb={droneGlb} ati={ati2}
 		/>
 		<Drone
-			position={position3} // Access the position of the current drone
-			light={light3} // Access the light of the current drone
-			setpoint={setpoint3} // Access the setpoint of the current drone
-			color={colors[3]}
-			droneGlb={droneGlb3}
-			ati={ati3}
+			position={position3} light={light3} setpoint={setpoint3} 
+			color={colors[3]} droneGlb={droneGlb} ati={ati3}
 		/>
 
 		{[ [-5, 1.25, -5], [5, 1.25, -5], [-5, 1.25, 5], [5, 1.25, 5],  // THE OPTITRACKS POLES
-		].map((position, index) => (
-			<Cylinder args={[0.07, 0.07, 2.5, 32]} position={position} key={index}>
-				<meshStandardMaterial attach="material" color="#837296" />
-			</Cylinder>
+			].map((position, index) => (
+				<Cylinder args={[0.07, 0.07, 2.5, 32]} position={position} key={index}>
+					<meshStandardMaterial attach="material" color="#837296" />
+				</Cylinder>
 		))}
+
 		<pointLight position={[0, 6, 0]} intensity={50} color="white" />
-		<OrbitControls target={position3} /> 
-		{/* <OrbitControls target={[0, 1.2, 0]} />  */}
-		<gridHelper args={[10, 10, 'black', 'black']} />
+		{/* <OrbitControls target={position0} />  */}
+		<OrbitControls target={[0, 1.2, 0]} /> 
+		<gridHelper args={[10, 10, 'black', '#57534e']} />
 	</Canvas>
-	</div>
 	);
 });
 

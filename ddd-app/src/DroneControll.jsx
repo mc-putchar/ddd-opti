@@ -6,27 +6,29 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 
 	return (
 	<>
-	
-	<div className="col-span-4 bg-stone-700 p-1" style={{ height: '21vh' }}>
-		<div className="grid grid-cols-4 gap-1 p-1 bg-stone-900 text-white" >
-			<div className="col-span-1 bg-neutral-700 p-2 items-center ap-1 py-0 gap-1 flex">
-				<h3 className="font-bold" >
-					Drone {index}
-				</h3>
+		<div className="col-span-1 grid grid-cols-4 gap-x-0.5 p-0 bg-stone-800" >
+			<div className="col-span-1 bg-stone-600 p-0 m-0 items-center gap-1 flex">
+				<div className="bg-stone-700 p-2 items-center gap-1 flex" style={{ backgroundColor: color }}>
+					<h3 className="font-bold text-stone-950" >
+						Drone {index}
+					</h3>
+				</div>
 				<Arm index={index} ws={ws} color={color}/>
 			</div>
 
-			<div className="col-span-1 bg-stone-700 p-2 pt-3 gap-4 flex">
+			<div className="col-span-1 bg-stone-600 p-2 pt-3 gap-4 flex">
 				<Battery bat={bat} />
 			</div>
 
-			<div className="col-span-1 bg-stone-700 p-2 pt-3 flex">
-				<h4 className="font-bold"> Path </h4>
+			<div className="col-span-1 bg-stone-600 p-2 pt-3 flex">
+				<h4 className=""> Path </h4>
 			</div>
 
-			<div className="col-span-1 bg-stone-700 p-2 pt-3 flex">
-				<h4 className="font-bold"> Light </h4>
+			<div className="col-span-1 bg-stone-600 p-2 pt-3 flex">
+				<h4 className=""> Light </h4>
 			</div>
+			<div className="col-span-4 bg-stone-100 h-px" style={{ backgroundColor: color }}></div>
+			{/* <div className="col-span-4 bg-stone-900 h-px" ></div> */}
 
 			{/* Trim sliders */}
 			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
@@ -64,7 +66,7 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			{/* Path */}
 			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Path index={index} ws={ws} frame={frame} setFrame={setFrame} pathLen={pathLen}  />
-				<FloatInputForm param={setpoint} index={index} ws={ws}/>
+				{/* <FloatInputForm param={setpoint} index={index} ws={ws}/> */}
 			</div>
 
 			{/* Light */}
@@ -86,7 +88,6 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 				/>
 			</div>
 		</div>
-	</div>
 	</>
 	)
 } 
