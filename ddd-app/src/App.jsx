@@ -5,6 +5,7 @@ import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
 
 
+
 function App() {
 	const [messages, setMessages] = useState([]);
 	const [wsState, setWsState] = useState('disconnected');
@@ -49,6 +50,7 @@ function App() {
 	const [bat1, setBat1] = useState([1, 1]);
 	const [bat2, setBat2] = useState([1, 1]);
 	const [bat3, setBat3] = useState([1, 1]);
+	const [block_incoming_setpoint, setBlock_incoming_setpoint] = useState();
 
 	const droneGlb = useGLTF('/src/assets/Drone.glb');
 
@@ -57,7 +59,7 @@ function App() {
 		setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
 		setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
 		setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
-		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3
+		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, block_incoming_setpoint
 	); }, []);
 
 	useEffect(() => { // Scroll to the bottom whenever messages update
@@ -100,38 +102,46 @@ function App() {
 		<div className="col-span-8 grid grid-cols-2 gap-1 px-1 bg-stone-950">
 			<DroneControll
 				index={0} bat={bat0} rc={rc0} ws={ws}
-				setpoint={setSetpoint0} setSetpoint={setSetpoint0}
+				setpoint={setpoint0} setSetpoint={setSetpoint0}
 				light={light0} setLight={setLight0}
 				trim={trim0} setTrim={setTrim0}
 				frame={frame0} setFrame={setFrame0}
-				pathLen={pathLen0} color={colors[0]}
+				pathLen={pathLen0} color={colors[0]} 
+				block_incoming_setpoint={block_incoming_setpoint}
+				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
 			<DroneControll
 				index={1} bat={bat1} rc={rc1} ws={ws}
-				setpoint={setSetpoint1} setSetpoint={setSetpoint1}
+				setpoint={setpoint1} setSetpoint={setSetpoint1}
 				light={light1} setLight={setLight1}
 				trim={trim1} setTrim={setTrim1}
 				frame={frame1} setFrame={setFrame1}
-				pathLen={pathLen1} color={colors[1]}
+				pathLen={pathLen1} color={colors[1]} 
+				block_incoming_setpoint={block_incoming_setpoint}
+				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
 			<DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
-				setpoint={setSetpoint2} setSetpoint={setSetpoint2}
+				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
 				trim={trim2} setTrim={setTrim2}
 				frame={frame2} setFrame={setFrame2}
-				pathLen={pathLen2} color={colors[2]}
+				pathLen={pathLen2} color={colors[2]} 
+				block_incoming_setpoint={block_incoming_setpoint}
+				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
 			<DroneControll
 				index={3} bat={bat3} rc={rc3} ws={ws}
-				setpoint={setSetpoint3} setSetpoint={setSetpoint3}
+				setpoint={setpoint3} setSetpoint={setSetpoint3}
 				light={light3} setLight={setLight3}
 				trim={trim3} setTrim={setTrim3}
 				frame={frame3} setFrame={setFrame3}
-				pathLen={pathLen3} color={colors[3]}
+				pathLen={pathLen3} color={colors[3]} 
+				block_incoming_setpoint={block_incoming_setpoint}
+				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 		</div>
 	</div>

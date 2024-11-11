@@ -3,40 +3,6 @@ import { Col, Card, Row, Form, Container} from 'react-bootstrap';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 import { Input as ShadcnInput } from "@/components/ui/input";
 
-function FloatInputForm({ setpoint, index, ws }) {
-	const [input, setInput] = useState('');
-
-	// Function to handle form submission
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		const values = input.split(',').map(val => parseFloat(val.trim()));
-		if (values.length !== 3 || values.some(isNaN)) {
-			setError('Please enter 3 valid float values separated by commas.');
-			return;
-		}
-		const formattedValues = values.map(val => val.toFixed(5));
-		 const message = `${index}{"setpoint":[${formattedValues.join(',')},-837.593]}`;
-		 if (ws && ws.readyState === WebSocket.OPEN) {
-			 ws.send(message);
-		 }
-		setInput('');
-	};
-
-	return (
-		<div  className="mt-3">
-		<Form onSubmit={handleSubmit}>
-					<Form.Control
-						type="text"
-						placeholder=" Setpoints (x, y, z)"
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						className="bg-stone-950"
-						/>
-		</Form>
-		</div>
-	);
-}
-
 function Progression({ rc, index, arg, color = "blue" }) {
 	const bgColorClass = `bg-${color}-950`;
 	const overlayColorClass = `bg-${color}-800`;
@@ -136,7 +102,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 					onChange={handleInputChange} // Add onChange handler
 					onBlur={handleInputBlur} // Save on blur
 					onKeyDown={handleKeyDown}
-					className="mr-3 w-16 block text-right bg-stone-800 border border-stone-600 rounded" // Style as needed
+					className="mr-3 w-18 block text-right bg-stone-800 border border-stone-600 rounded" // Style as needed
 					style={{
 						WebkitAppearance: 'none', // Hide the spinner in Webkit browsers
 						MozAppearance: 'textfield', // Hide the spinner in Firefox
@@ -145,10 +111,10 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 				/>
 			) : (
 				<span
-					className="mr-3 w-16 block text-right cursor-pointer" // Add cursor pointer for clarity
+					className="mr-3 w-4 block text-right cursor-pointer" // Add cursor pointer for clarity
 					onClick={handleEditClick} // Click to edit
 				>
-					{inputValue}
+					{inputValue.toFixed()}
 				</span>
 			)}
 			<ShadcnSlider 
@@ -222,7 +188,7 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 	return (
 	<>
 		<div className="flex items-center mt-2 mb-4 w-full">
-			<span>{frame}</span>
+			<span className="w-12">{frame}</span>
 				<ShadcnSlider 
 					value={[frame]} // Slider expects an array
 					onValueChange={handleSliderChange} // Update on value change
@@ -231,7 +197,7 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 					step={1} // Step size for the slider
 					className="flex-grow bg-stone-900" // Allow the slider to take up available space and set a height
 				/>
-			<span>{pathLen}</span>
+			<span className="w-12">{pathLen}</span>
 		</div>
 		<div className="flex space-x-2">
 		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2" onClick={playPath}>
@@ -249,4 +215,4 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 	)
 }
 
-export {FloatInputForm, Slider, Arm, Path, Progression};
+export {Slider, Arm, Path, Progression};

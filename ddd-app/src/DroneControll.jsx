@@ -1,12 +1,14 @@
-import {FloatInputForm, Slider, Arm, Path, Progression} from './Input';
+import { Slider, Arm, Path, Progression} from './Input';
 import { Battery } from './Battery';
+import { Setpoint2d } from './Setpoint2d';
 
 function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
-					setpoint, light, trim, setLight, setPoint, setTrim, color }) {
-
+					setpoint, light, trim, setLight, setSetpoint, setTrim, color, block_incoming_setpoint,
+					setBlock_incoming_setpoint }) {
+				
 	return (
 	<>
-		<div className="col-span-1 grid grid-cols-4 gap-x-0.5 p-0 bg-stone-800" >
+		<div className="col-span-1 grid grid-cols-5 gap-x-0.5 p-0 bg-stone-800" >
 			<div className="col-span-1 bg-stone-600 p-0 m-0 items-center gap-1 flex">
 				<div className="bg-stone-700 p-2 items-center gap-1 flex" style={{ backgroundColor: color }}>
 					<h3 className="font-bold text-stone-950" >
@@ -23,11 +25,14 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			<div className="col-span-1 bg-stone-600 p-2 pt-3 flex">
 				<h4 className=""> Path </h4>
 			</div>
+			<div className="col-span-1 bg-stone-600 p-2 pt-3 flex">
+				<h4 className=""> Setpoint </h4>
+			</div>
 
 			<div className="col-span-1 bg-stone-600 p-2 pt-3 flex">
 				<h4 className=""> Light </h4>
 			</div>
-			<div className="col-span-4 bg-stone-100 h-px" style={{ backgroundColor: color }}></div>
+			<div className="col-span-5 bg-stone-100 h-px" style={{ backgroundColor: color }}></div>
 			{/* <div className="col-span-4 bg-stone-900 h-px" ></div> */}
 
 			{/* Trim sliders */}
@@ -66,6 +71,14 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			{/* Path */}
 			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Path index={index} ws={ws} frame={frame} setFrame={setFrame} pathLen={pathLen}  />
+				{/* <FloatInputForm param={setpoint} index={index} ws={ws}/> */}
+			</div>
+
+			{/* Setpoint2D */}
+			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
+				<Setpoint2d index={index} ws={ws} setpoint={setpoint} setSetpoint={setSetpoint} 
+							block_incoming_setpoint={block_incoming_setpoint}
+							setBlock_incoming_setpoint={setBlock_incoming_setpoint} />
 				{/* <FloatInputForm param={setpoint} index={index} ws={ws}/> */}
 			</div>
 
