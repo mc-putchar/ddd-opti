@@ -68,7 +68,7 @@ function App() {
 
 		{/* Header */}
 		<div className="col-span-8 bg-gray-800 p-4 flex items-center justify-center gap-3" style={{ height: '2vh' }}>
-			<h2> Dancing Drones Dialogue </h2>
+			<h2> Drone Dance Dialog </h2>
 			<span className={wsStateColor}>{wsState}</span>
 		</div>
 		

@@ -33,7 +33,7 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 		};
 
 		socket.onclose = () => {
-			setWsState('diconnected');
+			setWsState('disconnected');
 			setWsStateColor('text-red-600');
 			console.log('WebSocket connection closed');
 		};
