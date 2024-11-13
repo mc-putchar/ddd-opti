@@ -12,7 +12,7 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
-#define DRONE_INDEX 1
+#define DRONE_INDEX 0
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
 #define LEDPMWCHANNEL 0  // PWM channel
@@ -133,12 +133,11 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 	//Serial.write(incomingData, len);
 	//Serial.println();
 
-  int index = incomingData[0] - '0';
+  uint8_t index = incomingData[0] - '0';
   if(index != DRONE_INDEX) {
     return;
   }
-  const uint8_t* message = &incomingData[1];
-	DeserializationError err = deserializeJson(json, (const char *)message);
+	DeserializationError err = deserializeJson(json, (const char *)&incomingData[1]);
 	if (err) {
 		Serial.println("failed to parse json");
 		return;
