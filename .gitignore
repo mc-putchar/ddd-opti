@@ -3,9 +3,7 @@ build/
 *.a
 *.exe
 *.log
-ddd-client
-ddd-controller
-ddd-clientkey
+ddd-backend
 .cache/
 .vscode/
 .DS_Store
