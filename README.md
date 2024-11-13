@@ -1,6 +1,6 @@
 # Dancing Drones Dialogue with OptiTrack
 
-![Project Preview](./preview.png)
+![Project Preview](extras/preview.png)
 
 A **React web application** designed for **choreographing and visualizing drones** accurately in space using the **OptiTrack system**. This project leverages real-time motion capture to control and preview drones, both in simulation and live flight. The backend is written in **C++** and communicates with drones using **ESP32** modules, ensuring seamless information flow between the system and the drones.
 
