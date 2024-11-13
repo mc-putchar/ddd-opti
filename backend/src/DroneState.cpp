@@ -8,24 +8,24 @@
 
 DroneState::DroneState(int idx, SerialHandler & ref)
 	: path(NULL),
-		index(idx),
-		armed(false),
-		position{0, 0, 0, 0},
-		trim{0, 0, 0, 0},
-		light{0, 0},
-		serialHandler(ref),
-		lastTimestamp(std::chrono::steady_clock::now())
-		{}
+	index(idx),
+	armed(false),
+	position{0, 0, 0, 0},
+	trim{0, 0, 0, 0},
+	light{0, 0},
+	serialHandler(ref),
+	lastTimestamp(std::chrono::steady_clock::now())
+{}
 
 DroneState::DroneState(DroneState const &cpy)
 	: path(cpy.path),
-	  index(cpy.index),
-	  armed(cpy.armed.load()),
-	  position(cpy.position),
-	  trim(cpy.trim),
-	  light(cpy.light),
-	  serialHandler(cpy.serialHandler)
-	{ }
+	index(cpy.index),
+	armed(cpy.armed.load()),
+	position(cpy.position),
+	trim(cpy.trim),
+	light(cpy.light),
+	serialHandler(cpy.serialHandler)
+{}
 
 
 
@@ -91,6 +91,7 @@ void DroneState::disarm() {
 	armed.store(false);
 	// stopKeepAlive();
 	this->send("\"armed\":false");
+	// return std::string("\"armed\":true");
 }
 
 

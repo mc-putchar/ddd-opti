@@ -12,6 +12,14 @@ A **React web application** designed for **choreographing and visualizing drones
 - Communication between **C++ backend** and drones via **ESP32** devices.
 - Utilizes the **OptiTrack motion capture system** for accurate drone tracking.
 
+## Requirements
+
+- Docker with Docker Compose
+- Forward USB to UART serial port to WSL (if running on MS Windows)
+> `usbipd list`
+> `usbipd bind --busid <device BUSID>`
+> `usbipd attach --wsl --busid <device BUSID>`
+
 ## Tech Stack
 
 ### Backend

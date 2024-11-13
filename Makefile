@@ -6,14 +6,15 @@ CONF := setup.conf
 .PHONY: all up down start stop ps logs clean
 
 all: up
-setup: $(CONF)
-up: $(CONF)
+up:
 	$(DC) up --build -d
 down start stop ps logs:
 	$(DC) $@
+logs-front:
+	$(DC) logs --tail=100 -f frontend
+logs-back:
+	$(DC) logs --tail=100 -f backend
 clean: down
 	docker system prune
 fclean: clean
-	$(RM) $(CONF)
-$(CONF):
-	touch $(CONF)
+re: down up

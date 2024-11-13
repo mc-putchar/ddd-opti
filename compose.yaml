@@ -23,6 +23,6 @@ services:
       - "0.0.0.0:4242:4242"
     devices:
       - "/dev/ttyUSB0:/dev/ttyUSB0"
-    #    device_cgroup_rules:  # NOTE: not supported in rootless mode or in user namespace
-    #      - 'a 188:* rmw'
+    device_cgroup_rules:  # NOTE: not supported in rootless mode or in user namespace
+      - 'a 188:* rmw'
     restart: unless-stopped

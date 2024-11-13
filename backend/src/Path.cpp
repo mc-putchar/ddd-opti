@@ -1,7 +1,7 @@
 #include "Path.hpp"
 
 
-Path::Path(std::string file_path, DroneState & ref) : drone(ref), sending(false)
+Path::Path(std::string file_path) : sending(false)
 {
 	std::ifstream inputFile(file_path);
 	std::string str((std::istreambuf_iterator<char>(inputFile)),
@@ -49,6 +49,8 @@ std::stringstream Path::getCurrentFrame(size_t i) {
 	return (ss);
 }
 
+// TODO:
+// Extract sending path frames to drone controller
 int Path::sendFrameByFrame() {
 	if (sending) {
 		std::cout << "sending already" << std::endl;
@@ -69,8 +71,8 @@ int Path::sendFrameByFrame() {
 			}
 			std::cout << "about the send frame " << currframe << std::endl;
 			std::stringstream ssframe = getCurrentFrame(currframe);
-			if (drone.send(ssframe.str().c_str()) < 0)
-				std::cout << "serial send failed " << currframe << std::endl;
+			// if (drone.send(ssframe.str().c_str()) < 0)
+			// 	std::cout << "serial send failed " << currframe << std::endl;
 		}
 		sending = false;
 		});
@@ -82,10 +84,10 @@ Path::~Path() {
 	std::cout << "path " << " went out of scope" << std::endl;
 }
 
-Path::Path(Path const &cpy) : drone(cpy.drone){
-	(void)cpy;
-	// TODO ?
-}
+// Path::Path(Path const &cpy) : drone(cpy.drone){
+// 	(void)cpy;
+// 	// TODO ?
+// }
 
 Path & Path::operator=(Path const &rhs) {
 	(void)rhs;

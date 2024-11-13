@@ -8,12 +8,14 @@
 class WsServer {
 	public:
 		static WsServer &getInstance();
-		~WsServer();
+		WsServer() = delete;
 		WsServer(WsServer const &) = delete;
 		WsServer(WsServer const &&) = delete;
 		void operator=(WsServer const &) = delete;
 		void operator=(WsServer const &&) = delete;
+		~WsServer();
 
+		void start();
 		void send(std::string const &msg, size_t client = 0);
 		void add_client(ws_cli_conn_t client);
 		void remove_client(ws_cli_conn_t client);

@@ -21,10 +21,9 @@
 #include "WsServer.hpp"
 
 #define BUFFER_SIZE 512
-#define MIN_INTER_SEND 1.5
 #ifdef __linux__
 	#define SERIAL_PORT "/dev/ttyUSB0"
-	#define BAUD_RATE 1000000
+	#define BAUD_RATE B115200
 #elif __APPLE__
 	#define SERIAL_PORT "/dev/cu.usbserial-0001"
 	#define BAUD_RATE B115200

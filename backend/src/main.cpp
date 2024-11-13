@@ -1,20 +1,19 @@
 #include <iostream>
 #include <thread>
 
+#include "DroneControl.hpp"
 #include "DroneState.hpp"
-#include "SerialHandler.hpp"
 #include "Path.hpp"
+#include "SerialHandler.hpp"
 #include "WsServer.hpp"
 
 // TODO: 
 // Refactor program control flow
 // Segments:
 // - Serial port connection and communication
-//	- List available ports, connect to selected one
 //	- Warn if disconnected (CRITICAL)
 //	- Establish message queue for send/receive
 // - WebSocket connection and communication
-//	- crow/asio (check if we can decouple from this dependency?)
 // - Internal data model - DroneState
 //	- track and update individual drones position, status, trajectory
 //	- decouple from dependencies
@@ -32,28 +31,26 @@ int main(void) {
 	if (serialPort.empty())
 		return 1;
 
-	std::vector<std::shared_ptr<DroneState>>	drones;
-
-	WsServer &wsServer = WsServer::getInstance();
-
 	SerialHandler serialHandler(serialPort);
 	serialHandler.setup();
 	std::thread transmitThread([&serialHandler]() { // Monitor if message are properly delivered to drones.
 		serialHandler.monitorIncoming(); // Could come off a thread and added after each send if not setting too much latency.
 	});
 
-	drones.push_back(std::make_shared<DroneState>(0, serialHandler));
-	drones.push_back(std::make_shared<DroneState>(1, serialHandler));
-	drones.push_back(std::make_shared<DroneState>(2, serialHandler));
-	drones.push_back(std::make_shared<DroneState>(3, serialHandler));
+	WsServer &wsServer = WsServer::getInstance();
+	wsServer.start();
 
-	std::cout << "drones array size  " << drones.size() << std::endl;
+	DroneControl &control = DroneControl::getInstance();
+	control.track(std::make_shared<DroneState>(0, serialHandler));
+	control.track(std::make_shared<DroneState>(1, serialHandler));
+	control.track(std::make_shared<DroneState>(2, serialHandler));
+	control.track(std::make_shared<DroneState>(3, serialHandler));
 
-	Path path("Path01.json", *drones[0]); // Create path on the stack
-	drones[0]->setPath(&path);
+	Path path("Path01.json"); // Create path on the stack
+	control.setPath(0, &path);
 
-	Path path1("animation.json", *drones[1]); // Create path on the stack
-	drones[1]->setPath(&path1);
+	Path path1("animation.json"); // Create path on the stack
+	control.setPath(1, &path1);
 
 	transmitThread.join();
 	// wsServerThread.join();

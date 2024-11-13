@@ -6,6 +6,8 @@
 
 #include "json.hpp"
 #include "ws.h"
+
+#include "DroneControl.hpp"
 #include "WsServer.hpp"
 
 #define WS_PORT	4242
@@ -26,11 +28,15 @@ WsServer::WsServer(int port, char const *host) : server(), clients()
 	this->server.evs.onopen = &(this->onopen);
 	this->server.evs.onclose = &(this->onclose);
 	this->server.evs.onmessage = &(this->onmessage);
-	std::cout << "WebSocket Server listening on port: " << port << std::endl;
 }
 
 WsServer::~WsServer() {}
 
+
+void WsServer::start() {
+	ws_socket(&this->server);
+	std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
+}
 
 void WsServer::send(std::string const &msg, size_t client)
 {
@@ -66,6 +72,7 @@ void WsServer::onclose(ws_cli_conn_t client)
 }
 
 using json = nlohmann::json;
+
 void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 	uint64_t size, int type)
 {
@@ -75,55 +82,11 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		return;
 	}
 
-	int const	index = msg[0] - '0';
-	(void)index;
+	int const idx = msg[0] - '0';
 	try {
 		std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
 		json data = json::parse(tmp);
-		if (data.contains("trim")) {
-			// drones[index]->send(drones[index]->settrim(
-			// 	data["trim"][0], data["trim"][1], data["trim"][2], data["trim"][3]));
-		}
-
-		if (data.contains("light")) {
-			// drones[index]->send(drones[index]->setlight(data["light"][0], data["light"][1]));
-		}
-
-		if (data.contains("setpoint")) {
-			// drones[index]->send(drones[index]->setpoint(data["setpoint"][0], data["setpoint"][1],
-			// 											data["setpoint"][2], data["setpoint"][3]));
-		}
-
-		if (data.contains("armed")) {
-			// if (data["armed"].get<bool>()) 
-			// 	drones[index]->startup();
-			// else
-			// 	drones[index]->disarm();
-		}
-
-		if (data.contains("path")) {
-			if (data["path"] == "play") {
-				// Check if the unique pointer is not null
-				// if (drones[index]->path != nullptr) {
-				// 	drones[index]->path->sendFrameByFrame();
-				// } else {
-				// 	std::cerr << "Error: Path is null for drone " << index << std::endl;
-				// }
-			}
-			if (data["path"] == "pause") {
-				// drones[index]->path->paused.store(true);
-			}
-			if (data["path"] == "stop") {
-				// drones[index]->path->sending=false;
-			}
-		}
-		if (data.contains("frame")) {
-			// if (drones[index]->path != nullptr) {
-			// 	drones[index]->send(drones[index]->path->getCurrentFrame(data["frame"]).str().c_str());
-			// } else {
-			// 	std::cerr << "Error: Path is null for drone " << index << std::endl;
-			// }
-		}
+		DroneControl::getInstance().update(idx, data);
 	} catch (nlohmann::json::parse_error& e) {
 		std::cerr << "Parse error: " << e.what() << std::endl;
 	}

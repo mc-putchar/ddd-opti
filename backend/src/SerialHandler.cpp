@@ -16,7 +16,6 @@ SerialHandler::~SerialHandler() {
 
 
 bool SerialHandler::setup() {
-	std::cout << "Setting up serial connection..." << std::endl;
 	serial_port = setup_serial();
 	if (serial_port < 0) {
 		std::cerr << "Failed to initialize serial connection." << std::endl;
@@ -78,11 +77,10 @@ void SerialHandler::parseTeleMsg(char* msg) {
 		ss << index << "{\"bat\":[" << bat.Bat_volt << "," 
 					<< bat.Bat_cur << "]}";
 
-		sendFront(ss.str().c_str());
+		sendFront(ss.str());
 	}
 	else if (id == 2) {
-
-
+		// TODO: implement drone attitude telemetry
 	}
 
 	else if (id == 3) {
@@ -95,7 +93,7 @@ void SerialHandler::parseTeleMsg(char* msg) {
 		ss << index << "{\"rc\":[" << rc.ch_1 << "," << rc.ch_2 << "," 
 					<< rc.ch_3 << "," << rc.ch_4 << "," << rc.ch_5 << "]}";
 
-		sendFront(ss.str().c_str());
+		sendFront(ss.str());
 	}
 	else 
 		std::cout << msg << std::endl;

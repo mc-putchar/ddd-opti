@@ -13,7 +13,7 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 		}
 		const config = await response.json();
 		console.log('wsPort from json =', config.wsPort);
-		const socket = new WebSocket(`ws://localhost:${config.wsPort}/ws`);
+		const socket = new WebSocket(`ws://localhost:${config.wsPort}`);
 		setWs(socket);
 
 		socket.onopen = () => {

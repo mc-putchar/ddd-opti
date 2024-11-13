@@ -70,7 +70,7 @@ public:
 	void		keepAlive();
 	void		stopKeepAlive();
 
-	Path *					path; 
+	Path					*path; 
 	const int				index;
 
 private:
