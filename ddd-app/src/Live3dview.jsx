@@ -79,9 +79,13 @@ const Live3dview = React.memo(({
 			color={colors[3]} droneGlb={droneGlb} ati={ati3}
 		/>
 
-		{[ [-5, 1.25, -5], [5, 1.25, -5], [-5, 1.25, 5], [5, 1.25, 5],  // THE OPTITRACKS POLES
+		<OptiCameras/>
+		{[ [-SPACE_WIDTH/2, SPACE_HEIGHT/2, -SPACE_DEPTH/2],
+			 [SPACE_WIDTH/2, SPACE_HEIGHT/2, -SPACE_DEPTH/2],
+			 [-SPACE_WIDTH/2, SPACE_HEIGHT/2, SPACE_DEPTH/2],
+			 [SPACE_WIDTH/2, SPACE_HEIGHT/2, SPACE_DEPTH/2],
 			].map((position, index) => (
-				<Cylinder args={[0.07, 0.07, 2.5, 32]} position={position} key={index}>
+				<Cylinder args={[0.07, 0.07, SPACE_HEIGHT, 32]} position={position} key={index}>
 					<meshStandardMaterial attach="material" color="#837296" />
 				</Cylinder>
 		))}
@@ -89,10 +93,17 @@ const Live3dview = React.memo(({
 		<pointLight position={[0, 6, 0]} intensity={50} color="white" />
 		{/* <OrbitControls target={position0} />  */}
 		<OrbitControls target={[0, 1.2, 0]} /> 
-		<gridHelper args={[10, 10, 'black', '#57534e']} />
+		<gridHelper args={[Math.ceil(SPACE_WIDTH), Math.ceil(SPACE_WIDTH), 'black', '#57534e']} />
 	</Canvas>
 	);
 });
 
+function OptiCameras() {
+
+	return (
+		<></>
+	)
+
+}
 
 export {Live3dview};
