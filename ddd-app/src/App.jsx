@@ -13,7 +13,7 @@ function App() {
 	const [ws, setWs] = useState(null);
 	const messagesEndRef = useRef(null);
 
-	const colors = ["#ff7b00", "#00e82b", "#8b00d1", "#e3054b"];
+	const colors = ["#d0ff00", "#ff7b00", "#00e82b", "#e3054b"];
 	const [position0, setPosition0] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
 	const [position1, setPosition1] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [position2, setPosition2] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
@@ -122,7 +122,7 @@ function App() {
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
-			<DroneControll
+			{/* <DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
 				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
@@ -142,7 +142,7 @@ function App() {
 				pathLen={pathLen3} color={colors[3]} 
 				block_incoming_setpoint={block_incoming_setpoint}
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
-			/>
+			/> */}
 		</div>
 	</div>
 	);

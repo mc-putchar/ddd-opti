@@ -16,7 +16,7 @@ function OptiCameras() {
 					<meshStandardMaterial attach="material" color="#837296" />
 				</Cylinder>
 				<Box args={[0.13, 0.13, 0.13]} position={[0, (SPACE_HEIGHT/2) - 0.12/2 ,0]} >
-					<meshLambertMaterial attach="material" color={"cyan"} wireframe={false} />
+					<meshLambertMaterial attach="material" color={"#0339a3"} wireframe={false} />
 				</Box>
 			</group>
 		))}

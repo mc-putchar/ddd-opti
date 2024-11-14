@@ -5,6 +5,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const LIGHT_COLOR = "#fffbeb"
+const DRONE_BOUNDING_BOX = 0.8;
 
 
 const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) => {
@@ -84,7 +85,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 				receiveShadow
 				/>
 		
-		<Box args={[0.80, 0.25, 0.80]}>
+		<Box args={[DRONE_BOUNDING_BOX, 0.25, DRONE_BOUNDING_BOX]}>
 			<meshLambertMaterial attach="material" color={color} wireframe={true} />
 		</Box>
 		
@@ -168,4 +169,4 @@ function LightBeam({rotation, position, light }) {
 	)
 }
 
-export {Drone};
+export {Drone, DRONE_BOUNDING_BOX};

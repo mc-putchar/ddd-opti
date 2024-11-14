@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
+import { SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH } from './Live3dview';
+import { DRONE_BOUNDING_BOX } from './Drone';
 
 
 function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint, setBlock_incoming_setpoint}) {
@@ -44,8 +46,8 @@ function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 		const containerRect = containerRef.current.getBoundingClientRect();
   
 	  // Calculate the new X and Y based on mouse position within the container
-		const newX = Math.max(-5, Math.min(5, ((e.clientX - containerRect.left) / containerRect.width) * 10 - 5));
-		const newY = Math.max(-5, Math.min(5, ((e.clientY - containerRect.top) / containerRect.height) * 10 - 5));
+		const newX = Math.max(-((SPACE_WIDTH/2) - DRONE_BOUNDING_BOX/2), Math.min((SPACE_WIDTH/2) - DRONE_BOUNDING_BOX/2, ((e.clientX - containerRect.left) / containerRect.width) * SPACE_WIDTH - (SPACE_WIDTH/2)));
+		const newY = Math.max(-(SPACE_DEPTH/2 - DRONE_BOUNDING_BOX/2), Math.min((SPACE_DEPTH/2) -  DRONE_BOUNDING_BOX/2, ((e.clientY - containerRect.top) / containerRect.height) * SPACE_DEPTH - (SPACE_DEPTH/2)));
 
 	  
 		setCoordinates({ x: newX, y: newY });
@@ -100,8 +102,8 @@ function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 			className="dot bg-stone-400"
 			style={{
 			  position: 'absolute',
-			  left: `${((coordinates.x + 5) / 10) * 100}%`,
-			  top: `${((coordinates.y + 5) / 10) * 100}%`,
+			  left: `${((coordinates.x + (SPACE_WIDTH/2)) / SPACE_WIDTH) * 100}%`,
+			  top: `${((coordinates.y + (SPACE_DEPTH/2)) / SPACE_DEPTH) * 100}%`,
 			  width: '10px',
 			  height: '10px',
 			  borderRadius: '50%',

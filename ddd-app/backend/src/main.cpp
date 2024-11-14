@@ -33,7 +33,7 @@ int main(int argc, char ** argv) {
 
 	std::cout << "drones array size  " << drones.size() << std::endl;
 
-	Path path("Path01.json", *drones[0]); // Create path on the stack
+	Path path("chocolate_Circle.json", *drones[0]); // Create path on the stack
 	drones[0]->setPath(&path);
 
 	Path path1("animation.json", *drones[1]); // Create path on the stack

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { OptiCameras } from './OptiCameras';
 
 const SPACE_HEIGHT = 3.00;
-const SPACE_DEPTH = 6.00;
+const SPACE_DEPTH = 6.30;
 const SPACE_WIDTH = 5.33;
 
 
@@ -74,15 +74,18 @@ const Live3dview = React.memo(({
 			position={position1} light={light1} setpoint={setpoint1} 
 			color={colors[1]} droneGlb={droneGlb} ati={ati1}
 		/>
-		<Drone
+		{/* <Drone
 			position={position2} light={light2} setpoint={setpoint2} 
 			color={colors[2]} droneGlb={droneGlb} ati={ati2}
 		/>
 		<Drone
 			position={position3} light={light3} setpoint={setpoint3} 
 			color={colors[3]} droneGlb={droneGlb} ati={ati3}
-		/>
+		/> */}
 		<OptiCameras/>
+
+
+		{/* Windows */}
 		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[SPACE_WIDTH/2/2, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
 			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
 		</Box>
@@ -92,6 +95,8 @@ const Live3dview = React.memo(({
 		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[0, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
 			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
 		</Box>
+
+
 		<pointLight position={[0, 6, 0]} intensity={50} color="white" />
 		{/* <OrbitControls target={position0} />  */}
 		<OrbitControls target={[0, 1.2, 0]} /> 
