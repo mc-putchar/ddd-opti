@@ -3,15 +3,15 @@ function parseWsMessage(setMessages, event,
 setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
 setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
 setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
-setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3) {
+setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, blockIncomingSetpointRef) {
 
 	// Extract drone index and JSON part
 	const droneIndex = parseInt(event.data[0], 10);  // Get drone index (0, 1, 2...)
 	const jsonString = event.data.slice(1);  // Get everything after the first character
-
+	
 	try {
+		// console.log("json = ", jsonString);
 		const jsonData = JSON.parse(jsonString);  // Parse the cleaned JSON string
-		console.log("json = ", jsonString);
 		if (jsonData.rc) {
 			switch (droneIndex) {
 			  case 0:
@@ -49,24 +49,24 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 			  default:
 				console.error('Invalid drone index');
 		}}
-		if (jsonData.position) {
-			switch (droneIndex) {
-			  case 0:
-				setPosition0([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-				break;
-			  case 1:
-				setPosition1([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-				break;
-			  case 2:
-				setPosition2([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-				break;
-			  case 3:
-				setPosition3([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-				break;
-			  default:
-				console.error('Invalid drone index');
-			}
-		}
+		// if (jsonData.position) {
+		// 	switch (droneIndex) {
+		// 	  case 0:
+		// 		setPosition0([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
+		// 		break;
+		// 	  case 1:
+		// 		setPosition1([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
+		// 		break;
+		// 	  case 2:
+		// 		setPosition2([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
+		// 		break;
+		// 	  case 3:
+		// 		setPosition3([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
+		// 		break;
+		// 	  default:
+		// 		console.error('Invalid drone index');
+		// 	}
+		// }
 		if (jsonData.light) {
 			switch (droneIndex) {
 			  case 0:
@@ -86,21 +86,21 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 			}
 		  }
 		  
-		if (jsonData.setpoint) {
+		if (jsonData.setpoint && !blockIncomingSetpointRef.current) {
 			switch (droneIndex) {
-			  case 0:
-				setPosition0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+			case 0:
+				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
 				break;
-			  case 1:
-				setPosition1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+			case 1:
+				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
 				break;
-			  case 2:
-				setPosition2([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+			case 2:
+				setSetpoint2([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
 				break;
-			  case 3:
-				setPosition3([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.position[3]]);
+			case 3:
+				setSetpoint3([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
 				break;
-			  default:
+			default:
 				console.error('Invalid drone index');
 			  }
 		}
@@ -175,24 +175,6 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 				break;
 			  case 3:
 				setAti3([jsonData.ati[0], jsonData.ati[1], jsonData.ati[2]]);
-				break;
-			  default:
-				console.error('Invalid drone index');
-			}
-		}
-		if (jsonData.setpoint) {
-			switch (droneIndex) {
-			  case 0:
-				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[1]]);
-				break;
-			  case 1:
-				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[1]]);
-				break;
-			  case 2:
-				setSetpoint2([jsonData.setpoint[0], jsonData.setpoint[1]]);
-				break;
-			  case 3:
-				setSetpoint3([jsonData.setpoint[0], jsonData.setpoint[1]]);
 				break;
 			  default:
 				console.error('Invalid drone index');

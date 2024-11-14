@@ -150,7 +150,6 @@ int DroneState::sendAll() {
 		<< setlight(light.angle, light.power);
 
 	if (path){
-		std::cerr << "path error" << std::endl;
 		ss << "," << "\"length\":" << path->length << ","
 		<< "\"frame\":" << path->currframe;
 	}

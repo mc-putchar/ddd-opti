@@ -46,7 +46,7 @@ int main(void) {
 	control.track(std::make_shared<DroneState>(2, serialHandler));
 	control.track(std::make_shared<DroneState>(3, serialHandler));
 
-	Path path("Path01.json"); // Create path on the stack
+	Path path("chocolate_Circle.json"); // Create path on the stack
 	control.setPath(0, &path);
 
 	Path path1("animation.json"); // Create path on the stack

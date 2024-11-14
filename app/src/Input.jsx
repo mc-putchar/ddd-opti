@@ -3,43 +3,9 @@ import { Col, Card, Row, Form, Container} from 'react-bootstrap';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 import { Input as ShadcnInput } from "@/components/ui/input";
 
-function FloatInputForm({ setpoint, index, ws }) {
-	const [input, setInput] = useState('');
-
-	// Function to handle form submission
-	const handleSubmit = (e) => {
-		e.preventDefault();
-		const values = input.split(',').map(val => parseFloat(val.trim()));
-		if (values.length !== 3 || values.some(isNaN)) {
-			setError('Please enter 3 valid float values separated by commas.');
-			return;
-		}
-		const formattedValues = values.map(val => val.toFixed(5));
-		 const message = `${index}{"setpoint":[${formattedValues.join(',')},-837.593]}`;
-		 if (ws && ws.readyState === WebSocket.OPEN) {
-			 ws.send(message);
-		 }
-		setInput('');
-	};
-
-	return (
-		<div  className="mt-3">
-		<Form onSubmit={handleSubmit}>
-					<Form.Control
-						type="text"
-						placeholder=" Setpoints (x, y, z)"
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						style={{ backgroundColor: "#5b5d6e" }}
-						/>
-		</Form>
-		</div>
-	);
-}
-
-function Progression({ rc, index, arg, color = "blue" }) {
-	const bgColorClass = `bg-${color}-900`;
-	const overlayColorClass = `bg-${color}-600`;
+function Progression({ rc, index, arg, color = "stone" }) {
+	const bgColorClass = `bg-${color}-950`;
+	const overlayColorClass = `bg-${color}-800`;
 	const maxvalue = 3000;
   
 	// Calculate the width proportionally based on rc[index][arg]
@@ -49,16 +15,17 @@ function Progression({ rc, index, arg, color = "blue" }) {
 
   
 	return (
-	  <div className="relative w-full h-5 mb-2">
+	  <div className="relative w-full h-4 mb-2">
 		{/* Background div (full width) */}
-		<div className={`absolute inset-0 ${bgColorClass}`}></div>
+		{/* <div className={`absolute inset-0 ${bgColorClass}`}></div> */}
+		<div className={`absolute inset-0 bg-stone-950`}></div>
 		{/* Half-width overlay, proportionally sized */}
 		<div
 		  className={`absolute inset-0 ${overlayColorClass}`}
 		  style={{ width: `${width}%` }}
 		></div>
 		{/* Centered text */}
-		<div className="absolute inset-0 flex items-center justify-center text-white font-bold">
+		<div className="absolute inset-0 flex items-center justify-center font-bold">
 		  {rc[arg]}
 		</div>
 	  </div>
@@ -135,7 +102,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 					onChange={handleInputChange} // Add onChange handler
 					onBlur={handleInputBlur} // Save on blur
 					onKeyDown={handleKeyDown}
-					className="mr-3 w-16 block text-right bg-gray-800 text-white border border-gray-600 rounded" // Style as needed
+					className="mr-3 w-18 block text-right bg-stone-800 border border-stone-600 rounded" // Style as needed
 					style={{
 						WebkitAppearance: 'none', // Hide the spinner in Webkit browsers
 						MozAppearance: 'textfield', // Hide the spinner in Firefox
@@ -144,10 +111,10 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 				/>
 			) : (
 				<span
-					className="mr-3 w-16 block text-right cursor-pointer" // Add cursor pointer for clarity
+					className="mr-3 w-4 block text-right cursor-pointer" // Add cursor pointer for clarity
 					onClick={handleEditClick} // Click to edit
 				>
-					{inputValue}
+					{inputValue.toFixed()}
 				</span>
 			)}
 			<ShadcnSlider 
@@ -156,13 +123,13 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 				min={min} // Adjust min value as needed
 				max={max} // Adjust max value as needed
 				step={1} // Step size for the slider
-				className="flex-grow bg-gray-900" // Allow the slider to take up available space and set a height
+				className="flex-grow bg-stone-950" // Allow the slider to take up available space and set a height
 			/>
 		</div>
 	);
 }
 
-function Arm({index, ws}) {
+function Arm({index, ws, color}) {
 
 	function arm() {
 		if (ws && ws.readyState === WebSocket.OPEN) {
@@ -178,8 +145,10 @@ function Arm({index, ws}) {
 
 	return (
 	<>
-		<div className="bg-gray-900 cursor-pointer mx-2 p-1" onClick={arm} >Arm</div>
-		<div className="bg-gray-900 cursor-pointer p-1" onClick={disarm} >Disarm</div>
+		<div className="bg-stone-800 border border-stone-500 cursor-pointer p-1 py-0.5 mx-2 " onClick={arm}
+			// style={{ backgroundColor: color , color: "white"}}
+			> Arm </div>
+		<div className="bg-stone-800 border border-stone-500 cursor-pointer p-1 py-0.5" onClick={disarm} >Disarm</div>
 	</>
 	)
 }
@@ -219,30 +188,31 @@ function Path({index, ws, frame, setFrame, pathLen }) {
 	return (
 	<>
 		<div className="flex items-center mt-2 mb-4 w-full">
-			<span>{frame}</span>
+			<span className="w-12">{frame}</span>
 				<ShadcnSlider 
 					value={[frame]} // Slider expects an array
 					onValueChange={handleSliderChange} // Update on value change
 					min={0} // Adjust min value as needed
 					max={pathLen} // Adjust max value as needed
 					step={1} // Step size for the slider
-					className="flex-grow bg-gray-900" // Allow the slider to take up available space and set a height
+					className="flex-grow bg-stone-900" // Allow the slider to take up available space and set a height
 				/>
-			<span>{pathLen}</span>
+			<span className="w-12">{pathLen}</span>
 		</div>
 		<div className="flex space-x-2">
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={playPath}>
-			Play
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2" onClick={playPath}>
+		  &#9654;
 		  </div>
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={pausePath}>
-			Pause
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2" onClick={pausePath}>
+		  &#10074; &#10074;
 		  </div>
-		  <div className="bg-gray-900 cursor-pointer p-1 px-2" onClick={stopPath}>
-			Stop
+		  <div className="bg-stone-600 cursor-pointer border border-stone-900 p-1 px-2 no-spacing" onClick={stopPath} style={{
+    letterSpacing: "-1px"}}>
+		  &#10074;&#10074;
 		  </div>
 		</div>
 	</>
 	)
 }
 
-export {FloatInputForm, Slider, Arm, Path, Progression};
+export {Slider, Arm, Path, Progression};

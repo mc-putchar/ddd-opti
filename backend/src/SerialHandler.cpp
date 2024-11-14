@@ -69,24 +69,28 @@ void SerialHandler::parseTeleMsg(char* msg) {
 	int const id = static_cast<int>(msg[0]);
 	int const index = static_cast<int>(msg[1]);
 
-	if (id == 1) {
+	if (id == S_TEL_BAT) {
 		t_tel_bat bat = *reinterpret_cast<t_tel_bat*>(&msg[0]);
 
 		std::stringstream ss;
 
-		ss << index << "{\"bat\":[" << bat.Bat_volt << "," 
-					<< bat.Bat_cur << "]}";
+		ss << index << "{\"bat\":[" << bat.volt << "," 
+					<< bat.cur << "]}";
 
 		sendFront(ss.str());
 	}
-	else if (id == 2) {
-		// TODO: implement drone attitude telemetry
+	else if (id == S_TEL_ATITU) {
+		t_tel_atitu atitu = *reinterpret_cast<t_tel_atitu*>(&msg[0]);
+		std::stringstream ss;
+		ss << index << "{\"ati\":[" << atitu.pitch << "," 
+					<< atitu.roll << "," 
+					<< atitu.yaw << "]}";
+
+		sendFront(ss.str());
 	}
 
-	else if (id == 3) {
+	else if (id == S_TEL_RC) {
 		t_tel_rc rc = *reinterpret_cast<t_tel_rc*>(&msg[0]);
-
-		// std::cout << rc.ch_pitch << " " << rc.ch_roll << " " << rc.aux1 << std::endl; 
 
 		std::stringstream ss;
 

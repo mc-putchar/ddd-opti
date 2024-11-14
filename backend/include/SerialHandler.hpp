@@ -19,6 +19,7 @@
 #include <mutex>
 #include "DroneState.hpp"
 #include "WsServer.hpp"
+#include "PacketDefinition.hpp"
 
 #define BUFFER_SIZE 512
 #ifdef __linux__
@@ -32,34 +33,6 @@
 #endif
 
 class WsServer;
-
-typedef struct __attribute__((packed)) s_tel_bat
-{
-  uint8_t id;
-  uint8_t index;
-  uint16_t Bat_volt;
-  int16_t Bat_cur;
-}t_tel_bat;
-
-typedef struct __attribute__((packed)) s_tel_atitu
-{
-  uint8_t id;
-  uint8_t index;
-  float pitch;
-  float roll;
-  float yaw;
-}t_tel_atitu;
-
-typedef struct __attribute__((packed)) s_tel_rc
-{
-  uint8_t id;
-  uint8_t index;
-  uint16_t ch_1;
-  uint16_t ch_2;
-  uint16_t ch_3;
-  uint16_t ch_4;
-  uint16_t ch_5;
-}t_tel_rc;
 
 std::string getSerialPort();
 
