@@ -16,38 +16,24 @@ function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 
 	const handleMouseDown = (e) => {
 	  setIsDragging(true);
+	  setBlock_incoming_setpoint(true);
 	};
   
 	const handleMouseUp = () => {
 	  setIsDragging(false);
+	  setBlock_incoming_setpoint(false);
 	};	
-
-	useEffect(() => {
-		// Debounce effect to set blockIncomingSetpoint back to false after 500ms of inactivity
-		const interval = setInterval(() => {
-			if (block_incoming_setpoint && Date.now() - lastExecuted.current >= 500) {
-				setBlock_incoming_setpoint(false);
-			}
-		}, 100);
-
-		// Clear the interval on unmount
-		return () => clearInterval(interval);
-	}, [block_incoming_setpoint]);
   
 	// Handle mouse move on the document to update coordinates while dragging
 	const handleMouseMove = (e) => {
 		if (!containerRef.current || !isDragging) return; // Only move the dot if dragging is active
-  
-		setBlock_incoming_setpoint(true);
-		lastExecuted.current = Date.now();
-		console.log("down", block_incoming_setpoint);
 
 	  // Get the container's bounding box
 		const containerRect = containerRef.current.getBoundingClientRect();
   
 	  // Calculate the new X and Y based on mouse position within the container
-		const newX = Math.max(-((SPACE_WIDTH/2) - DRONE_BOUNDING_BOX/2), Math.min((SPACE_WIDTH/2) - DRONE_BOUNDING_BOX/2, ((e.clientX - containerRect.left) / containerRect.width) * SPACE_WIDTH - (SPACE_WIDTH/2)));
-		const newY = Math.max(-(SPACE_DEPTH/2 - DRONE_BOUNDING_BOX/2), Math.min((SPACE_DEPTH/2) -  DRONE_BOUNDING_BOX/2, ((e.clientY - containerRect.top) / containerRect.height) * SPACE_DEPTH - (SPACE_DEPTH/2)));
+		const newX = Math.max(-5, Math.min(5, ((e.clientX - containerRect.left) / containerRect.width) * 10 - 5));
+		const newY = Math.max(-5, Math.min(5, ((e.clientY - containerRect.top) / containerRect.height) * 10 - 5));
 
 	  
 		setCoordinates({ x: newX, y: newY });
@@ -58,11 +44,11 @@ function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 			updatedSetpoint[1] = 1;
 			return updatedSetpoint;
 		});
-		// const wsArray = [...setpoint];
-		// wsArray[3] = 0;
-		// if (ws && ws.readyState === WebSocket.OPEN) {
-		// 	ws.send(`${index}{"setpoint":${JSON.stringify(wsArray)}}`);
-		// }
+		const wsArray = [...setpoint];
+		wsArray[3] = 0;
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(`${index}{"setpoint":${JSON.stringify(wsArray)}}`);
+		}
 	};
 
 	// Use useEffect to add global event listeners for mousemove and mouseup

@@ -50,16 +50,21 @@ function App() {
 	const [bat1, setBat1] = useState([1, 1]);
 	const [bat2, setBat2] = useState([1, 1]);
 	const [bat3, setBat3] = useState([1, 1]);
-	const [block_incoming_setpoint, setBlock_incoming_setpoint] = useState();
+	const [block_incoming_setpoint, setBlock_incoming_setpoint] = useState(false);
+	const blockIncomingSetpointRef = useRef(block_incoming_setpoint);
 
 	const droneGlb = useGLTF('/src/assets/Drone.glb');
+
+	useEffect(() => {
+		blockIncomingSetpointRef.current = block_incoming_setpoint;
+	}, [block_incoming_setpoint]);
 
 	useEffect(() => {
 	fetchConfigAndInitializeWebSocket(setMessages, setWs, setWsState, setWsStateColor,
 		setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
 		setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
 		setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
-		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, block_incoming_setpoint
+		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, blockIncomingSetpointRef
 	); }, []);
 
 	useEffect(() => { // Scroll to the bottom whenever messages update
