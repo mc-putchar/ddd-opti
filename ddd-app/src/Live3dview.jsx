@@ -3,7 +3,11 @@ import { Drone } from './Drone';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sphere, Plane, Cylinder, Box, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { OptiCameras } from './OptiCameras';
 
+const SPACE_HEIGHT = 3.00;
+const SPACE_DEPTH = 6.00;
+const SPACE_WIDTH = 5.33;
 
 
 const Live3dview = React.memo(({ 
@@ -21,7 +25,7 @@ const Live3dview = React.memo(({
 		if (child.isMesh && child.material) {
 		  // Apply a "statue-like" material
 		  child.material = new THREE.MeshStandardMaterial({
-			color: '#7d6b5c',      // Use a light gray or white for a stone-like color
+			color: '#7d6b5c',      // Use a light stone or white for a stone-like color
 			metalness: 0.1,          // Low metalness to avoid a shiny look
 			roughness: 0.8,          // High roughness to give it a matte, textured appearance
 		  });
@@ -34,8 +38,8 @@ const Live3dview = React.memo(({
 
 	<Canvas
 		orthographic
-		camera={{ zoom: 60, position: [4, 4.5, 10] }}
-		style={{ background: '#0c0a09' }}
+		camera={{ zoom: 90, position: [4, 4.5, 10] }}
+		style={{ background: '#1c1917' }}
 		shadows
 		onCreated={({ gl }) => {
 			const globalPlane = new THREE.Plane(new THREE.Vector3(0, 0.02, 0), 1)
@@ -59,7 +63,7 @@ const Live3dview = React.memo(({
 				castShadow
 				receiveShadow
 			/>
-		<Plane position={[0, -0.01, 0]} args={[11, 11]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+		<Plane position={[0, -0.01, 0]} args={[SPACE_WIDTH, SPACE_DEPTH]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
 			<meshStandardMaterial attach="material" color="#57534e" />
 		</Plane>
 		<Drone
@@ -78,18 +82,16 @@ const Live3dview = React.memo(({
 			position={position3} light={light3} setpoint={setpoint3} 
 			color={colors[3]} droneGlb={droneGlb} ati={ati3}
 		/>
-
 		<OptiCameras/>
-		{[ [-SPACE_WIDTH/2, SPACE_HEIGHT/2, -SPACE_DEPTH/2],
-			 [SPACE_WIDTH/2, SPACE_HEIGHT/2, -SPACE_DEPTH/2],
-			 [-SPACE_WIDTH/2, SPACE_HEIGHT/2, SPACE_DEPTH/2],
-			 [SPACE_WIDTH/2, SPACE_HEIGHT/2, SPACE_DEPTH/2],
-			].map((position, index) => (
-				<Cylinder args={[0.07, 0.07, SPACE_HEIGHT, 32]} position={position} key={index}>
-					<meshStandardMaterial attach="material" color="#837296" />
-				</Cylinder>
-		))}
-
+		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[SPACE_WIDTH/2/2, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
+			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
+		</Box>
+		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[-SPACE_WIDTH/2/2, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
+			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
+		</Box>
+		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[0, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
+			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
+		</Box>
 		<pointLight position={[0, 6, 0]} intensity={50} color="white" />
 		{/* <OrbitControls target={position0} />  */}
 		<OrbitControls target={[0, 1.2, 0]} /> 
@@ -98,12 +100,5 @@ const Live3dview = React.memo(({
 	);
 });
 
-function OptiCameras() {
 
-	return (
-		<></>
-	)
-
-}
-
-export {Live3dview};
+export {Live3dview, SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH};

@@ -3,7 +3,7 @@ import { Col, Card, Row, Form, Container} from 'react-bootstrap';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 import { Input as ShadcnInput } from "@/components/ui/input";
 
-function Progression({ rc, index, arg, color = "blue" }) {
+function Progression({ rc, index, arg, color = "stone" }) {
 	const bgColorClass = `bg-${color}-950`;
 	const overlayColorClass = `bg-${color}-800`;
 	const maxvalue = 3000;
@@ -123,7 +123,7 @@ function Slider({ index, name, vari, arg, ws, stateArray, setStateArray, min, ma
 				min={min} // Adjust min value as needed
 				max={max} // Adjust max value as needed
 				step={1} // Step size for the slider
-				className="flex-grow bg-gray-950" // Allow the slider to take up available space and set a height
+				className="flex-grow bg-stone-950" // Allow the slider to take up available space and set a height
 			/>
 		</div>
 	);

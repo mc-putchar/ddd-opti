@@ -5,7 +5,7 @@ module.exports = {
 	  "./src/**/*.{js,jsx,ts,tsx}",
 	],
 	safelist: [
-		'bg-blue-800', 'bg-blue-600',
+		'bg-stone-800', 'bg-stone-600',
 		'bg-green-800', 'bg-green-600',
 		'bg-red-800', 'bg-red-600',
 		'bg-purple-800', 'bg-purple-600',

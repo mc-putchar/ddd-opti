@@ -3,7 +3,7 @@ import { DroneControll } from './DroneControll';
 import { fetchConfigAndInitializeWebSocket } from './WebSocket';
 import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
-
+import { SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH } from './Live3dview';
 
 
 function App() {
@@ -14,14 +14,14 @@ function App() {
 	const messagesEndRef = useRef(null);
 
 	const colors = ["#ff7b00", "#00e82b", "#8b00d1", "#e3054b"];
-	const [position0, setPosition0] = useState([-4.5, 0.12, 1.5, 0]);
-	const [position1, setPosition1] = useState([-4.5, 0.12, 0.5, 0]);
-	const [position2, setPosition2] = useState([-4.5, 0.12, -0.5, 0]);
-	const [position3, setPosition3] = useState([-4.5, 0.12, -1.5, 0]);
-	const [setpoint0, setSetpoint0] = useState([-4.5, 0.12, 1.5, 0]);
-	const [setpoint1, setSetpoint1] = useState([-4.5, 0.12, 0.5, 0]);
-	const [setpoint2, setSetpoint2] = useState([-4.5, 0.12, -0.5, 0]);
-	const [setpoint3, setSetpoint3] = useState([-4.5, 0.12, -1.5, 0]);
+	const [position0, setPosition0] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	const [position1, setPosition1] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	const [position2, setPosition2] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
+	const [position3, setPosition3] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
+	const [setpoint0, setSetpoint0] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	const [setpoint1, setSetpoint1] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	const [setpoint2, setSetpoint2] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
+	const [setpoint3, setSetpoint3] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
 	const [rc0, setRc0] = useState([1, 1, 1, 1, 1]);
 	const [rc1, setRc1] = useState([1, 1, 1, 1, 1]);
 	const [rc2, setRc2] = useState([1, 1, 1, 1, 1]);
@@ -88,7 +88,7 @@ function App() {
 		</div>
 
 		{/* Three.js view */}
-		<div className="col-span-5 bg-gray-800 mr-1 flex">
+		<div className="col-span-5 bg-stone-800 mr-1 flex">
 			<Live3dview 
 				position0={position0} setpoint0={setpoint0} light0={light0} ati0={ati0}
 				position1={position1} setpoint1={setpoint1} light1={light1} ati1={ati1}

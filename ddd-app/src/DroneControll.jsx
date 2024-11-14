@@ -63,7 +63,7 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			<div className="col-span-1 bg-stone-700 p-2 flex flex-col">
 				<Progression rc={rc} index={index} arg={0} color={"red"}/>
 				<Progression rc={rc} index={index} arg={1} color={"purple"}/>
-				<Progression rc={rc} index={index} arg={2} color={"blue"}/>
+				<Progression rc={rc} index={index} arg={2} color={"stone"}/>
 				<Progression rc={rc} index={index} arg={3} color={"cyan"}/> 
 				<Progression rc={rc} index={index} arg={4} color={"green"}/>
 			</div>
