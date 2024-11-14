@@ -40,7 +40,7 @@ function Setpoint2d ({index, ws, setpoint, setSetpoint, block_incoming_setpoint,
   
 		setBlock_incoming_setpoint(true);
 		lastExecuted.current = Date.now();
-		console.log(block_incoming_setpoint);
+		console.log("down", block_incoming_setpoint);
 
 	  // Get the container's bounding box
 		const containerRect = containerRef.current.getBoundingClientRect();

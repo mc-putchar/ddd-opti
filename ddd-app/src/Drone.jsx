@@ -110,7 +110,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	);
 });
 
-function LightBeam({rotation, position, light }) {
+function LightBeam({rotation, position, light, args}) {
 	
 	const geometry = new THREE.ConeGeometry(0.8, 3, 12);
 	geometry.computeBoundingBox();
@@ -162,7 +162,7 @@ function LightBeam({rotation, position, light }) {
 	
 	return (
 		<>
-			<Cone args={[0.8, 3, 12]} position={position} rotation={rotation}>
+			<Cone args={args} position={position} rotation={rotation}>
 				<primitive attach="material" object={coneMaterial} />
 			</Cone>
 		</>
