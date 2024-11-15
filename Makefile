@@ -7,6 +7,7 @@ CONF := setup.conf
 
 all: up
 up:
+	git submodule update --init --recursive
 	$(DC) up --build -d
 down start stop ps logs:
 	$(DC) $@
