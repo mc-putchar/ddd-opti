@@ -11,7 +11,7 @@
     "start-backend": "run-script-os",
     "start-backend:darwin:linux": "./start-backend.sh",
     "start-backend:win32": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./start-backend.ps1",
-    "dev": "vite",
+    "dev": "vite --port 3000 --host 0.0.0.0",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
