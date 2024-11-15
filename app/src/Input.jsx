@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Card, Row, Form, Container} from 'react-bootstrap';
 import { Slider as ShadcnSlider } from "@/components/ui/slider";
 import { Input as ShadcnInput } from "@/components/ui/input";
 
