@@ -10,7 +10,7 @@ WSSERVERDIR := $(LIBDIR)/wsServer
 WSSERVER := $(WSSERVERDIR)/libws.a
 
 # Source files
-SRCS = main DroneControl DroneState Path WsServer
+SRCS = main DroneControl DroneState NatNetClient Path WsServer
 ifeq ($(OS),Windows_NT)
 	SRCS += WinSerialHandler
 	NAME := $(NAME).exe

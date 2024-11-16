@@ -3,30 +3,32 @@
 
 #include "DroneControl.hpp"
 #include "DroneState.hpp"
+#include "NatNetClient.hpp"
 #include "Path.hpp"
 #include "SerialHandler.hpp"
 #include "WsServer.hpp"
 
 // TODO: 
-// Refactor program control flow
-// Segments:
-// - Serial port connection and communication
-//	- Warn if disconnected (CRITICAL)
+// - Serial port Warn if disconnected (CRITICAL)
 //	- Establish message queue for send/receive
-// - WebSocket connection and communication
 // - Internal data model - DroneState
 //	- track and update individual drones position, status, trajectory
 //	- decouple from dependencies
-// - Optitrack MotiveAPI integration
-//	- Initialize
+// - Optitrack NatNet integration
 //	- retrieve positional data of registered rigid bodies
 //	- correlate with target DroneState and update its internal state
 // - Unit Tests
 // - Integration Tests
 // - GUI
 // - Documentation
-#define WS_PORT	4242
+
 int main(void) {
+	NatNetClient nnclient;
+	s_ports ports(CMD_PORT, DATA_PORT);
+	if (nnclient.init(&ports, LOOPBACK, LOOPBACK))
+	{
+		std::cerr << "Error: failed to initialize NatNet client." << std::endl;
+	}
 	std::string const serialPort = getSerialPort();
 	if (serialPort.empty())
 		return 1;

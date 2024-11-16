@@ -5,6 +5,8 @@
 #include <vector>
 #include "ws.h"
 
+#define WS_PORT	4242
+
 class WsServer {
 	public:
 		static WsServer &getInstance();
