@@ -4,8 +4,15 @@
 // NOTE: for now, Unicast only
 
 #include <cstdint>
+#include <csignal>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
 
+#define IPALL			"0.0.0.0"
 #define LOOPBACK		"127.0.0.1"
+#define DOCKER_HOST		"172.29.112.1" // Probably shouldnt hardcode this
+
 #define CMD_PORT		1510L
 #define DATA_PORT		1511L
 
@@ -14,6 +21,8 @@
 #define BUF_SIZE		65536L
 #define SOCK_TIMEOUT	2L
 #define SEND_RETRIES	3L
+
+extern volatile std::sig_atomic_t g_stopped;
 
 enum e_msg_type
 {
@@ -28,8 +37,7 @@ enum e_msg_type
 	MSGSTRING,
 	DISCONNECT,
 	KEEPALIVE,
-	UNRECOGNIZED = 100,
-	UNDEFINED = 999
+	UNRECOGNIZED = 100
 };
 
 struct s_ports
@@ -77,8 +85,18 @@ class NatNetClient
 		~NatNetClient();
 
 		int init(s_ports *ports, char const *my_ip, char const *host_ip);
+		void listen_cmd();
+		void listen_data();
 
 	private:
 		int cmd_socket;
 		int data_socket;
+		struct sockaddr_in host;
+		struct s_packet packet_in;
+		struct s_packet packet_out;
+
+		int request_conn(char const *ip, uint16_t port, uint16_t retries);
+		int send_keepalive(void);
+		void parse_cmd(void);
+		void parse_data(void);
 };

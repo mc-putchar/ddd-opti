@@ -6,7 +6,7 @@ std::string getSerialPort()
 }
 
 SerialHandler::SerialHandler(std::string const &port)
-	: g_stopped(false), serial_port(-1), port(port)
+	: serial_port(-1), port(port)
 {}
 
 

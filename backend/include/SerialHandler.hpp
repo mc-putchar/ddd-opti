@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef _WIN32
-# include "WinSerialHandler.hpp"
-#else
 #include <csignal>
 #include <errno.h>
 #include <fcntl.h>
@@ -22,19 +19,14 @@
 #include "PacketDefinition.hpp"
 
 #define BUFFER_SIZE 512
-#ifdef __linux__
-	#define SERIAL_PORT "/dev/ttyUSB0"
-	#define BAUD_RATE B115200
-#elif __APPLE__
-	#define SERIAL_PORT "/dev/cu.usbserial-0001"
-	#define BAUD_RATE B115200
-#else
-	#error "Unsupported platform"
-#endif
+#define BAUD_RATE B115200
+#define SERIAL_PORT "/dev/ttyUSB0"
 
 class WsServer;
 
 std::string getSerialPort();
+
+extern volatile std::sig_atomic_t g_stopped;
 
 class SerialHandler {
 public:
@@ -48,7 +40,6 @@ public:
 	void	parseTeleMsg(char *msg);
 
 private:
-	volatile std::sig_atomic_t	g_stopped;
 	int				serial_port;
 	int				fifo;
 	int				fifoKey;
@@ -59,4 +50,3 @@ private:
 	int setup_serial();
 
 };
-#endif

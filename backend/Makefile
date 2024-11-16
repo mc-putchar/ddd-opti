@@ -56,7 +56,7 @@ help:	# Print help on Makefile
 	printf "$(COLOUR_MAGB)%-16s$(COLOUR_CYN)%s$(COLOUR_END)\n", $$1, $$2 } ' \
 	Makefile
 
-$(NAME): $(SRCS:%=$(BINDIR)/%.o) $(WSSERVER)
+$(NAME): $(WSSERVER) $(SRCS:%=$(BINDIR)/%.o)
 	$(CXX) $(CPPFLAGS) $(SRCS:%=$(BINDIR)/%.o) -o $@ $(LDFLAGS) $(LDLIBS)
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
@@ -66,4 +66,4 @@ $(BINDIR):
 	$(MKDIR) $(BINDIR)
 
 $(WSSERVER):
-	$(MAKE) -C $(WSSERVERDIR)
+	$(MAKE) -C $(WSSERVERDIR) libws.a

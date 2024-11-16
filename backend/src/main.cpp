@@ -1,3 +1,4 @@
+#include <csignal>
 #include <iostream>
 #include <thread>
 
@@ -21,14 +22,26 @@
 // - Integration Tests
 // - GUI
 // - Documentation
+volatile std::sig_atomic_t g_stopped;
+void sighandler(int sig) {
+	(void)sig;
+	g_stopped = 1;
+}
 
+#define CONTAINER_IP	"172.18.0.2"
 int main(void) {
+	g_stopped = 0;
+	::signal(SIGINT, sighandler);
 	NatNetClient nnclient;
 	s_ports ports(CMD_PORT, DATA_PORT);
-	if (nnclient.init(&ports, LOOPBACK, LOOPBACK))
+	if (nnclient.init(&ports, CONTAINER_IP, DOCKER_HOST))
 	{
 		std::cerr << "Error: failed to initialize NatNet client." << std::endl;
 	}
+	std::thread NatNetThread([&nnclient]()->void {
+		nnclient.listen_cmd();
+	});
+
 	std::string const serialPort = getSerialPort();
 	if (serialPort.empty())
 		return 1;
@@ -55,6 +68,7 @@ int main(void) {
 	control.setPath(1, &path1);
 
 	transmitThread.join();
+	NatNetThread.join();
 	// wsServerThread.join();
 	return 0;
 }

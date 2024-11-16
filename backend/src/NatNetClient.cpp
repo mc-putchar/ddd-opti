@@ -12,7 +12,7 @@
 #include "NatNetClient.hpp"
 
 NatNetClient::NatNetClient()
-	: cmd_socket(-1), data_socket(-1)
+	: cmd_socket(-1), data_socket(-1), host(), packet_in(), packet_out()
 {}
 
 NatNetClient::~NatNetClient()
@@ -41,21 +41,21 @@ static int create_cmd_socket(uint16_t port, char const *ip_addr)
 		::close(sfd);
 		return (-1);
 	}
-	int recvbuf_size(0);
-	int sendbuf_size(0);
-	socklen_t optlen(0);
-	if (::getsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvbuf_size, &optlen)
-	|| ::getsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendbuf_size, &optlen))
-	{
-		std::cerr << "Error: " << errno << " from getsockopt" << std::endl
-			<< ::strerror(errno) << std::endl;
-		::close(sfd);
-		return (-1);
-	}
-	if (recvbuf_size != BUF_SIZE)
-		std::cerr << "Warn: Receive buffer size differs, set to: " << recvbuf_size << std::endl;
-	if (sendbuf_size != BUF_SIZE)
-		std::cerr << "Warn: Sending buffer size differs, set to: " << sendbuf_size << std::endl;
+	// int recvbuf_size(0);
+	// int sendbuf_size(0);
+	// socklen_t optlen(0);
+	// if (::getsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvbuf_size, &optlen)
+	// || ::getsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendbuf_size, &optlen))
+	// {
+	// 	std::cerr << "Error: " << errno << " from getsockopt" << std::endl
+	// 		<< ::strerror(errno) << std::endl;
+	// 	::close(sfd);
+	// 	return (-1);
+	// }
+	// if (recvbuf_size != BUF_SIZE)
+	// 	std::cerr << "Warn: Receive buffer size differs, set to: " << recvbuf_size << std::endl;
+	// if (sendbuf_size != BUF_SIZE)
+	// 	std::cerr << "Warn: Sending buffer size differs, set to: " << sendbuf_size << std::endl;
 	struct timeval tv;
 	tv.tv_sec = SOCK_TIMEOUT;
 	tv.tv_usec = 0;
@@ -107,17 +107,17 @@ static int create_data_socket(uint16_t port, char const *ip_addr)
 		::close(sfd);
 		return (-1);
 	}
-	int recvbuf_size(0);
-	socklen_t optlen(0);
-	if (::getsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvbuf_size, &optlen))
-	{
-		std::cerr << "Error: " << errno << " from getsockopt" << std::endl
-			<< ::strerror(errno) << std::endl;
-		::close(sfd);
-		return (-1);
-	}
-	if (recvbuf_size != BUF_SIZE)
-		std::cerr << "Warn: Receive buffer size differs, set to: " << recvbuf_size << std::endl;
+	// int recvbuf_size(0);
+	// socklen_t optlen(0);
+	// if (::getsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvbuf_size, &optlen))
+	// {
+	// 	std::cerr << "Error: " << errno << " from getsockopt" << std::endl
+	// 		<< ::strerror(errno) << std::endl;
+	// 	::close(sfd);
+	// 	return (-1);
+	// }
+	// if (recvbuf_size != BUF_SIZE)
+	// 	std::cerr << "Warn: Receive buffer size differs, set to: " << recvbuf_size << std::endl;
 	int const re = 1L;
 	if (::setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &re, sizeof re))
 	{
@@ -131,29 +131,50 @@ static int create_data_socket(uint16_t port, char const *ip_addr)
 	return (sfd);
 }
 
-static int request_conn(int fd, char const *ip, uint16_t port, uint16_t retries)
+int NatNetClient::request_conn(char const *ip, uint16_t port, uint16_t retries)
 {
-	struct sockaddr_in host = {};
-	host.sin_family = AF_INET;
-	host.sin_port = ::htons(port);
-	host.sin_addr.s_addr = ::inet_addr(ip);
+	this->host.sin_family = AF_INET;
+	this->host.sin_port = ::htons(port);
+	this->host.sin_addr.s_addr = ::inet_addr(ip);
 
 	s_connection_opts conn_opts = s_connection_opts();
 	s_sender sender = {};
-	s_packet packet;
-	packet.type = CONNECT;
-	packet.size = (4L + sizeof sender + sizeof conn_opts);
-	::memcpy(&packet.data, &sender, sizeof sender);
-	::memcpy(&(packet.data.bytes[sizeof sender]), &conn_opts, sizeof conn_opts);
+	this->packet_out.type = CONNECT;
+	this->packet_out.size = (4L + sizeof sender + sizeof conn_opts);
+	::memcpy(&this->packet_out.data, &sender, sizeof sender);
+	::memcpy(&(this->packet_out.data.bytes[sizeof sender]), &conn_opts, \
+		sizeof conn_opts);
 	ssize_t sb(0);
-	while (sb < 1L)
+	while (sb < 1L && retries--)
 	{
-		sb = ::sendto(fd, reinterpret_cast<char *>(&packet), packet.size, 0, \
-			(sockaddr *)&host, sizeof host);
-		std::cerr << "Error: " << errno << " from sendto" << std::endl
-			<< ::strerror(errno) << std::endl;
-		if (!retries--)
-			return (-1);
+		sb = ::sendto(
+			this->cmd_socket,
+			reinterpret_cast<char *>(&this->packet_out),
+			this->packet_out.size,
+			0L,
+			reinterpret_cast<sockaddr*>(&this->host),
+			sizeof this->host
+		);
+	}
+	return (retries ? 0 : -1);
+}
+
+int NatNetClient::send_keepalive()
+{
+	this->packet_out.type = KEEPALIVE;
+	this->packet_out.size = 0;
+	ssize_t sb = ::sendto(
+		this->cmd_socket,
+		reinterpret_cast<char *>(&this->packet_out),
+		4L,
+		0L,
+		reinterpret_cast<sockaddr*>(&this->host),
+		sizeof this->host
+	);
+	if (sb < 1)
+	{
+		std::cerr << "NatNet client: Failed sending keepalive." << std::endl;
+		return (-1);
 	}
 	return (0);
 }
@@ -170,7 +191,7 @@ int NatNetClient::init(s_ports *ports, char const *my_ip, char const *host_ip)
 		this->cmd_socket = -1;
 		return (-1);
 	}
-	if (request_conn(this->cmd_socket, host_ip, ports->cmd, SEND_RETRIES))
+	if (request_conn(host_ip, ports->cmd, SEND_RETRIES))
 	{
 		std::cerr << "Error: Failed to establish connection with server. Maximum retries exceeded." << std::endl;
 		::close(this->cmd_socket);
@@ -181,4 +202,74 @@ int NatNetClient::init(s_ports *ports, char const *my_ip, char const *host_ip)
 	}
 	std::cout << "INFO: Established connection with NatNet server." << std::endl;
 	return (0);
+}
+
+void NatNetClient::parse_cmd()
+{
+	switch (this->packet_in.type)
+	{
+		case SERVERINFO:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		case RESPONSE:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		case MODELDEF:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		case DATAFRAME:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		case MSGSTRING:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		case UNRECOGNIZED:
+			std::cout << "[NatNet] Received: " << this->packet_in.type << std::endl;
+			break;
+		default:
+			std::cerr << "[NatNet] Unknown command" << std::endl;
+	}
+}
+
+void NatNetClient::listen_cmd()
+{
+	ssize_t rb(0);
+
+	while (!g_stopped) {
+		this->send_keepalive();
+		rb = recvfrom(
+			this->cmd_socket,
+			reinterpret_cast<char*>(&this->packet_in),
+			sizeof this->packet_in,
+			0L,
+			NULL,
+			NULL
+		);
+		if (rb < 0)
+			std::cerr << "[NatNet] client command receive error." << std::endl;
+		else if (rb > 0)
+			this->parse_cmd();
+	}
+}
+
+void NatNetClient::parse_data()
+{}
+
+void NatNetClient::listen_data()
+{
+	ssize_t rb(0);
+	while (!g_stopped) {
+		rb = recvfrom(
+			this->data_socket,
+			reinterpret_cast<char*>(&this->packet_in),
+			sizeof this->packet_in,
+			0L,
+			NULL,
+			NULL
+		);
+		if (rb < 0)
+			std::cerr << "[NatNet] client data receive error." << std::endl;
+		else if (rb > 0)
+			this->parse_data();
+	}
 }

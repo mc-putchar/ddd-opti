@@ -1,5 +1,5 @@
-FROM alpine AS builder
-RUN apk update && apk add --no-cache binutils make libgcc musl-dev gcc g++ asio-dev
+FROM alpine
+RUN apk update && apk add --no-cache binutils musl-dev make gcc g++ libgcc
 WORKDIR /code
 COPY . .
 RUN make static
