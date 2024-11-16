@@ -12,7 +12,7 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			<div className="col-span-1 bg-stone-600 p-0 m-0 items-center gap-1 flex">
 				<div className="bg-stone-700 p-2 items-center gap-1 flex" style={{ backgroundColor: color }}>
 					<h3 className="font-bold text-stone-950" >
-						Drone {index}
+						D_{index}
 					</h3>
 				</div>
 				<Arm index={index} ws={ws} color={color}/>

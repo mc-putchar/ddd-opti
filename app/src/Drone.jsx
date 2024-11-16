@@ -6,6 +6,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const LIGHT_COLOR = "#fffbeb"
 const DRONE_BOUNDING_BOX = 0.8;
+const DRONE_BOUNDING_BOX_HEIGHT = 0.8;
+
+const DRONE_Z_MAX = 1.6 
+					- DRONE_BOUNDING_BOX_HEIGHT/2;
+const DRONE_Z_MIN = 0
+					+ DRONE_BOUNDING_BOX_HEIGHT/2;
+
+
 
 
 const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) => {

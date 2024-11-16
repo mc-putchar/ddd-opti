@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH } from './Live3dview';
 import { DRONE_BOUNDING_BOX } from './Drone';
+import { Slider as ShadcnSlider } from "@/components/ui/slider";
+import { Input as ShadcnInput } from "@/components/ui/input";
 
 function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint, setBlock_incoming_setpoint }) {
-	const [coordinates, setCoordinates] = useState({ x: setpoint[0], y: setpoint[2] });
+	const [coordinates, setCoordinates] = useState({ x: setpoint[0], y: setpoint[2], z: setpoint[1]});
 	const containerRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const throttleTimeout = useRef(null);
 
 	useEffect(() => {
-		setCoordinates({ x: setpoint[0], y: setpoint[2] });
+		setCoordinates({ x: setpoint[0], y: setpoint[2], z: setpoint[1]});
 	}, [setpoint]);
 
 	const handleMouseDown = () => {
@@ -46,12 +48,11 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 			)
 		);
 
-		setCoordinates({ x: newX, y: newY });
+		setCoordinates({ x: newX, y: newY});
 		setSetpoint((prevSetpoint) => {
 			const updatedSetpoint = [...prevSetpoint];
 			updatedSetpoint[0] = newX;
 			updatedSetpoint[2] = newY;
-			updatedSetpoint[1] = 1;
 			return updatedSetpoint;
 		});
 	};
@@ -76,6 +77,15 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 		}
 	}, [setpoint, isDragging, ws, index]);
 
+	const handleSliderChange = (value) => {
+		setCoordinates({z: value[0]});
+		setSetpoint((prevSetpoint) => {
+			const updatedSetpoint = [...prevSetpoint];
+			updatedSetpoint[1] = value[0];
+			return updatedSetpoint;
+		});
+	};
+
 	useEffect(() => {
 		if (isDragging) {
 			document.addEventListener('mousemove', handleMouseMove);
@@ -92,8 +102,9 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 	}, [isDragging]);
 
 	return (
+		<>
 		<div
-			className="slider-container h-full bg-stone-900 border border-stone-950 flex"
+			className="slider-container h-full mb-2 bg-stone-900 border border-stone-950 flex"
 			ref={containerRef}
 			onMouseDown={handleMouseDown}
 			style={{
@@ -102,7 +113,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 				overflow: 'hidden',
 				flexDirection: 'column',
 			}}
-		>
+			>
 			<div
 				className="dot bg-stone-400"
 				style={{
@@ -115,8 +126,18 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 					cursor: 'pointer',
 					transform: 'translate(-50%, -50%)',
 				}}
-			/>
+				/>
 		</div>
+		<ShadcnSlider 
+				value={[coordinates.z]} // Slider expects an array
+				onValueChange={handleSliderChange} // Update on value change
+				onMouseDown={handleMouseDown}
+				min={0.25} // Adjust min value as needed
+				max={1} // Adjust max value as needed
+				step={0.1} // Step size for the slider
+				className="flex-grow bg-stone-950" // Allow the slider to take up available space and set a height
+			/>
+		</>
 	);
 }
 

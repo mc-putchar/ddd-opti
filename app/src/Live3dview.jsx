@@ -5,9 +5,9 @@ import { OrbitControls, Sphere, Plane, Cylinder, Box, useGLTF } from '@react-thr
 import * as THREE from 'three';
 import { OptiCameras } from './OptiCameras';
 
-const SPACE_HEIGHT = 3.00;
-const SPACE_DEPTH = 6.30;
-const SPACE_WIDTH = 5.33;
+const SPACE_HEIGHT = 3.20;
+const SPACE_DEPTH = 6.80;
+const SPACE_WIDTH = 5.10;
 
 
 const Live3dview = React.memo(({ 
@@ -56,13 +56,13 @@ const Live3dview = React.memo(({
 				castShadow
 				receiveShadow
 			/> */}
-		<primitive
+		{/* <primitive
 				object={dancer.scene}
 				position={[0, 0, 0]}
 				scale={[0.007, 0.007, 0.007]} // Adjust scale as needed
 				castShadow
 				receiveShadow
-			/>
+			/> */}
 		<Plane position={[0, -0.01, 0]} args={[SPACE_WIDTH, SPACE_DEPTH]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
 			<meshStandardMaterial attach="material" color="#57534e" />
 		</Plane>
@@ -84,26 +84,40 @@ const Live3dview = React.memo(({
 		/> */}
 		<OptiCameras/>
 
-
-		{/* Windows */}
-		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[SPACE_WIDTH/2/2, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
-			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
-		</Box>
-		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[-SPACE_WIDTH/2/2, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
-			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
-		</Box>
-		<Box args={[SPACE_WIDTH/5, 1, 0.05]} position={[0, (SPACE_HEIGHT/1.7) - 0.12/2 , -SPACE_DEPTH/2]} >
-			<meshLambertMaterial attach="material" color={"#42526e"} wireframe={false} />
-		</Box>
-
-
-		<pointLight position={[0, 6, 0]} intensity={50} color="white" />
+		<Curtain />
+		<pointLight position={[2, 2, 0]} intensity={50} color="white" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
 		{/* <OrbitControls target={position0} />  */}
 		<OrbitControls target={[0, 1.2, 0]} /> 
 		<gridHelper args={[Math.ceil(SPACE_WIDTH), Math.ceil(SPACE_WIDTH), 'black', '#57534e']} />
 	</Canvas>
 	);
 });
+
+function Curtain () {
+	const curtainRef = useRef();
+
+	useEffect(() => {
+	  const { geometry } = curtainRef.current;
+  
+	  const position = geometry.attributes.position;
+	  for (let i = 0; i < position.count; i++) {
+		const x = position.getX(i);
+		const wave = Math.sin(x * 20) * 0.12; // Adjust fold frequency and height
+		position.setZ(i, wave);
+	  }
+	  position.needsUpdate = true; // Notify Three.js of the geometry update
+	}, []);
+  
+	return (
+	  <mesh ref={curtainRef} position={[0, 0, -SPACE_DEPTH/2]} >
+		{/* Plane geometry for the curtain */}
+		<planeGeometry args={[5, 6, 128, 16]} castShadow receiveShadow/>
+		<meshStandardMaterial color="#403737"/>
+	  </mesh>
+	);
+  };
+  
+  
 
 
 export {Live3dview, SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH};
