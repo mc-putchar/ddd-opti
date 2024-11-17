@@ -1,7 +1,9 @@
-#include "Path.hpp"
+#include "DronePath.hpp"
+#include "Log.hpp"
 
+#define TAG	"DronePath"
 
-Path::Path(std::string file_path) : sending(false)
+DronePath::DronePath(std::string file_path) : sending(false)
 {
 	std::ifstream inputFile(file_path);
 	std::string str((std::istreambuf_iterator<char>(inputFile)),
@@ -9,7 +11,8 @@ Path::Path(std::string file_path) : sending(false)
 	jsonStr = str;
 
 	if (jsonStr.empty()) {
-		std::cerr << "Error: JSON input is empty!" << std::endl;
+		// std::cerr << "Error: JSON input is empty!" << std::endl;
+		ERROR(TAG, "JSON input is empty!");
 		return;
 	}
 
@@ -37,11 +40,14 @@ Path::Path(std::string file_path) : sending(false)
 			frames.push_back(f);
 		}
 	} catch (nlohmann::json::parse_error& e) {
-		std::cerr << "Parse error: " << e.what() << std::endl;
+		// std::cerr << "Parse error: " << e.what() << std::endl;
+		std::string tmp("Parse error: ");
+		tmp.append(e.what());
+		ERROR(TAG, tmp.c_str());
 	}
 }
 
-std::stringstream Path::getCurrentFrame(size_t i) {
+std::stringstream DronePath::getCurrentFrame(size_t i) {
 	std::stringstream ss;
 			ss << "\"setpoint\":[" << frames[i].location.x << "," << frames[i].location.y << "," << frames[i].location.z << "," << frames[i].location.yaw << "],"
 					  << "\"light\":[" << frames[i].light.angle << "," << frames[i].light.power << "]" << ","
@@ -51,7 +57,7 @@ std::stringstream Path::getCurrentFrame(size_t i) {
 
 // TODO:
 // Extract sending path frames to drone controller
-int Path::sendFrameByFrame() {
+int DronePath::sendFrameByFrame() {
 	if (sending) {
 		std::cout << "sending already" << std::endl;
 		if (paused.load() == true)
@@ -80,8 +86,8 @@ int Path::sendFrameByFrame() {
 	return 0;
 }
 
-Path::~Path() {
-	std::cout << "path " << " went out of scope" << std::endl;
+DronePath::~DronePath() {
+	// std::cout << "path " << " went out of scope" << std::endl;
 }
 
 // Path::Path(Path const &cpy) : drone(cpy.drone){
@@ -89,7 +95,7 @@ Path::~Path() {
 // 	// TODO ?
 // }
 
-Path & Path::operator=(Path const &rhs) {
+DronePath & DronePath::operator=(DronePath const &rhs) {
 	(void)rhs;
 	return *this;
 	//TODO ?

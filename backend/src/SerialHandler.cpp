@@ -1,4 +1,9 @@
+#include <string>
+
+#include "Log.hpp"
 #include "SerialHandler.hpp"
+
+#define TAG	"Serial"
 
 std::string getSerialPort()
 {
@@ -6,39 +11,46 @@ std::string getSerialPort()
 }
 
 SerialHandler::SerialHandler(std::string const &port)
-	: serial_port(-1), port(port)
+	: port(port), port_fd(-1)
 {}
 
 
 SerialHandler::~SerialHandler() {
-	(void)close(serial_port);
+	(void)close(port_fd);
 }
 
 
 bool SerialHandler::setup() {
-	serial_port = setup_serial();
-	if (serial_port < 0) {
-		std::cerr << "Failed to initialize serial connection." << std::endl;
-		std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
+	port_fd = setup_serial();
+	if (port_fd < 0) {
+		ERROR(TAG, "Failed to initialize serial connection. Make sure the ESP32 is connected");
+		// std::cerr << "Failed to initialize serial connection." << std::endl;
+		// std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
 		return false;
 	}
-	std::cerr << "Serial port connected." << std::endl;
+	// std::cerr << "Serial port connected." << std::endl;
+	INFO(TAG, "Serial port connected.");
 	return true;
 }
 
 
 int SerialHandler::setup_serial() {
-	std::cout << "Connecting to serial port: " << SERIAL_PORT << std::endl;
+	// std::cout << "Connecting to serial port: " << SERIAL_PORT << std::endl;
+	std::string tmp("Connecting to serial port: ");
+	tmp.append(SERIAL_PORT);
+	INFO(TAG, tmp.c_str());
 	int serial_port = open(SERIAL_PORT, O_RDWR | O_NOCTTY | O_SYNC);
 	if (serial_port < 0) {
-		std::cerr << "Error " << errno << " from open: " 
-			<< strerror(errno) << std::endl;
+		// std::cerr << "Error " << errno << " from open: " 
+		// 	<< strerror(errno) << std::endl;
+		ERROR(TAG, "Failed to open requested port.");
 		return (-1);
 	}
 	struct termios tty;
 	if (tcgetattr(serial_port, &tty) != 0) {
-		std::cerr << "Error " << errno << " from tcgetattr: " 
-			<< strerror(errno) << std::endl;
+		// std::cerr << "Error " << errno << " from tcgetattr: " 
+		// 	<< strerror(errno) << std::endl;
+		ERROR(TAG, "Failed to get term attributes.");
 		return (-1);
 	}
 
@@ -58,8 +70,9 @@ int SerialHandler::setup_serial() {
 	cfsetospeed(&tty, BAUD_RATE);
 
 	if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
-		std::cerr << "Error " << errno << " from tcsetattr: " 
-			<< strerror(errno) << std::endl;
+		// std::cerr << "Error " << errno << " from tcsetattr: " 
+		// 	<< strerror(errno) << std::endl;
+		ERROR(TAG, "Failed to set term attributes.");
 		return (-1);
 	}
 	return (serial_port);
@@ -99,7 +112,7 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		sendFront(ss.str());
 	}
-	else 
+	else
 		std::cout << msg << std::endl;
 }
 
@@ -108,13 +121,14 @@ void SerialHandler::monitorIncoming() {
 	char buf[BUFFER_SIZE];
 	std::string msg;
 
-	while (!g_stopped) {
+	while (true) {
 		usleep(500);
-		if (serial_port < 0) continue;
+		if (port_fd < 0) continue;
 		std::memset(buf, 0, sizeof(buf));
-		rb = read(serial_port, buf, BUFFER_SIZE - 1);
+		rb = read(port_fd, buf, BUFFER_SIZE - 1);
 		if (rb < 0) {
 			std::cerr << "Error reading from serial." << std::endl;
+			ERROR(TAG, "Error reading from serial.");
 			continue;
 		}
 		buf[rb] = 0;
@@ -129,7 +143,7 @@ int SerialHandler::send(std::string const &msg) {
 	int serial_rt;
 	{
 		std::lock_guard<std::mutex> guard(serialMutex);
-		serial_rt = write(serial_port, msg.c_str(), msg.length());
+		serial_rt = write(port_fd, msg.c_str(), msg.length());
 	}
 	this->sendFront(msg);
 	return (serial_rt);

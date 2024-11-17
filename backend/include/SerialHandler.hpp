@@ -40,10 +40,8 @@ public:
 	void	parseTeleMsg(char *msg);
 
 private:
-	int				serial_port;
-	int				fifo;
-	int				fifoKey;
-	std::string const		port;
+	std::string const	port;
+	int					port_fd;
 	std::mutex			serialMutex;
 
 	void send_to_ws(std::string msg);

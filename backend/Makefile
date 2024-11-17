@@ -10,17 +10,12 @@ WSSERVERDIR := $(LIBDIR)/wsServer
 WSSERVER := $(WSSERVERDIR)/libws.a
 
 # Source files
-SRCS = main DroneControl DroneState NatNetClient Path WsServer
-ifeq ($(OS),Windows_NT)
-	SRCS += WinSerialHandler
-	NAME := $(NAME).exe
-	MKDIR := mkdir
-	RM := del /s /q
-else
-	SRCS += SerialHandler
-	MKDIR := mkdir -p
-	RM := rm -fr
-endif
+SRCS = main Log
+SRCS += DroneControl DroneState DronePath
+SRCS += SerialHandler NatNetClient WsServer
+
+MKDIR := mkdir -p
+RM := rm -fr
 
 CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++14

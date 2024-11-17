@@ -8,10 +8,12 @@
 #include "ws.h"
 
 #include "DroneControl.hpp"
+#include "Log.hpp"
 #include "WsServer.hpp"
 
 #define WS_PORT	4242
-#define WS_HOST "0.0.0.0"
+#define WS_HOST	"0.0.0.0"
+#define TAG		"WSServ"
 
 WsServer &WsServer::getInstance()
 {
@@ -35,7 +37,10 @@ WsServer::~WsServer() {}
 
 void WsServer::start() {
 	ws_socket(&this->server);
-	std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
+	// std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
+	std::string tmp("WebSocket Server listening on port: ");
+	tmp.append(std::to_string(this->server.port));
+	INFO(TAG, tmp.c_str());
 }
 
 void WsServer::send(std::string const &msg, size_t client)
@@ -88,6 +93,9 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		json data = json::parse(tmp);
 		DroneControl::getInstance().update(idx, data);
 	} catch (nlohmann::json::parse_error& e) {
-		std::cerr << "Parse error: " << e.what() << std::endl;
+		// std::cerr << "Parse error: " << e.what() << std::endl;
+		std::string	tmp("Parsing error: ");
+		tmp.append(e.what());
+		ERROR(TAG, tmp.c_str());
 	}
 }
