@@ -3,7 +3,7 @@ import { DroneControll } from './DroneControll';
 import { fetchConfigAndInitializeWebSocket } from './WebSocket';
 import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
-import { SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH } from './Live3dview';
+import * as Config from './Settings';
 
 
 function App() {
@@ -13,15 +13,18 @@ function App() {
 	const [ws, setWs] = useState(null);
 	const messagesEndRef = useRef(null);
 
-	const colors = ["#e100ff", "#00e82b", "#d0ff00", "#e3054b"];
-	const [position0, setPosition0] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
-	const [position1, setPosition1] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
-	const [position2, setPosition2] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
-	const [position3, setPosition3] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
-	const [setpoint0, setSetpoint0] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
-	const [setpoint1, setSetpoint1] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
-	const [setpoint2, setSetpoint2] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
-	const [setpoint3, setSetpoint3] = useState([(-SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
+	const colors = ["#ff7700", "#00e82b", "purple", "#e3054b"];
+	const [position0, setPosition0] = useState([0, 0.12, 0, 0]);
+	// const [position0, setPosition0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+
+	const [position1, setPosition1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	const [position2, setPosition2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
+	const [position3, setPosition3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
+	const [setpoint0, setSetpoint0] = useState([0, 0.12, 0, 0]);
+	// const [setpoint0, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	const [setpoint2, setSetpoint2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
+	const [setpoint3, setSetpoint3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
 	const [rc0, setRc0] = useState([1, 1, 1, 1, 1]);
 	const [rc1, setRc1] = useState([1, 1, 1, 1, 1]);
 	const [rc2, setRc2] = useState([1, 1, 1, 1, 1]);
@@ -75,7 +78,7 @@ function App() {
 
 
 	return (
-	<div className="grid grid-rows-[auto,1fr,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300">
+	<div className="grid grid-rows-[auto,1fr,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300 select-none">
 
 		{/* Header */}
 		<div className="col-span-8 bg-stone-900 p-2 flex items-center justify-center gap-3">
@@ -127,7 +130,7 @@ function App() {
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
-			{/* <DroneControll
+			<DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
 				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
@@ -147,7 +150,7 @@ function App() {
 				pathLen={pathLen3} color={colors[3]} 
 				block_incoming_setpoint={block_incoming_setpoint}
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
-			/> */}
+			/>
 		</div>
 	</div>
 	);

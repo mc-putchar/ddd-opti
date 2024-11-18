@@ -4,10 +4,8 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sphere, Plane, Cylinder, Box, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { OptiCameras } from './OptiCameras';
+import * as Config from './Settings';
 
-const SPACE_HEIGHT = 3.20;
-const SPACE_DEPTH = 6.80;
-const SPACE_WIDTH = 5.10;
 
 
 const Live3dview = React.memo(({ 
@@ -63,7 +61,9 @@ const Live3dview = React.memo(({
 				castShadow
 				receiveShadow
 			/> */}
-		<Plane position={[0, -0.01, 0]} args={[SPACE_WIDTH, SPACE_DEPTH]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+		<Plane position={[0, -0.01, 0]} args={[Config.SPACE_WIDTH, Config.SPACE_DEPTH]} rotation={[-Math.PI / 2, 0, 0]} 
+		// receiveShadow
+		>
 			<meshStandardMaterial attach="material" color="#57534e" />
 		</Plane>
 		<Drone
@@ -74,21 +74,21 @@ const Live3dview = React.memo(({
 			position={position1} light={light1} setpoint={setpoint1} 
 			color={colors[1]} droneGlb={droneGlb} ati={ati1}
 		/>
-		{/* <Drone
+		<Drone
 			position={position2} light={light2} setpoint={setpoint2} 
 			color={colors[2]} droneGlb={droneGlb} ati={ati2}
 		/>
 		<Drone
 			position={position3} light={light3} setpoint={setpoint3} 
 			color={colors[3]} droneGlb={droneGlb} ati={ati3}
-		/> */}
+		/>
 		<OptiCameras/>
 
 		<Curtain />
-		<pointLight position={[2, 2, 0]} intensity={50} color="white" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
+		<pointLight position={[0, 3, 0]} intensity={50} color="white" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
 		{/* <OrbitControls target={position0} />  */}
-		<OrbitControls target={[0, 1.2, 0]} /> 
-		<gridHelper args={[Math.ceil(SPACE_WIDTH), Math.ceil(SPACE_WIDTH), 'black', '#57534e']} />
+		<OrbitControls target={[0, 0.7, 0]} /> 
+		<gridHelper args={[Math.ceil(Config.SPACE_WIDTH), Math.ceil(Config.SPACE_WIDTH), 'black', '#57534e']} />
 	</Canvas>
 	);
 });
@@ -109,7 +109,7 @@ function Curtain () {
 	}, []);
   
 	return (
-	  <mesh ref={curtainRef} position={[0, 0, -SPACE_DEPTH/2]} >
+	  <mesh ref={curtainRef} position={[0, 0, -Config.SPACE_DEPTH/2]} >
 		{/* Plane geometry for the curtain */}
 		<planeGeometry args={[5, 6, 128, 16]} castShadow receiveShadow/>
 		<meshStandardMaterial color="#403737"/>
@@ -120,4 +120,4 @@ function Curtain () {
   
 
 
-export {Live3dview, SPACE_HEIGHT, SPACE_DEPTH, SPACE_WIDTH};
+export {Live3dview};
