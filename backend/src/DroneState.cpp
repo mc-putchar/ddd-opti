@@ -188,3 +188,8 @@ void DroneState::stopKeepAlive() {
 		keepAliveThread.join(); // Wait for the thread to finish
 	}
 }
+
+void DroneState::update_position(float pos[4])
+{
+	this->position = pos;
+}

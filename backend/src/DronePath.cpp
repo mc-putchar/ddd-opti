@@ -11,7 +11,6 @@ DronePath::DronePath(std::string file_path) : sending(false)
 	jsonStr = str;
 
 	if (jsonStr.empty()) {
-		// std::cerr << "Error: JSON input is empty!" << std::endl;
 		ERROR(TAG, "JSON input is empty!");
 		return;
 	}
@@ -40,7 +39,6 @@ DronePath::DronePath(std::string file_path) : sending(false)
 			frames.push_back(f);
 		}
 	} catch (nlohmann::json::parse_error& e) {
-		// std::cerr << "Parse error: " << e.what() << std::endl;
 		std::string tmp("Parse error: ");
 		tmp.append(e.what());
 		ERROR(TAG, tmp.c_str());

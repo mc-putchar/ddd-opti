@@ -84,12 +84,11 @@ Log &Log::operator<<(std::ostream &(*os)(std::ostream &))
 
 Log &Log::operator<<(e_loglevel const &severity)
 {
+	bool const use_colors = !this->is_file_;
 	this->verbosity_curr_ = severity;
 	if (!this->out_ || this->verbosity_curr_ < this->verbosity_)
 		return *this;
-
-	bool use_colors = !this->is_file_;
-
+	this->timestamp();
 	switch (severity) {
 		case DEBUG: (*this->out_) << (use_colors ? CYAN : "")
 			<< "[DEBUG]	" << (use_colors ? RESET : ""); break;
@@ -102,7 +101,6 @@ Log &Log::operator<<(e_loglevel const &severity)
 		default: (*this->out_) << (use_colors ? MAGENTA : "")
 			<< "[MESSAGE]	" << (use_colors ? RESET : ""); break;
 	}
-	this->timestamp();
 	return *this;
 }
 

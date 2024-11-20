@@ -1,28 +1,121 @@
 #include <cstdint>
 #include <iostream>
+#include <string>
 
 #include <arpa/inet.h>
-#include <sys/epoll.h>
-#include <errno.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include "Log.hpp"
+#include "DataBroker.h"
 #include "NatNetClient.hpp"
 
 #define TAG	"NatNet"
 
 NatNetClient::NatNetClient(int epoll_fd)
-	: epoll_fd(epoll_fd), cmd_socket(-1), data_socket(-1), host(), packet_in(), packet_out()
+	: epoll_fd(epoll_fd),
+	cmd_socket(-1),
+	data_socket(-1),
+	host(),
+	packet_in(),
+	packet_out()
 {}
 
 NatNetClient::~NatNetClient()
 {
-	::close(this->cmd_socket);
-	::close(this->data_socket);
+	if (this->cmd_socket >= 0)
+		(void)::close(this->cmd_socket);
+	if (this->data_socket >= 0)
+		(void)::close(this->data_socket);
+}
+
+int NatNetClient::connect(s_ports *ports, char const *my_ip, char const *host_ip, s_databroker *db)
+{
+	if (this->init(ports, my_ip, db))
+		return (-1);
+	if (request_conn(host_ip, ports->cmd, SEND_RETRIES))
+	{
+		ERROR(TAG, "failed to establish connection with server. Maximum retries exceeded.");
+		(void)::close(this->cmd_socket);
+		(void)::close(this->data_socket);
+		this->cmd_socket = -1;
+		this->data_socket = -1;
+		return (-1);
+	}
+	INFO(TAG, "Established connection with the server.");
+	return (0);
+}
+
+void NatNetClient::listen_cmd()
+{
+	ssize_t rb(0);
+
+	rb = recvfrom(
+		this->cmd_socket,
+		reinterpret_cast<char*>(&this->packet_in),
+		sizeof this->packet_in,
+		0L,
+		NULL,
+		NULL
+	);
+	if (rb < 0)
+		ERROR(TAG, "client command receive error.");
+	else if (rb > 0)
+		this->parse_cmd();
+}
+
+int NatNetClient::send_cmd(std::string const &cmd, e_msg_type type)
+{
+	this->packet_out.type = type;
+	if (!cmd.empty())
+	{
+		this->packet_out.size = cmd.length() + 1;
+		::memcpy(
+			this->packet_out.data.str,
+			cmd.c_str(),
+			cmd.length()
+		);
+		this->packet_out.data.str[cmd.length()] = 0;
+	}
+	else
+	{
+		this->packet_out.size = 0;
+	}
+	ssize_t sb = ::sendto(
+		this->cmd_socket,
+		reinterpret_cast<char *>(&this->packet_out),
+		(4L + this->packet_out.size),
+		0L,
+		reinterpret_cast<sockaddr*>(&this->host),
+		sizeof this->host
+	);
+	if (sb < 1)
+	{
+		ERROR(TAG, "failed to send command");
+		return (-1);
+	}
+	return (0);
+}
+
+void NatNetClient::listen_data()
+{
+	ssize_t rb(0);
+	rb = recvfrom(
+		this->data_socket,
+		reinterpret_cast<char*>(&this->packet_in),
+		sizeof this->packet_in,
+		0L,
+		NULL,
+		NULL
+	);
+	if (rb < 0)
+		ERROR(TAG, "client data receive error.");
+	else if (rb > 0)
+		this->parse_data();
 }
 
 static int create_cmd_socket(uint16_t port, char const *ip_addr)
@@ -31,8 +124,6 @@ static int create_cmd_socket(uint16_t port, char const *ip_addr)
 	int const sfd = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sfd < 0)
 	{
-		// std::cerr << "Error: " << errno << " from socket" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to create socket");
 		return (-1);
 	}
@@ -41,10 +132,8 @@ static int create_cmd_socket(uint16_t port, char const *ip_addr)
 	my_addr.sin_addr.s_addr = ::inet_addr(ip_addr);
 	if (::bind(sfd, (struct sockaddr*)&my_addr, sizeof(struct sockaddr)))
 	{
-		// std::cerr << "Error: " << errno << " from bind" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to bind socket");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
 	// int recvbuf_size(0);
@@ -69,30 +158,22 @@ static int create_cmd_socket(uint16_t port, char const *ip_addr)
 	int ipfrag = IP_PMTUDISC_DO;
 	if (::setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv))
 	{
-		// std::cerr << "Error: " << errno << " from setsockopt timeout" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to set socket option");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
 	if (::setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &re, sizeof re))
 	{
-		// std::cerr << "Error: " << errno << " from setsockopt reuse" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to set socket option");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
 	if (::setsockopt(sfd, IPPROTO_IP, IP_MTU_DISCOVER, &ipfrag, sizeof ipfrag))
 	{
-		// std::cerr << "Error: " << errno << " from setsockopt fragment" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to set socket option");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
-	// std::cout << "INFO: " << "Configured unicast command socket."
-	// 	<< " IP: " << ip_addr << " Port: " << port << std::endl;
 	INFO(TAG, "Configured command socket");
 	return (sfd);
 }
@@ -103,8 +184,6 @@ static int create_data_socket(uint16_t port, char const *ip_addr)
 	int const sfd = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sfd < 0)
 	{
-		// std::cerr << "Error: " << errno << " from socket" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to create socket");
 		return (-1);
 	}
@@ -113,10 +192,8 @@ static int create_data_socket(uint16_t port, char const *ip_addr)
 	my_addr.sin_addr.s_addr = ::inet_addr(ip_addr);
 	if (::bind(sfd, (struct sockaddr*)&my_addr, sizeof(struct sockaddr)))
 	{
-		// std::cerr << "Error: " << errno << " from bind" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to bind socket");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
 	// int recvbuf_size(0);
@@ -133,16 +210,47 @@ static int create_data_socket(uint16_t port, char const *ip_addr)
 	int const re = 1L;
 	if (::setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &re, sizeof re))
 	{
-		// std::cerr << "Error: " << errno << " from setsockopt" << std::endl
-		// 	<< ::strerror(errno) << std::endl;
 		ERROR(TAG, "failed to set socket option");
-		::close(sfd);
+		(void)::close(sfd);
 		return (-1);
 	}
-	// std::cout << "INFO: " << "Configured unicast data socket."
-	// 	<< " IP: " << ip_addr << " Port: " << port << std::endl;
 	INFO(TAG, "Configured command socket");
 	return (sfd);
+}
+
+void	cmd_handler()
+{
+	INFO(TAG, "cmd_handler called");
+}
+
+void	data_handler()
+{
+	INFO(TAG, "data_handler called");
+}
+
+int NatNetClient::init(s_ports *ports, char const *my_ip, s_databroker *db)
+{
+	this->cmd_socket = create_cmd_socket(ports->cmd, my_ip);
+	if (this->cmd_socket < 0)
+		return (-1);
+	this->data_socket = create_data_socket(ports->data, my_ip);
+	if (this->data_socket < 0)
+	{
+		(void)::close(this->cmd_socket);
+		this->cmd_socket = -1;
+		return (-1);
+	}
+	if (broker_this(db, &cmd_handler, this->cmd_socket, EPOLLIN | EPOLLOUT)
+	|| broker_this(db, &data_handler, this->data_socket, EPOLLIN))
+	{
+		(void)::close(this->cmd_socket);
+		this->cmd_socket = -1;
+		(void)::close(this->data_socket);
+		this->data_socket = -1;
+		ERROR(TAG, "failed epoll add");
+		return (-1);
+	}
+	return (0);
 }
 
 int NatNetClient::request_conn(char const *ip, uint16_t port, uint16_t retries)
@@ -152,19 +260,21 @@ int NatNetClient::request_conn(char const *ip, uint16_t port, uint16_t retries)
 	this->host.sin_addr.s_addr = ::inet_addr(ip);
 
 	s_connection_opts conn_opts = s_connection_opts();
+	conn_opts.subscribed_data_only = true;
 	s_sender sender = {};
 	this->packet_out.type = CONNECT;
-	this->packet_out.size = (4L + sizeof sender + sizeof conn_opts);
+	this->packet_out.size = (sizeof sender + sizeof conn_opts);
 	::memcpy(&this->packet_out.data, &sender, sizeof sender);
 	::memcpy(&(this->packet_out.data.bytes[sizeof sender]), &conn_opts, \
 		sizeof conn_opts);
 	ssize_t sb(0);
-	while (sb < 1L && retries--)
+	while (sb < 1L && retries)
 	{
+		--retries;
 		sb = ::sendto(
 			this->cmd_socket,
 			reinterpret_cast<char *>(&this->packet_out),
-			this->packet_out.size,
+			(4L + this->packet_out.size),
 			0L,
 			reinterpret_cast<sockaddr*>(&this->host),
 			sizeof this->host
@@ -194,59 +304,18 @@ int NatNetClient::send_keepalive()
 	return (0);
 }
 
-int NatNetClient::init(s_ports *ports, char const *my_ip)
+void print_packet(s_packet *packet)
 {
-	this->cmd_socket = create_cmd_socket(ports->cmd, my_ip);
-	if (this->cmd_socket < 0)
-		return (-1);
-	this->data_socket = create_data_socket(ports->data, my_ip);
-	if (this->data_socket < 0)
-	{
-		::close(this->cmd_socket);
-		this->cmd_socket = -1;
-		return (-1);
-	}
-	epoll_event	event = {};
-	event.data.fd = this->cmd_socket;
-	event.events = EPOLLIN | EPOLLOUT;
-	if (::epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->cmd_socket, &event))
-	{
-		// std::cerr << "Error: epoll add" << std::endl;
-		ERROR(TAG, "failed epoll add");
-		return (-1);
-	}
-	event.data.fd = this->data_socket;
-	event.events = EPOLLIN;
-	if (::epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->data_socket, &event))
-	{
-		// std::cerr << "Error: epoll add" << std::endl;
-		ERROR(TAG, "failed epoll add");
-		return (-1);
-	}
-	return (0);
-}
-
-int NatNetClient::connect(s_ports *ports, char const *my_ip, char const *host_ip)
-{
-	if (this->init(ports, my_ip))
-		return (-1);
-	if (request_conn(host_ip, ports->cmd, SEND_RETRIES))
-	{
-		// std::cerr << "Error: Failed to establish connection with server. Maximum retries exceeded." << std::endl;
-		ERROR(TAG, "failed to establish connection with server. Maximum retries exceeded.");
-		::close(this->cmd_socket);
-		::close(this->data_socket);
-		this->cmd_socket = -1;
-		this->data_socket = -1;
-		return (-1);
-	}
-	// std::cout << "INFO: Established connection with NatNet server." << std::endl;
-	INFO(TAG, "Established connection with the server.");
-	return (0);
+	std::string	tmp(packet->data.str, packet->size);
+	std::cout << "[PACKET]\n"
+		<< "Type: " << packet->type << std::endl
+		<< "Size: " << packet->size << std::endl
+		<< "Data: " << tmp << std::endl;
 }
 
 void NatNetClient::parse_cmd()
 {
+	d3::log << Log::DEBUG << "[NatNet] Received command packet" << std::endl;
 	switch (this->packet_in.type)
 	{
 		case SERVERINFO:
@@ -270,46 +339,11 @@ void NatNetClient::parse_cmd()
 		default:
 			std::cerr << "[NatNet] Unknown command" << std::endl;
 	}
-}
-
-void NatNetClient::listen_cmd()
-{
-	ssize_t rb(0);
-
-	rb = recvfrom(
-		this->cmd_socket,
-		reinterpret_cast<char*>(&this->packet_in),
-		sizeof this->packet_in,
-		0L,
-		NULL,
-		NULL
-	);
-	if (rb < 0)
-		ERROR(TAG, "client command receive error.");
-		// std::cerr << "[NatNet] client command receive error." << std::endl;
-	else if (rb > 0)
-		this->parse_cmd();
+	print_packet(&this->packet_in);
 }
 
 void NatNetClient::parse_data()
-{}
-
-void NatNetClient::listen_data()
 {
-	ssize_t rb(0);
-	rb = recvfrom(
-		this->data_socket,
-		reinterpret_cast<char*>(&this->packet_in),
-		sizeof this->packet_in,
-		0L,
-		NULL,
-		NULL
-	);
-	if (rb < 0)
-		ERROR(TAG, "client data receive error.");
-		// std::cerr << "[NatNet] client data receive error." << std::endl;
-	else if (rb > 0)
-		this->parse_data();
+	d3::log << Log::DEBUG << "[NatNet] Received data packet" << std::endl;
+	print_packet(&this->packet_in);
 }
-
-

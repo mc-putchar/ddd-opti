@@ -28,6 +28,15 @@ struct SetPoint {
 
 struct Position {
 	float x, y, z, yaw;
+	Position(Position const &cpy) = default;
+	Position &operator=(Position const &rhs) = default;
+	Position &operator=(float pos[4]) {
+		this->x = pos[0];
+		this->y = pos[1];
+		this->z = pos[2];
+		this->yaw = pos[3];
+		return *this;
+	};
 };
 
 struct Trim {
@@ -69,6 +78,7 @@ public:
 	void		setPath(DronePath *p);
 	void		keepAlive();
 	void		stopKeepAlive();
+	void		update_position(float pos[4]);
 
 	DronePath				*path; 
 	const int				index;

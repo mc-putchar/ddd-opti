@@ -35,7 +35,8 @@ WsServer::WsServer(int port, char const *host) : server(), clients()
 WsServer::~WsServer() {}
 
 
-void WsServer::start() {
+void WsServer::start()
+{
 	ws_socket(&this->server);
 	// std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
 	std::string tmp("WebSocket Server listening on port: ");
@@ -61,17 +62,14 @@ void WsServer::remove_client(ws_cli_conn_t client)
 		this->clients.erase(it);
 }
 
-
 void WsServer::onopen(ws_cli_conn_t client)
 {
-	// (void)client;
 	WsServer::getInstance().add_client(client);
 	std::cout << "Client connected" << std::endl;
 }
 
 void WsServer::onclose(ws_cli_conn_t client)
 {
-	// (void)client;
 	WsServer::getInstance().remove_client(client);
 	std::cout << "Client disconnected" << std::endl;
 }

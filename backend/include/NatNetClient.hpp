@@ -5,10 +5,13 @@
 
 #include <csignal>
 #include <cstdint>
+#include <string>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
+
+#include "DataBroker.h"
 
 #define IPALL			"0.0.0.0"
 #define LOOPBACK		"127.0.0.1"
@@ -18,12 +21,10 @@
 #define DATA_PORT		1511L
 
 #define MAX_NAMELEN		256L
-#define MAX_PACKETSIZE	65500L
+#define MAX_PACKETSIZE	65504L
 #define BUF_SIZE		65536L
 #define SOCK_TIMEOUT	2L
-#define SEND_RETRIES	3L
-
-extern volatile std::sig_atomic_t g_stopped;
+#define SEND_RETRIES	4L
 
 enum e_msg_type
 {
@@ -191,25 +192,26 @@ struct s_data_desc
 
 class NatNetClient
 {
-	public:
-		NatNetClient(int epoll_fd);
-		~NatNetClient();
+public:
+	NatNetClient(int epoll_fd);
+	~NatNetClient();
 
-		int connect(s_ports *ports, char const *my_ip, char const *host_ip);
-		void listen_cmd();
-		void listen_data();
+	int connect(s_ports *ports, char const *my_ip, char const *host_ip, s_databroker *db);
+	void listen_cmd();
+	int send_cmd(std::string const &cmd, e_msg_type type = REQUEST);
+	void listen_data();
 
-	private:
-		int			epoll_fd;
-		int			cmd_socket;
-		int			data_socket;
-		sockaddr_in	host;
-		s_packet	packet_in;
-		s_packet	packet_out;
+private:
+	int			epoll_fd;
+	int			cmd_socket;
+	int			data_socket;
+	sockaddr_in	host;
+	s_packet	packet_in;
+	s_packet	packet_out;
 
-		int init(s_ports *ports, char const *my_ip);
-		int request_conn(char const *ip, uint16_t port, uint16_t retries);
-		int send_keepalive(void);
-		void parse_cmd(void);
-		void parse_data(void);
+	int init(s_ports *ports, char const *my_ip, s_databroker *db);
+	int request_conn(char const *ip, uint16_t port, uint16_t retries);
+	int send_keepalive(void);
+	void parse_cmd(void);
+	void parse_data(void);
 };

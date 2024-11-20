@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
 #include <vector>
 
 #include "json.hpp"
@@ -12,7 +10,7 @@ using json = nlohmann::json;
 
 class DroneControl {
 	public:
-		static DroneControl &getInstance();
+		static DroneControl &getInstance(void);
 		DroneControl(DroneControl const &) = delete;
 		DroneControl(DroneControl const &&) = delete;
 		void operator=(DroneControl const &) = delete;
