@@ -56,7 +56,7 @@ int main(void)
 
 	SerialHandler &serialHandler = SerialHandler::getInstance();
 	std::string const serialPort = getSerialPort();
-	if (serialPort.empty() || serialHandler.setup())
+	if (serialPort.empty() || !serialHandler.setup())
 		return (1);
 	std::thread transmitThread([&serialHandler]() { // Monitor if message are properly delivered to drones.
 		serialHandler.monitorIncoming(); // Could come off a thread and added after each send if not setting too much latency.

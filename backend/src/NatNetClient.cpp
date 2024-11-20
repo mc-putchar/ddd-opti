@@ -297,7 +297,6 @@ int NatNetClient::send_keepalive()
 	);
 	if (sb < 1)
 	{
-		// std::cerr << "NatNet client: Failed sending keepalive." << std::endl;
 		WARN(TAG, "failed to send keepalive");
 		return (-1);
 	}
@@ -306,11 +305,11 @@ int NatNetClient::send_keepalive()
 
 void print_packet(s_packet *packet)
 {
-	std::string	tmp(packet->data.str, packet->size);
+	// std::string	tmp(packet->data.str, packet->size);
 	std::cout << "[PACKET]\n"
 		<< "Type: " << packet->type << std::endl
-		<< "Size: " << packet->size << std::endl
-		<< "Data: " << tmp << std::endl;
+		<< "Size: " << packet->size << std::endl;
+		// << "Data: " << tmp << std::endl;
 }
 
 void NatNetClient::parse_cmd()

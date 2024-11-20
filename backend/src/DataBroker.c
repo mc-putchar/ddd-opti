@@ -103,7 +103,8 @@ int	broker_this(struct s_databroker *dbro, t_handler handler, int fd, int events
 	if (dbro->n_fds < MAX_FDS - 1 && !add_fd_to_epoll(fd, dbro->epoll_fd, events))
 	{
 		dbro->handlers[dbro->n_fds] = handler;
-		dbro->fds[++dbro->n_fds] = fd;
+		dbro->fds[dbro->n_fds] = fd;
+		++dbro->n_fds;
 		return (0);
 	}
 	db_warn("DataBroker", "failed to accept fd.");
