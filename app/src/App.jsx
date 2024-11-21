@@ -3,6 +3,7 @@ import { DroneControll } from './DroneControll';
 import { fetchConfigAndInitializeWebSocket } from './WebSocket';
 import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
+import { Timeline } from './Timeline';
 import * as Config from './Settings';
 
 
@@ -78,7 +79,7 @@ function App() {
 
 
 	return (
-	<div className="grid grid-rows-[auto,1fr,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300 select-none">
+	<div className="grid grid-rows-[auto,1fr,auto,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300 select-none">
 
 		{/* Header */}
 		<div className="col-span-8 bg-stone-900 p-2 flex items-center justify-center gap-3">
@@ -105,6 +106,12 @@ function App() {
 				colors={colors} droneGlb={droneGlb}
 			/>
 		</div>
+
+		{/* Timeline */}
+		<div className="col-span-8 bg-stone-800 p-2 flex flex-col items-center gap-3">
+			<Timeline duration={48} />
+		</div>
+
 
 		{/* Drone controller */}
 		<div className="col-span-8 grid grid-cols-2 gap-1 px-1 bg-stone-950">
