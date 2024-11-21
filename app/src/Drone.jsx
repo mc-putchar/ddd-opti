@@ -10,7 +10,8 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	const [droneReal, setDroneReal] = useState(droneGlb.scene.clone(true));
 	const [droneGhost, setDroneGhost] = useState(droneGlb.scene.clone(true));
 	const lightTarget = useRef();
-	const scale = 0.0014;
+	// const scale = 0.0014;
+	const scale = 1;
 
 	const zRotationReal = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
 	const zRotationGhost = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
@@ -69,8 +70,8 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 		</group>
 
 		{/* Real drone = setpoint */}
-		<group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}>
-		{/* <group position={position} rotation={[ati[0], -(zRotation + ati[2]), -ati[1]]}> */}
+		{/* <group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}> */}
+		<group position={setpoint} rotation={[ati[0], -(zRotationReal + ati[2]), -ati[1]]}>
 		{/* Drone Box */}
 		{/* <Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color={color} />
