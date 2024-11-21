@@ -25,8 +25,8 @@ endif
 CXX := g++
 CXXFLAGS := -Wall -Wextra -std=c++14
 CPPFLAGS := -I$(INCDIR) -I$(WSSERVERDIR)/include
-LDFLAGS := -L$(WSSERVERDIR)
-LDLIBS := -lws
+LDFLAGS := -L$(WSSERVERDIR) -Llib/NatNet
+LDLIBS := -lws -lNatNet -pthread
 static: CXXFLAGS += -static -static-libgcc -static-libstdc++
 debug: CXXFLAGS += -ggdb3 -Og
 

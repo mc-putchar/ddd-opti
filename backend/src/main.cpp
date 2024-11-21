@@ -7,6 +7,12 @@
 #include "SerialHandler.hpp"
 #include "WsServer.hpp"
 
+//FOR SAMLPLE CLIENT
+#include <NatNetTypes.h>
+#include <NatNetCAPI.h>
+#include <NatNetClient.h>
+using namespace std;
+
 // TODO: 
 // Refactor program control flow
 // Segments:
@@ -26,10 +32,35 @@
 // - GUI
 // - Documentation
 #define WS_PORT	4242
+
+void NATNET_CALLCONV MessageHandler( Verbosity msgType, const char* msg ){}
+void NATNET_CALLCONV DataHandler(sFrameOfMocapData* data, void* pUserData){}
+
+
+void SampleClienttemp() {
+	NatNetClient* g_pClient = NULL;
+	unsigned char ver[4];
+    NatNet_GetVersion( ver );
+    printf( "NatNet Sample Client (NatNet ver. %d.%d.%d.%d)\n", ver[0], ver[1], ver[2], ver[3] );
+
+    // Install logging callback
+    // NatNet_SetLogCallback( MessageHandler );
+
+    // Create NatNet client
+    g_pClient = new NatNetClient();
+
+    // Set the frame callback handler
+    // g_pClient->SetFrameReceivedCallback( DataHandler, g_pClient );
+
+}
+
+
 int main(void) {
 	std::string const serialPort = getSerialPort();
 	if (serialPort.empty())
 		return 1;
+
+	SampleClienttemp();
 
 	SerialHandler serialHandler(serialPort);
 	serialHandler.setup();
