@@ -12,10 +12,10 @@ WSSERVER := $(WSSERVERDIR)/libws.a
 # Source files
 SRCS = main Log
 SRCS += DroneControl DroneState DronePath
-SRCS += SerialHandler NatNetClient WsServer
+SRCS += SerialHandler WsServer
 BINS := $(SRCS:%=$(BINDIR)/%.o)
 
-CSRCS = DataBroker
+CSRCS = 
 CBINS := $(CSRCS:%=$(BINDIR)/%.o)
 
 MKDIR := mkdir -p

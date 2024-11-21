@@ -3,7 +3,7 @@ NAME := d3
 DC := docker compose
 SETUP := setup.bat
 
-.PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup-serial
+.PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup
 
 all: up
 up:
@@ -18,6 +18,6 @@ clean: down
 	docker system prune
 fclean: clean
 re: down up
-setup-serial:
+setup:
 	$(info Running serial connection setup script requires administrator privileges)
 	@cmd.exe /c "$(SETUP)"

@@ -28,6 +28,17 @@ void DroneControl::track(std::shared_ptr<DroneState> drone)
 	INFO(TAG, tmp.c_str());
 }
 
+void DroneControl::update(int idx, float position[3], float quaternions[4])
+{
+	float pos[4];
+
+	pos[0] = position[0];
+	pos[1] = position[1];
+	pos[2] = position[2];
+	pos[3] = 0; // TODO: convert quaternions to euler and extract yaw
+	drones[idx]->update_position(pos);
+}
+
 void DroneControl::update(int idx, json const &data)
 {
 	if (data.contains("trim")) {

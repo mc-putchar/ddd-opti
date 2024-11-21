@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -86,14 +87,38 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 	}
 
 	int const idx = msg[0] - '0';
-	try {
-		std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
-		json data = json::parse(tmp);
-		DroneControl::getInstance().update(idx, data);
-	} catch (nlohmann::json::parse_error& e) {
-		// std::cerr << "Parse error: " << e.what() << std::endl;
-		std::string	tmp("Parsing error: ");
-		tmp.append(e.what());
-		ERROR(TAG, tmp.c_str());
+	if (idx < 0)
+	{
+		std::string tmp(reinterpret_cast<const char*>(msg + 1), size - 1);
+		// INFO(TAG, tmp.c_str());
+		float p[3];
+		float q[4];
+		int drone_idx;
+		char c;
+		std::stringstream ss(tmp);
+		ss >> drone_idx 
+			>> c >> c >> p[0]
+			>> c >> c >> p[1]
+			>> c >> c >> p[2]
+			>> c >> c >> c >> q[0]
+			>> c >> c >> q[1]
+			>> c >> c >> q[2]
+			>> c >> c >> q[3];
+		DroneControl::getInstance().update(drone_idx, p, q);
+	}
+	else
+	{
+		try
+		{
+			std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
+			json data = json::parse(tmp);
+			DroneControl::getInstance().update(idx, data);
+		}
+		catch (nlohmann::json::parse_error& e)
+		{
+			std::string	tmp("Parsing error: ");
+			tmp.append(e.what());
+			ERROR(TAG, tmp.c_str());
+		}
 	}
 }

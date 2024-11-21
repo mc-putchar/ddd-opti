@@ -116,6 +116,8 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
+	// INFO(TAG, "Position update:");
+	// INFO(TAG, ss.str().c_str());
 	return std::string("\"pos\":" + ss.str());
 }
 
@@ -191,5 +193,6 @@ void DroneState::stopKeepAlive() {
 
 void DroneState::update_position(float pos[4])
 {
-	this->position = pos;
+	//TODO: reduce sending on the socket
+	this->send(this->setpos(pos[0],pos[1],pos[2],pos[3]));
 }

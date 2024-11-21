@@ -18,6 +18,7 @@ class DroneControl {
 		~DroneControl();
 
 		void track(std::shared_ptr<DroneState> drone);
+		void update(int idx, float position[3], float quaternions[4]);
 		void update(int idx, json const &data);
 		void setPath(int idx, DronePath *path);
 

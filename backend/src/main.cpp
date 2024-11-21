@@ -1,9 +1,7 @@
-#include "DataBroker.h"
 #include "DroneControl.hpp"
 #include "DroneState.hpp"
 #include "DronePath.hpp"
 #include "Log.hpp"
-#include "NatNetClient.hpp"
 #include "SerialHandler.hpp"
 #include "WsServer.hpp"
 
@@ -40,19 +38,8 @@ int main(void)
 		}
 	}
 
-	struct s_databroker databro = {};
-	if (broker_create(&databro))
-		return (-1);
-
 	WsServer &wsServer = WsServer::getInstance();
 	wsServer.start();
-
-	NatNetClient nnclient(databro.epoll_fd);
-	s_ports ports(CMD_PORT, DATA_PORT);
-	if (nnclient.connect(&ports, CONTAINER_IP, DOCKER_HOST, &databro))
-	{
-		ERROR("NatNet", "failed to initialize NatNet client.");
-	}
 
 	SerialHandler &serialHandler = SerialHandler::getInstance();
 	std::string const serialPort = getSerialPort();
@@ -73,9 +60,7 @@ int main(void)
 	DronePath path1("animation.json"); // Create path on the stack
 	control.setPath(1, &path1);
 
-	broker_run(&databro);
-
 	transmitThread.join();
-
+	INFO("main", "exiting");
 	return (0);
 }
