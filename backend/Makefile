@@ -10,25 +10,29 @@ WSSERVERDIR := $(LIBDIR)/wsServer
 WSSERVER := $(WSSERVERDIR)/libws.a
 
 # Source files
-SRCS = main DroneControl DroneState Path WsServer
-ifeq ($(OS),Windows_NT)
-	SRCS += WinSerialHandler
-	NAME := $(NAME).exe
-	MKDIR := mkdir
-	RM := del /s /q
-else
-	SRCS += SerialHandler
-	MKDIR := mkdir -p
-	RM := rm -fr
-endif
+SRCS = main Log
+SRCS += DroneControl DroneState DronePath
+SRCS += SerialHandler WsServer
+BINS := $(SRCS:%=$(BINDIR)/%.o)
+
+CSRCS = 
+CBINS := $(CSRCS:%=$(BINDIR)/%.o)
+
+MKDIR := mkdir -p
+RM := rm -fr
 
 CXX := g++
+CC := gcc
+CFLAGS := -Wall -Wextra
 CXXFLAGS := -Wall -Wextra -std=c++14
 CPPFLAGS := -I$(INCDIR) -I$(WSSERVERDIR)/include
 LDFLAGS := -L$(WSSERVERDIR)
 LDLIBS := -lws
+static: CFLAGS += -static -static-libgcc
 static: CXXFLAGS += -static -static-libgcc -static-libstdc++
+debug: CFLAGS += -ggdb3 -Og
 debug: CXXFLAGS += -ggdb3 -Og
+debug: CPPFLAGS += -DDEBUG_MODE=1
 
 COLOUR_END := \033[0m
 COLOUR_GREEN := \033[0;32m
@@ -56,14 +60,17 @@ help:	# Print help on Makefile
 	printf "$(COLOUR_MAGB)%-16s$(COLOUR_CYN)%s$(COLOUR_END)\n", $$1, $$2 } ' \
 	Makefile
 
-$(NAME): $(SRCS:%=$(BINDIR)/%.o) $(WSSERVER)
-	$(CXX) $(CPPFLAGS) $(SRCS:%=$(BINDIR)/%.o) -o $@ $(LDFLAGS) $(LDLIBS)
+$(NAME): $(WSSERVER) $(BINS) $(CBINS)
+	$(CXX) $(CPPFLAGS) $(BINS) $(CBINS) -o $@ $(LDFLAGS) $(LDLIBS)
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+
+$(BINDIR)/%.o: $(SRCDIR)/%.c | $(BINDIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 $(BINDIR):
 	$(MKDIR) $(BINDIR)
 
 $(WSSERVER):
-	$(MAKE) -C $(WSSERVERDIR)
+	$(MAKE) -C $(WSSERVERDIR) libws.a

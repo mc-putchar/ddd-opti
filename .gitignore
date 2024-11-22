@@ -9,3 +9,5 @@ ddd-backend
 .DS_Store
 compile_commands.json
 tmp/
+venv/
+__pycache__

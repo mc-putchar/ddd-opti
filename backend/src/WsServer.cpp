@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -8,10 +9,12 @@
 #include "ws.h"
 
 #include "DroneControl.hpp"
+#include "Log.hpp"
 #include "WsServer.hpp"
 
 #define WS_PORT	4242
-#define WS_HOST "0.0.0.0"
+#define WS_HOST	"0.0.0.0"
+#define TAG		"WSServ"
 
 WsServer &WsServer::getInstance()
 {
@@ -33,9 +36,13 @@ WsServer::WsServer(int port, char const *host) : server(), clients()
 WsServer::~WsServer() {}
 
 
-void WsServer::start() {
+void WsServer::start()
+{
 	ws_socket(&this->server);
-	std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
+	// std::cout << "WebSocket Server listening on port: " << this->server.port << std::endl;
+	std::string tmp("WebSocket Server listening on port: ");
+	tmp.append(std::to_string(this->server.port));
+	INFO(TAG, tmp.c_str());
 }
 
 void WsServer::send(std::string const &msg, size_t client)
@@ -56,17 +63,14 @@ void WsServer::remove_client(ws_cli_conn_t client)
 		this->clients.erase(it);
 }
 
-
 void WsServer::onopen(ws_cli_conn_t client)
 {
-	// (void)client;
 	WsServer::getInstance().add_client(client);
 	std::cout << "Client connected" << std::endl;
 }
 
 void WsServer::onclose(ws_cli_conn_t client)
 {
-	// (void)client;
 	WsServer::getInstance().remove_client(client);
 	std::cout << "Client disconnected" << std::endl;
 }
@@ -83,11 +87,38 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 	}
 
 	int const idx = msg[0] - '0';
-	try {
-		std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
-		json data = json::parse(tmp);
-		DroneControl::getInstance().update(idx, data);
-	} catch (nlohmann::json::parse_error& e) {
-		std::cerr << "Parse error: " << e.what() << std::endl;
+	if (idx < 0)
+	{
+		std::string tmp(reinterpret_cast<const char*>(msg + 1), size - 1);
+		// INFO(TAG, tmp.c_str());
+		float p[3];
+		float q[4];
+		int drone_idx;
+		char c;
+		std::stringstream ss(tmp);
+		ss >> drone_idx 
+			>> c >> c >> p[0]
+			>> c >> c >> p[1]
+			>> c >> c >> p[2]
+			>> c >> c >> c >> q[0]
+			>> c >> c >> q[1]
+			>> c >> c >> q[2]
+			>> c >> c >> q[3];
+		DroneControl::getInstance().update(drone_idx, p, q);
+	}
+	else
+	{
+		try
+		{
+			std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
+			json data = json::parse(tmp);
+			DroneControl::getInstance().update(idx, data);
+		}
+		catch (nlohmann::json::parse_error& e)
+		{
+			std::string	tmp("Parsing error: ");
+			tmp.append(e.what());
+			ERROR(TAG, tmp.c_str());
+		}
 	}
 }

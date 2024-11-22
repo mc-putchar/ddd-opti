@@ -1,10 +1,9 @@
 NAME := d3
 
 DC := docker compose
-CONF := setup.conf
-OVERRIDE_FILE := -f compose.yaml -f compose.dev.yaml
+SETUP := setup.bat
 
-.PHONY: all up down start stop ps logs clean
+.PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup
 
 all: up
 up: 
@@ -22,3 +21,6 @@ clean: down
 	docker builder prune -a
 fclean: clean
 re: down up
+setup:
+	$(info Running serial connection setup script requires administrator privileges)
+	@cmd.exe /c "$(SETUP)"

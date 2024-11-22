@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <iostream>
+// #include <iostream>
 #include <mutex>
 
 #include <chrono>  // For std::chrono::seconds
@@ -28,14 +28,14 @@ struct FrameData {
 	Light light;
 };
 
-class Path { 
+class DronePath { 
 
 public:
-	Path(std::string file);
-	Path() = delete;
-	Path(Path const &cpy);
-	Path &operator=(Path const &rhs);
-	~Path();
+	DronePath(std::string file);
+	DronePath() = delete;
+	DronePath(DronePath const &cpy);
+	DronePath &operator=(DronePath const &rhs);
+	~DronePath();
 
 	int							getLenght();
 	int							sendFrameByFrame();

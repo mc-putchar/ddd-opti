@@ -1,10 +1,12 @@
-#include <iostream>
+// #include <iostream>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 
 #include "DroneState.hpp"
+#include "Log.hpp"
 
+#define TAG	"DroneState"
 
 DroneState::DroneState(int idx, SerialHandler & ref)
 	: path(NULL),
@@ -30,10 +32,10 @@ DroneState::DroneState(DroneState const &cpy)
 
 
 DroneState::~DroneState() {
-	std::cout << "drone " << index << " went out of scope" << std::endl;
+	// std::cout << "drone " << index << " went out of scope" << std::endl;
 }
 
-void DroneState::setPath(Path * p) {
+void DroneState::setPath(DronePath * p) {
 	path = p;
 }
 
@@ -70,7 +72,8 @@ bool DroneState::startup() {
         c = this->send(this->settrim(0, 64, 0, 0));
         
         if (a == 0 || b == 0 || c == 0) {
-            std::cerr << "Failed to send startup" << std::endl;
+			ERROR(TAG, "Failed to send startup");
+            // std::cerr << "Failed to send startup" << std::endl;
             success = false;  // Set success to false if any send fails
         }
     });
@@ -89,7 +92,7 @@ std::string DroneState::arm() {
 
 void DroneState::disarm() {
 	armed.store(false);
-	// stopKeepAlive();
+	stopKeepAlive();
 	this->send("\"armed\":false");
 	// return std::string("\"armed\":true");
 }
@@ -113,6 +116,8 @@ std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	}
 	std::stringstream ss;
 	ss << "[" << x << "," << y << "," << z << "," << yaw << "]";
+	// INFO(TAG, "Position update:");
+	// INFO(TAG, ss.str().c_str());
 	return std::string("\"pos\":" + ss.str());
 }
 
@@ -184,4 +189,10 @@ void DroneState::stopKeepAlive() {
 		armed.store(false); // Set armed to false to break the loop
 		keepAliveThread.join(); // Wait for the thread to finish
 	}
+}
+
+void DroneState::update_position(float pos[4])
+{
+	//TODO: reduce sending on the socket
+	this->send(this->setpos(pos[0],pos[1],pos[2],pos[3]));
 }

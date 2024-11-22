@@ -7,10 +7,10 @@
 #include <mutex>
 #include <chrono>
 
-#include "Path.hpp"
+#include "DronePath.hpp"
 #include "SerialHandler.hpp"
 
-class Path;
+class DronePath;
 class SerialHandler;
 
 struct SetPoint {
@@ -28,6 +28,15 @@ struct SetPoint {
 
 struct Position {
 	float x, y, z, yaw;
+	Position(Position const &cpy) = default;
+	Position &operator=(Position const &rhs) = default;
+	Position &operator=(float pos[4]) {
+		this->x = pos[0];
+		this->y = pos[1];
+		this->z = pos[2];
+		this->yaw = pos[3];
+		return *this;
+	};
 };
 
 struct Trim {
@@ -66,11 +75,12 @@ public:
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
 	std::string setlight(float angle, float power);
-	void		setPath(Path *p);
+	void		setPath(DronePath *p);
 	void		keepAlive();
 	void		stopKeepAlive();
+	void		update_position(float pos[4]);
 
-	Path					*path; 
+	DronePath				*path; 
 	const int				index;
 
 private:

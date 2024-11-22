@@ -1,44 +1,73 @@
+#include <string>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
+
+// #include "DataBroker.h"
+#include "DroneState.hpp"
+#include "Log.hpp"
+#include "PacketDefinition.hpp"
 #include "SerialHandler.hpp"
+#include "WsServer.hpp"
+
+#define TAG	"Serial"
 
 std::string getSerialPort()
 {
 	return SERIAL_PORT;
 }
 
+SerialHandler &SerialHandler::getInstance()
+{
+	static SerialHandler instance(getSerialPort());
+	return instance;
+}
+
 SerialHandler::SerialHandler(std::string const &port)
-	: g_stopped(false), serial_port(-1), port(port)
+	: port(port), port_fd(-1)
 {}
 
 
-SerialHandler::~SerialHandler() {
-	(void)close(serial_port);
+SerialHandler::~SerialHandler()
+{
+	if (this->port_fd >= 0)
+		(void)::close(this->port_fd);
 }
 
 
-bool SerialHandler::setup() {
-	serial_port = setup_serial();
-	if (serial_port < 0) {
-		std::cerr << "Failed to initialize serial connection." << std::endl;
-		std::cerr << "\033[1;31mMake sure the ESP32 is connected\033[0m" << std::endl;
+bool SerialHandler::setup()
+{
+	this->port_fd = setup_serial();
+	if (this->port_fd < 0)
+	{
+		ERROR(TAG, "Make sure the ESP32 is connected");
 		return false;
 	}
-	std::cerr << "Serial port connected." << std::endl;
+	INFO(TAG, "Serial port connected.");
 	return true;
 }
 
 
-int SerialHandler::setup_serial() {
-	std::cout << "Connecting to serial port: " << SERIAL_PORT << std::endl;
-	int serial_port = open(SERIAL_PORT, O_RDWR | O_NOCTTY | O_SYNC);
-	if (serial_port < 0) {
-		std::cerr << "Error " << errno << " from open: " 
-			<< strerror(errno) << std::endl;
+int SerialHandler::setup_serial()
+{
+	{
+		std::string tmp("Connecting to serial port: ");
+		tmp.append(SERIAL_PORT);
+		INFO(TAG, tmp.c_str());
+	}
+	int const serial_port = ::open(this->port.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
+	if (serial_port < 0)
+	{
+		ERROR(TAG, "Failed to open requested port.");
 		return (-1);
 	}
 	struct termios tty;
-	if (tcgetattr(serial_port, &tty) != 0) {
-		std::cerr << "Error " << errno << " from tcgetattr: " 
-			<< strerror(errno) << std::endl;
+	if (::tcgetattr(serial_port, &tty) != 0)
+	{
+		ERROR(TAG, "Failed to get term attributes.");
 		return (-1);
 	}
 
@@ -54,18 +83,19 @@ int SerialHandler::setup_serial() {
 	tty.c_cflag &= ~CSTOPB;
 	tty.c_cflag &= ~CRTSCTS;
 
-	cfsetispeed(&tty, BAUD_RATE);
-	cfsetospeed(&tty, BAUD_RATE);
+	(void)::cfsetispeed(&tty, BAUD_RATE);
+	(void)::cfsetospeed(&tty, BAUD_RATE);
 
-	if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
-		std::cerr << "Error " << errno << " from tcsetattr: " 
-			<< strerror(errno) << std::endl;
+	if (::tcsetattr(serial_port, TCSANOW, &tty) != 0)
+	{
+		ERROR(TAG, "Failed to set term attributes.");
 		return (-1);
 	}
 	return (serial_port);
 }
 
-void SerialHandler::parseTeleMsg(char* msg) {
+void SerialHandler::parseTeleMsg(char* msg)
+{
 	int const id = static_cast<int>(msg[0]);
 	int const index = static_cast<int>(msg[1]);
 
@@ -99,22 +129,26 @@ void SerialHandler::parseTeleMsg(char* msg) {
 
 		sendFront(ss.str());
 	}
-	else 
+	else
 		std::cout << msg << std::endl;
 }
 
-void SerialHandler::monitorIncoming() {
+// TODO: rewrite to fit into polling
+void SerialHandler::monitorIncoming()
+{
 	ssize_t rb(0);
 	char buf[BUFFER_SIZE];
 	std::string msg;
 
-	while (!g_stopped) {
+	while (true)
+	{
 		usleep(500);
-		if (serial_port < 0) continue;
+		if (port_fd < 0) continue;
 		std::memset(buf, 0, sizeof(buf));
-		rb = read(serial_port, buf, BUFFER_SIZE - 1);
+		rb = read(port_fd, buf, BUFFER_SIZE - 1);
 		if (rb < 0) {
 			std::cerr << "Error reading from serial." << std::endl;
+			ERROR(TAG, "Error reading from serial.");
 			continue;
 		}
 		buf[rb] = 0;
@@ -124,24 +158,19 @@ void SerialHandler::monitorIncoming() {
 	}
 }
 
-int SerialHandler::send(std::string const &msg) {
-
+int SerialHandler::send(std::string const &msg)
+{
 	int serial_rt;
 	{
-		std::lock_guard<std::mutex> guard(serialMutex);
-		serial_rt = write(serial_port, msg.c_str(), msg.length());
+		std::lock_guard<std::mutex> guard(this->serialMutex);
+		serial_rt = ::write(this->port_fd, msg.c_str(), msg.length());
 	}
 	this->sendFront(msg);
 	return (serial_rt);
 }
 
-int SerialHandler::sendFront(std::string const &msg) {
-
-	// FOR NOW JUST ECHO ANY SERIAL SEND TO THE FRONT
-	// std::lock_guard<std::mutex> guardWs(wsServer.wsMutex); // TODO look into the mutex.
-	// if (wsServer.wsConn) {
-	// 	wsServer.wsConn->send_text(msg.c_str());
-	// }
+int SerialHandler::sendFront(std::string const &msg)
+{
 	WsServer::getInstance().send(msg);
 	return (1);
 }
