@@ -3,16 +3,15 @@ import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box, useGLTF } from '@rea
 import * as THREE from 'three';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-
-const LIGHT_COLOR = "#fffbeb"
-const DRONE_BOUNDING_BOX = 0.8;
+import * as Config from './Settings';
 
 
 const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) => {
 	const [droneReal, setDroneReal] = useState(droneGlb.scene.clone(true));
 	const [droneGhost, setDroneGhost] = useState(droneGlb.scene.clone(true));
 	const lightTarget = useRef();
-	const scale = 0.0014;
+	// const scale = 0.0014;
+	const scale = 1;
 
 	const zRotationReal = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
 	const zRotationGhost = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
@@ -71,8 +70,8 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 		</group>
 
 		{/* Real drone = setpoint */}
-		<group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}>
-		{/* <group position={position} rotation={[ati[0], -(zRotation + ati[2]), -ati[1]]}> */}
+		{/* <group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}> */}
+		<group position={setpoint} rotation={[ati[0], -(zRotationReal + ati[2]), -ati[1]]}>
 		{/* Drone Box */}
 		{/* <Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color={color} />
@@ -85,7 +84,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 				receiveShadow
 				/>
 		
-		<Box args={[DRONE_BOUNDING_BOX, 0.25, DRONE_BOUNDING_BOX]}>
+		<Box args={[Config.DRONE_BOUNDING_BOX, 0.25, Config.DRONE_BOUNDING_BOX]}>
 			<meshLambertMaterial attach="material" color={color} wireframe={true} />
 		</Box>
 		
@@ -102,7 +101,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 			penumbra={1} intensity={light[1]}
 			castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}
 			target={lightTarget.current} // Point spotlight at the target
-			color={LIGHT_COLOR}
+			color={Config.LIGHT_COLOR}
 			/>
 		<mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
 	</group>
@@ -117,8 +116,8 @@ function LightBeam({rotation, position, light, args}) {
 
 	const coneMaterial = new THREE.ShaderMaterial({
 		uniforms: {
-		  color1: { value: new THREE.Color(LIGHT_COLOR) }, // Color at the tip
-		  color2: { value: new THREE.Color(LIGHT_COLOR) }, // Color at the base
+		  color1: { value: new THREE.Color(Config.LIGHT_COLOR) }, // Color at the tip
+		  color2: { value: new THREE.Color(Config.LIGHT_COLOR) }, // Color at the base
 		  bboxMin: { value: geometry.boundingBox.min },
 		  bboxMax: { value: geometry.boundingBox.max },
 		  opacity: { value: light / 255 }
@@ -169,4 +168,4 @@ function LightBeam({rotation, position, light, args}) {
 	)
 }
 
-export {Drone, DRONE_BOUNDING_BOX};
+export {Drone};

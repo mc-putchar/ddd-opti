@@ -1,0 +1,20 @@
+name: d3
+
+networks:
+  d3net:
+    driver: bridge
+
+services:
+  frontend:
+    build:
+      context: "app"
+      target: development 
+    networks:
+      - d3net
+    ports:
+      - "0.0.0.0:3000:3000"
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    restart: unless-stopped
+
