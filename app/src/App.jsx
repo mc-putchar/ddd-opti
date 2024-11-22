@@ -108,9 +108,9 @@ function App() {
 		</div>
 
 		{/* Timeline */}
-		{/* <div className="col-span-8 bg-stone-800 p-2 flex flex-col items-center gap-3">
+		<div className="col-span-8 bg-stone-950 flex flex-col items-center gap-3">
 			<Timeline duration={48} />
-		</div> */}
+		</div>
 
 
 		{/* Drone controller */}
