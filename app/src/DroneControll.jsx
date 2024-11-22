@@ -1,4 +1,5 @@
 import { Slider, Arm, Path, Progression} from './Input';
+import React, { useEffect } from 'react';
 import { Battery } from './Battery';
 import { Setpoint2d } from './Setpoint2d';
 
@@ -6,6 +7,13 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 					setpoint, light, trim, setLight, setSetpoint, setTrim, color, block_incoming_setpoint,
 					setBlock_incoming_setpoint }) {
 				
+	useKey(" ", () => {
+		console.log("space pressed for drone: ", index);
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(`${index}{"armed":false}`);
+			console.log("sent kill for drone: ", index);
+		}
+	});
 	return (
 	<>
 		<div className="col-span-1 grid grid-cols-5 gap-x-0.5 p-0 bg-stone-800" >
@@ -104,5 +112,20 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 	</>
 	)
 } 
+
+function useKey(key, callback) {
+    useEffect(() => {
+        const handleKeyPress = (event) => {
+            if (event.key === key) {
+                callback(event);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyPress);
+        return () => {
+            window.removeEventListener("keydown", handleKeyPress);
+        };
+    }, [key, callback]);
+}
 
 export {DroneControll};
