@@ -34,7 +34,7 @@ static inline float quaternion_to_yaw(float x, float y, float z, float w)
 {
 	float sycp = (x * y + z * w) * 2.0f;
 	float cycp = 1 - (y * y + z * z) * 2.0f;
-	return (std::atan2f(sycp, cycp));
+	return (std::atan2(sycp, cycp));
 }
 
 void DroneControl::update(int idx, float position[3], float quaternions[4])
