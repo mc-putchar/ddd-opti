@@ -46,8 +46,6 @@ bool DroneState::is_armed() const { return this->armed; }
 
 ssize_t DroneState::send(std::string const &msg) {
 
-	// TODO imPLEMENT DEKAY COUNTER OF 2 SEC
-
 	std::ostringstream oss;
 	oss << this->index << "{" << msg << "}";
 	std::string output = oss.str();

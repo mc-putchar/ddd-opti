@@ -2,8 +2,12 @@
 #include <esp_wifi.h>
 #include <WiFi.h>
 
+#define MAX_BUF 250
+
 esp_now_peer_info_t peerInfo0, peerInfo1;
-char buffer[1024];
+char buffer[MAX_BUF];
+char buffer0[MAX_BUF];
+char buffer1[MAX_BUF];
 
 uint8_t senderMacAdd[6] = {
   0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9A
@@ -83,17 +87,25 @@ void setup() {
 void loop() {
 	int availableBytes = Serial.available();
 	if (availableBytes) {
-		// int droneIndex = Serial.read() - '0';
-		Serial.readBytes(buffer, availableBytes);
-		buffer[availableBytes] = '\0';
+		int bytesToRead = min(availableBytes, MAX_BUF - 1);
+		Serial.readBytes(buffer, bytesToRead);
+		buffer[bytesToRead] = '\0';
+		if (availableBytes >= 250) {
+			Serial.println("Message exiding max buffer 250");
+		}
+		strncpy(buffer0, buffer, sizeof(buffer0) - 1);
+		buffer0[sizeof(buffer0) - 1] = '\0';
+		strncpy(buffer1, buffer0, sizeof(buffer1) - 1);
+		buffer1[sizeof(buffer1) - 1] = '\0';
 		// Serial.print(buffer);
-		esp_err_t result = esp_now_send(broadcastAddresses[0], (uint8_t *)&buffer, strlen(buffer) + 1);
+		esp_err_t result = esp_now_send(broadcastAddresses[0], (uint8_t *)&buffer0, strlen(buffer0) + 1);
 		if (result) {
 			Serial.println(esp_err_to_name(result));
 		}
-		esp_err_t result2 = esp_now_send(broadcastAddresses[1], (uint8_t *)&buffer, strlen(buffer) + 1);
+		delay(1);
+		esp_err_t result2 = esp_now_send(broadcastAddresses[1], (uint8_t *)&buffer1, strlen(buffer1) + 1);
 		if (result2) {
-			Serial.println(esp_err_to_name(result));
+			Serial.println(esp_err_to_name(result2));
 		}
 	}
 	else {

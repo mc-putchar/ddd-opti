@@ -7,7 +7,12 @@
 
 #define BUFFER_SIZE 512
 #define BAUD_RATE B115200
-#define SERIAL_PORT "/dev/ttyUSB0"
+// #define SERIAL_PORT "/dev/ttyUSB0"
+#ifdef __linux__
+	#define SERIAL_PORT "/dev/ttyUSB0"
+#elif __APPLE__
+	#define SERIAL_PORT "/dev/cu.usbserial-0001"
+#endif
 
 std::string getSerialPort();
 

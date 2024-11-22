@@ -184,7 +184,7 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 		if (jsonData.arm) {
 		}
 
-		if (!(jsonData.bat )) { // Update the state with the parsed message to display and keep last 100
+		if (!(jsonData.bat ) && !(jsonData.rc) && !(JsonData.ati)) { // Update the state with the parsed message to display and keep last 100
 			setMessages((prevMessages) => {
 				const newMessages = [...prevMessages, event.data];
 				return newMessages.length > 100 ? newMessages.slice(-100) : newMessages; 

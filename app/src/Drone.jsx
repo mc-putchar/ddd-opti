@@ -46,7 +46,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 		  child.material = new THREE.MeshBasicMaterial({
 			color: color || 'yellow',    // Set color dynamically
 			transparent: true,           // Enable transparency
-			opacity: 0.08,                // Adjust opacity (0 is fully transparent, 1 is fully opaque)
+			opacity: 0.2,                // Adjust opacity (0 is fully transparent, 1 is fully opaque)
 			wireframe: true,             // Optional: wireframe mode for a lighter look
 		  });
 		  child.castShadow = false;      // Disable casting shadows
