@@ -1,4 +1,5 @@
 // #include <iostream>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -193,6 +194,7 @@ void DroneState::stopKeepAlive() {
 
 void DroneState::update_position(float pos[4])
 {
-	//TODO: reduce sending on the socket
-	this->send(this->setpos(pos[0],pos[1],pos[2],pos[3]));
+	static std::uint32_t frame_counter(0);
+	if (++frame_counter & 3)
+		this->send(this->setpos(pos[0],pos[1],pos[2],pos[3]));
 }
