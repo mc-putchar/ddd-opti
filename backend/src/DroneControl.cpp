@@ -1,4 +1,5 @@
 // #include <iostream>
+#include <cstdint>
 #include <string>
 
 #include "json.hpp"
@@ -28,6 +29,14 @@ void DroneControl::track(std::shared_ptr<DroneState> drone)
 	INFO(TAG, tmp.c_str());
 }
 
+#include <cmath>
+static inline float quaternion_to_yaw(float x, float y, float z, float w)
+{
+	float sycp = (x * y + z * w) * 2.0f;
+	float cycp = 1 - (y * y + z * z) * 2.0f;
+	return (std::atan2f(sycp, cycp));
+}
+
 void DroneControl::update(int idx, float position[3], float quaternions[4])
 {
 	float pos[4];
@@ -35,7 +44,8 @@ void DroneControl::update(int idx, float position[3], float quaternions[4])
 	pos[0] = position[0];
 	pos[1] = position[1];
 	pos[2] = position[2];
-	pos[3] = 0; // TODO: convert quaternions to euler and extract yaw
+	pos[3] = quaternion_to_yaw(quaternions[0], quaternions[1], quaternions[2], quaternions[3]);
+	// TODO: Sync updates to clock
 	drones[idx]->update_position(pos);
 }
 
