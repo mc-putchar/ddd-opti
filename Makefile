@@ -7,10 +7,10 @@ OVERRIDE_FILE := -f compose.yaml -f compose.dev.yaml
 .PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup
 
 all: up
+# NOTE to run vite in dev: make DEV=1
 up: 
 	git submodule update --init --recursive
 	$(DC) $(if $(DEV),$(OVERRIDE_FILE)) up --build -d 
-	# NOTE to run vite in dev: make DEV=1
 down start stop ps logs:
 	$(DC) $@
 logs-front:

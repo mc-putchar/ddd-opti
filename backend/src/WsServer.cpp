@@ -104,7 +104,7 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 			>> c >> c >> q[1]
 			>> c >> c >> q[2]
 			>> c >> c >> q[3];
-		DroneControl::getInstance().update(drone_idx, p, q);
+		DroneControl::getInstance().update(--drone_idx, p, q);
 	}
 	else
 	{
