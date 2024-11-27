@@ -48,22 +48,22 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 				<Slider
 					arg={1} name="trim" vari="Roll"
 					stateArray={trim} setStateArray={setTrim}
-					min={-800} max={800} index={index} ws={ws} 
+					min={-400} max={400} index={index} ws={ws} 
 				/>
 				<Slider
 					arg={0} name="trim" vari="Pitch"
 					stateArray={trim} setStateArray={setTrim}
-					min={-800} max={800} index={index} ws={ws} 
+					min={-400} max={400} index={index} ws={ws} 
 				/>
 				<Slider
 					arg={3} name="trim" vari="Yaw"
 					stateArray={trim} setStateArray={setTrim}
-					min={-800} max={800} index={index} ws={ws} 
+					min={-400} max={400} index={index} ws={ws} 
 				/>
 				<Slider
 					arg={2} name="trim" vari="Throt"
 					stateArray={trim} setStateArray={setTrim}
-					min={-800} max={800} index={index} ws={ws} 
+					min={-800} max={-600} index={index} ws={ws} 
 				/>
 			</div>
 

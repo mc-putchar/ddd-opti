@@ -5,9 +5,9 @@
 #define MAX_BUF 250
 
 esp_now_peer_info_t peerInfo0, peerInfo1;
-char buffer[MAX_BUF];
-char buffer0[MAX_BUF];
-char buffer1[MAX_BUF];
+static char buffer[MAX_BUF];
+static char buffer0[MAX_BUF];
+static char buffer1[MAX_BUF];
 
 uint8_t senderMacAdd[6] = {
   0x08, 0xB6, 0x1F, 0xBC, 0x8E, 0x9A
@@ -35,7 +35,9 @@ void registerPeer(uint8_t* address, esp_now_peer_info_t& peerInfo) {
 	peerInfo.encrypt = false;
 
 	// Unregister previous peer if already added
-	esp_now_del_peer(address);
+	if (esp_now_del_peer(address) != ESP_OK) {
+		Serial.println("Failed to delete peer");
+	}
 
 	if (esp_now_add_peer(&peerInfo) != ESP_OK) {
 		Serial.println("Failed to add peer");
