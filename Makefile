@@ -4,7 +4,7 @@ DC := docker compose
 SETUP := setup.bat
 OVERRIDE_FILE := -f compose.yaml -f compose.dev.yaml
 
-.PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup
+.PHONY: all up down start stop ps logs logs-front logs-back clean fclean re setup natnet
 
 all: up
 # NOTE to run vite in dev: make DEV=1
@@ -25,3 +25,5 @@ re: down up
 setup:
 	$(info Running serial connection setup script requires administrator privileges)
 	@cmd.exe /c "$(SETUP)"
+natnet:
+	@cd natnet && source venv/Scripts/activate && py PythonSample.py

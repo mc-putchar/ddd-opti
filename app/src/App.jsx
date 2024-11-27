@@ -15,15 +15,15 @@ function App() {
 	const messagesEndRef = useRef(null);
 
 	const colors = ["#ff7700", "#00e82b", "purple", "#e3054b"];
-	const [position0, setPosition0] = useState([0, 0.12, 0, 0]);
-	// const [position0, setPosition0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	const [position1, setPosition1] = useState([0, 0.12, 0, 0]);
+	const [position0, setPosition0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
 
-	const [position1, setPosition1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	// const [position1, setPosition1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [position2, setPosition2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [position3, setPosition3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
-	const [setpoint0, setSetpoint0] = useState([0, 0.12, 0, 0]);
-	// const [setpoint0, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
-	const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	const [setpoint1, setSetpoint1] = useState([0, 1, 0, 0]);
+	const [setpoint0, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	// const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [setpoint2, setSetpoint2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [setpoint3, setSetpoint3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
 	const [rc0, setRc0] = useState([1, 1, 1, 1, 1]);
@@ -38,10 +38,10 @@ function App() {
 	const [pathLen1, setPathLen1] = useState([1]);
 	const [pathLen2, setPathLen2] = useState([1]);
 	const [pathLen3, setPathLen3] = useState([1]);
-	const [light0, setLight0] = useState([1, 1]);
-	const [light1, setLight1] = useState([1, 1]);
-	const [light2, setLight2] = useState([1, 1]);
-	const [light3, setLight3] = useState([1, 1]);
+	const [light0, setLight0] = useState([90, 1]);
+	const [light1, setLight1] = useState([90, 1]);
+	const [light2, setLight2] = useState([90, 1]);
+	const [light3, setLight3] = useState([90, 1]);
 	const [ati0, setAti0] = useState([0, 0, 0]);
 	const [ati1, setAti1] = useState([0, 0, 0]);
 	const [ati2, setAti2] = useState([0, 0, 0]);
@@ -108,9 +108,9 @@ function App() {
 		</div>
 
 		{/* Timeline */}
-		<div className="col-span-8 bg-stone-950 flex flex-col items-center gap-3">
+		{/* <div className="col-span-8 bg-stone-950 flex flex-col items-center gap-3">
 			<Timeline duration={48} />
-		</div>
+		</div> */}
 
 
 		{/* Drone controller */}
@@ -137,7 +137,7 @@ function App() {
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
-			<DroneControll
+			{/* <DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
 				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
@@ -157,7 +157,7 @@ function App() {
 				pathLen={pathLen3} color={colors[3]} 
 				block_incoming_setpoint={block_incoming_setpoint}
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
-			/>
+			/> */}
 		</div>
 	</div>
 	);

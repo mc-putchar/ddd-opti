@@ -34,17 +34,17 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 
 		const containerRect = containerRef.current.getBoundingClientRect();
 		const newX = Math.max(
-			-(Config.SPACE_WIDTH / 2 - Config.DRONE_BOUNDING_BOX / 2),
+			-(Config.SPACE_WIDTH_FLY / 2 - Config.DRONE_BOUNDING_BOX / 2),
 			Math.min(
-				Config.SPACE_WIDTH / 2 - Config.DRONE_BOUNDING_BOX / 2,
-				((e.clientX - containerRect.left) / containerRect.width) * Config.SPACE_WIDTH - Config.SPACE_WIDTH / 2
+				Config.SPACE_WIDTH_FLY / 2 - Config.DRONE_BOUNDING_BOX / 2,
+				((e.clientX - containerRect.left) / containerRect.width) * Config.SPACE_WIDTH_FLY - Config.SPACE_WIDTH_FLY / 2
 			)
 		);
 		const newY = Math.max(
-			-(Config.SPACE_DEPTH / 2 - Config.DRONE_BOUNDING_BOX / 2),
+			-(Config.SPACE_DEPTH_FLY / 2 - Config.DRONE_BOUNDING_BOX / 2),
 			Math.min(
-				Config.SPACE_DEPTH / 2 - Config.DRONE_BOUNDING_BOX / 2,
-				((e.clientY - containerRect.top) / containerRect.height) * Config.SPACE_DEPTH - Config.SPACE_DEPTH / 2
+				Config.SPACE_DEPTH_FLY / 2 - Config.DRONE_BOUNDING_BOX / 2,
+				((e.clientY - containerRect.top) / containerRect.height) * Config.SPACE_DEPTH_FLY - Config.SPACE_DEPTH_FLY / 2
 			)
 		);
 
@@ -59,15 +59,20 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 
 	// Use useEffect to send WebSocket message whenever setpoint changes
 	useEffect(() => {
+		console.log("useeffect");
 		if (isDragging) {
 			// Throttle sending WebSocket messages by only allowing one send per interval
 			if (!throttleTimeout.current) {
 				throttleTimeout.current = setTimeout(() => {
 					const wsArray = [...setpoint];
+					const temp = wsArray[1];
+					wsArray[1] = wsArray[2];
+					wsArray[2] = temp;
 					wsArray[3] = 0;
 
 					if (ws && ws.readyState === WebSocket.OPEN) {
 						ws.send(`${index}{"setpoint":${JSON.stringify(wsArray)}}`);
+						console.log("sending : ", `${index}{"setpoint":${JSON.stringify(wsArray)}}`);
 					}
 					
 					// Clear throttle timeout
@@ -84,6 +89,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 			updatedSetpoint[1] = value[0];
 			return updatedSetpoint;
 		});
+		
 	};
 
 	useEffect(() => {
@@ -131,9 +137,9 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 		<ShadcnSlider 
 				value={[coordinates.z]} // Slider expects an array
 				onValueChange={handleSliderChange} // Update on value change
-				onMouseDown={handleMouseDown}
+				// onMouseDown={handleMouseDown}
 				min={0.25} // Adjust min value as needed
-				max={1} // Adjust max value as needed
+				max={Config.SPACE_HEIGHT_FLY} // Adjust max value as needed
 				step={0.1} // Step size for the slider
 				className="flex-grow bg-stone-950" // Allow the slider to take up available space and set a height
 			/>

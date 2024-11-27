@@ -48,8 +48,8 @@ def receive_new_frame(data_dict):
 # This is a callback function that gets connected to the NatNet client. It is called once per rigid body per frame
 def receive_rigid_body_frame( new_id, position, rotation ):
     #pass
-    print( "Received frame for rigid body", new_id )
-    #print( "Received frame for rigid body", new_id," ",position," ",rotation )
+    # print( "Received frame for rigid body", new_id )
+    # print( "Received frame for rigid body", new_id," ",position," ",rotation )
     ws.send(f'*{new_id} {position} {rotation}')
 
 

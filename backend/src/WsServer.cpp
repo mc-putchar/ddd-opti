@@ -96,15 +96,17 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		int drone_idx;
 		char c;
 		std::stringstream ss(tmp);
+		INFO(TAG, tmp.c_str());
 		ss >> drone_idx 
-			>> c >> c >> p[0]
-			>> c >> c >> p[1]
-			>> c >> c >> p[2]
-			>> c >> c >> c >> q[0]
-			>> c >> c >> q[1]
-			>> c >> c >> q[2]
-			>> c >> c >> q[3];
-		DroneControl::getInstance().update(--drone_idx, p, q);
+			>> c >> p[0]
+			>> c >> p[2]
+			>> c >> p[1]
+			>> c >> c >> q[0]
+			>> c >> q[1]
+			>> c >> q[2]
+			>> c >> q[3];
+		// drone00 is received as asset #1
+		DroneControl::getInstance().update(drone_idx - 1, p, q);
 	}
 	else
 	{

@@ -74,17 +74,21 @@ const Live3dview = React.memo(({
 			position={position1} light={light1} setpoint={setpoint1} 
 			color={colors[1]} droneGlb={droneGlb} ati={ati1}
 		/>
-		<Drone
+		{/* <Drone
 			position={position2} light={light2} setpoint={setpoint2} 
 			color={colors[2]} droneGlb={droneGlb} ati={ati2}
 		/>
 		<Drone
 			position={position3} light={light3} setpoint={setpoint3} 
 			color={colors[3]} droneGlb={droneGlb} ati={ati3}
-		/>
+		/> */}
 		<OptiCameras/>
 
 		<Curtain />
+		<Box args={[Config.SPACE_WIDTH_FLY, Config.SPACE_HEIGHT_FLY, Config.SPACE_DEPTH_FLY]}
+			position={[0, Config.SPACE_HEIGHT_FLY/2, 0]}>
+			<meshLambertMaterial attach="material" color={"yellow"} wireframe={true} />
+		</Box>
 		<pointLight position={[0, 3, 0]} intensity={50} color="white" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>
 		{/* <OrbitControls target={position0} />  */}
 		<OrbitControls target={[0, 0.7, 0]} /> 

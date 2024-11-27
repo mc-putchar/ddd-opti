@@ -114,3 +114,8 @@ void DroneControl::setPath(int idx, DronePath *path)
 {
 	this->drones[idx]->setPath(path);
 }
+
+void DroneControl::addMsgQeue(std::string msg) {
+	std::lock_guard<std::mutex> guard(msgQueMutex);
+	this->msgQue.push(msg);
+}

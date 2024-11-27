@@ -14,7 +14,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	const scale = 1;
 
 	const zRotationReal = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
-	const zRotationGhost = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
+	const zRotationGhost = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
   
 	// Calculate the target position based on the light[0] angle
 	const lightAngle = light[0]; // angle in degrees
@@ -27,6 +27,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
   
 	const coneRotationAngle = -Math.atan2(targetDistance, targetHeight);
 	const conePosition = new THREE.Vector3(0, 1.45 * targetHeight, 1.7 * targetDistance);
+	// console.log("pos ", position);
 
 
     droneReal.traverse((child) => {
@@ -46,7 +47,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 		  child.material = new THREE.MeshBasicMaterial({
 			color: color || 'yellow',    // Set color dynamically
 			transparent: true,           // Enable transparency
-			opacity: 0.08,                // Adjust opacity (0 is fully transparent, 1 is fully opaque)
+			opacity: 0.35,                // Adjust opacity (0 is fully transparent, 1 is fully opaque)
 			wireframe: true,             // Optional: wireframe mode for a lighter look
 		  });
 		  child.castShadow = false;      // Disable casting shadows
@@ -57,7 +58,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	return (
 		<>
 		{/* Ghost drone = position */}
-		<group position={position} rotation={[ati[0], (zRotationGhost), -ati[1]]}>
+		<group position={position} rotation={[0, (zRotationGhost), 0]}>
 			<primitive
 				object={droneGhost}
 				scale={[scale, scale, scale]} // Adjust scale as needed

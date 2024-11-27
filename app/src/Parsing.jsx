@@ -49,24 +49,25 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 			  default:
 				console.error('Invalid drone index');
 		}}
-		// if (jsonData.position) {
-		// 	switch (droneIndex) {
-		// 	  case 0:
-		// 		setPosition0([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-		// 		break;
-		// 	  case 1:
-		// 		setPosition1([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-		// 		break;
-		// 	  case 2:
-		// 		setPosition2([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-		// 		break;
-		// 	  case 3:
-		// 		setPosition3([jsonData.position[0], jsonData.position[1], jsonData.position[2], jsonData.position[3]]);
-		// 		break;
-		// 	  default:
-		// 		console.error('Invalid drone index');
-		// 	}
-		// }
+		if (jsonData.pos) {
+			switch (droneIndex) {
+			  case 0:
+				setPosition0([jsonData.pos[0], jsonData.pos[2], jsonData.pos[1], jsonData.pos[3]]);
+				break;
+			  case 1:
+				setPosition1([jsonData.pos[0], jsonData.pos[2], jsonData.pos[1], jsonData.pos[3]]);
+				// console.log("json = ", jsonString);
+				break;
+			  case 2:
+				setPosition2([jsonData.pos[0], jsonData.pos[2], jsonData.pos[1], jsonData.pos[3]]);
+				break;
+			  case 3:
+				setPosition3([jsonData.pos[0], jsonData.pos[2], jsonData.pos[1], jsonData.pos[3]]);
+				break;
+			  default:
+				console.error('Invalid drone index');
+			}
+		}
 		if (jsonData.light) {
 			switch (droneIndex) {
 			  case 0:
@@ -184,7 +185,7 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 		if (jsonData.arm) {
 		}
 
-		if (!(jsonData.bat )) { // Update the state with the parsed message to display and keep last 100
+		if (!(jsonData.bat ) && !(jsonData.rc) && !(jsonData.ati)) { // Update the state with the parsed message to display and keep last 100
 			setMessages((prevMessages) => {
 				const newMessages = [...prevMessages, event.data];
 				return newMessages.length > 100 ? newMessages.slice(-100) : newMessages; 
