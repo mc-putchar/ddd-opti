@@ -86,6 +86,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 
 	const handleSliderChange = (value) => {
 		setIssliding(true);
+		setBlock_incoming_setpoint(true);
 		setCoordinates({z: value[0]});
 		setSetpoint((prevSetpoint) => {
 			const updatedSetpoint = [...prevSetpoint];
@@ -94,6 +95,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 		});
 		setTimeout(() => {
 			setIssliding(false);
+			setBlock_incoming_setpoint(false);
 		}, 300);
 		
 	};
