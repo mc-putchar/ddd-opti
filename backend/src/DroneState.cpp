@@ -63,18 +63,18 @@ bool DroneState::startup() {
     bool success = true;  // Variable to track success
 
     std::thread sendAllFrames([this, &success]() {
-        int a, b, c;
-        a = this->send(this->settrim(0, 64, -800, 0));
-        sleep(1);
+        int b;
+        // a = this->send(this->settrim(0, 64, -800, 0));
+        // sleep(1);
         b = this->send(this->arm());
-        sleep(1);
-        c = this->send(this->settrim(0, 64, 0, 0));
+        // sleep(1);
+        // c = this->send(this->settrim(0, 64, 0, 0));
         
-        if (a == 0 || b == 0 || c == 0) {
-			ERROR(TAG, "Failed to send startup");
-            // std::cerr << "Failed to send startup" << std::endl;
-            success = false;  // Set success to false if any send fails
-        }
+        // if (a == 0 || b == 0 || c == 0) {
+		// 	ERROR(TAG, "Failed to send startup");
+        //     // std::cerr << "Failed to send startup" << std::endl;
+        //     success = false;  // Set success to false if any send fails
+        // }
     });
     sendAllFrames.join();  // Ensure the thread completes before returning
     return success;  // Return the result of the thread operation

@@ -96,7 +96,7 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		int drone_idx;
 		char c;
 		std::stringstream ss(tmp);
-		INFO(TAG, tmp.c_str());
+		// INFO(TAG, tmp.c_str());
 		ss >> drone_idx 
 			>> c >> p[0]
 			>> c >> p[2]

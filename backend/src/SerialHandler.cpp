@@ -130,7 +130,8 @@ void SerialHandler::parseTeleMsg(char* msg)
 		sendFront(ss.str());
 	}
 	else
-		std::cout << msg << std::endl;
+		// std::cout << msg << std::endl;
+		INFO(TAG, msg);
 }
 
 // TODO: rewrite to fit into polling
