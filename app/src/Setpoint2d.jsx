@@ -8,6 +8,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 	const [coordinates, setCoordinates] = useState({ x: setpoint[0], y: setpoint[2], z: setpoint[1]});
 	const containerRef = useRef(null);
 	const [isDragging, setIsDragging] = useState(false);
+	const [isSliding, setIssliding] = useState(false);
 	const throttleTimeout = useRef(null);
 
 	useEffect(() => {
@@ -59,8 +60,9 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 
 	// Use useEffect to send WebSocket message whenever setpoint changes
 	useEffect(() => {
-		console.log("useeffect");
-		if (isDragging) {
+		// console.log("in useeffect");
+		if (isDragging || isSliding) {
+			// console.log("in is draagin");
 			// Throttle sending WebSocket messages by only allowing one send per interval
 			if (!throttleTimeout.current) {
 				throttleTimeout.current = setTimeout(() => {
@@ -83,12 +85,16 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 	}, [setpoint, isDragging, ws, index]);
 
 	const handleSliderChange = (value) => {
+		setIssliding(true);
 		setCoordinates({z: value[0]});
 		setSetpoint((prevSetpoint) => {
 			const updatedSetpoint = [...prevSetpoint];
 			updatedSetpoint[1] = value[0];
 			return updatedSetpoint;
 		});
+		setTimeout(() => {
+			setIssliding(false);
+		}, 300);
 		
 	};
 
@@ -137,7 +143,7 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 		<ShadcnSlider 
 				value={[coordinates.z]} // Slider expects an array
 				onValueChange={handleSliderChange} // Update on value change
-				// onMouseDown={handleMouseDown}
+				onMouseDown={handleMouseDown}
 				min={0.25} // Adjust min value as needed
 				max={Config.SPACE_HEIGHT_FLY} // Adjust max value as needed
 				step={0.1} // Step size for the slider
