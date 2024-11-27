@@ -84,15 +84,38 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 		}
 	}, [setpoint, isDragging, ws, index]);
 
+	// const handleSliderChange = (value) => {
+	// 	setIssliding(true);
+	// 	setBlock_incoming_setpoint(true);
+	// 	setCoordinates({z: value[0]});
+	// 	setSetpoint((prevSetpoint) => {
+	// 		const updatedSetpoint = [...prevSetpoint];
+	// 		updatedSetpoint[1] = value[0];
+	// 		return updatedSetpoint;
+	// 	});
+	// 	setTimeout(() => {
+	// 		setIssliding(false);
+	// 		setBlock_incoming_setpoint(false);
+	// 	}, 300);
+		
+	// };
 	const handleSliderChange = (value) => {
+		updateValue(value[0]); // Since Radix slider returns an array
+	};
 
-		setCoordinates({z: value[0]});
+	const updateValue = (newValue) => {
 		setSetpoint((prevSetpoint) => {
-			const updatedSetpoint = [...prevSetpoint];
-			updatedSetpoint[1] = value[0];
-			return updatedSetpoint;
-		});
+					const updatedSetpoint = [...prevSetpoint];
+					updatedSetpoint[1] = value[0];
+					return updatedSetpoint;
+				});
 
+		// Update value in WebSocket
+		const wsArray = [...setpoint];
+		wsArray[arg] = newValue;
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(`${index}{"${name}":${JSON.stringify(wsArray)}}`);
+		}
 	};
 
 	useEffect(() => {

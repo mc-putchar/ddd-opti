@@ -11,7 +11,7 @@
 #define batVoltagePin 34
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
-#define Z_GAIN 0.7
+#define Z_GAIN 0.3
 #define DRONE_INDEX 1
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
@@ -43,6 +43,7 @@ bfs::SbusData	data;
 StaticJsonDocument<1024> json;
 
 bool			armed = false;
+bool			failsafe = false;
 unsigned long	timeArmed = 0;
 unsigned long	lastPing;
 int				xTrim = 0, yTrim = 0, zTrim = 0, yawTrim = 0;
@@ -140,29 +141,29 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		Serial.println("failed to parse json");
 		return;
 	}
-	serializeJsonPretty(json, Serial);
+	// serializeJsonPretty(json, Serial);
 
 
 
-	if (json.containsKey("vel") ) {
-		xVel = json["vel"][0];
-		yVel = json["vel"][1];
-		zVel = json["vel"][2];
-	}
+	// if (json.containsKey("vel") ) {
+	// 	xVel = json["vel"][0];
+	// 	yVel = json["vel"][1];
+	// 	zVel = json["vel"][2];
+	// }
 	if (json.containsKey("pos")) {
 		xPos =   json["pos"][0];
 		yPos =   json["pos"][1];
 		zPos =   json["pos"][2];
 		yawPos = json["pos"][3];
 	}
-	if (json.containsKey("light")) {
-		lightAngle = json["light"][0];
-		lightPower = json["light"][1];
-		// myServo.write(servoAngle);
-		if (ledcWrite(LEDPIN, lightPower)) {
-			Serial.printf("LED successfully set to %d\n", lightPower);
-		}
-	}
+	// if (json.containsKey("light")) {
+	// 	lightAngle = json["light"][0];
+	// 	lightPower = json["light"][1];
+	// 	// myServo.write(servoAngle);
+	// 	if (ledcWrite(LEDPIN, lightPower)) {
+	// 		Serial.printf("LED successfully set to %d\n", lightPower);
+	// 	}
+	// }
 	if (json.containsKey("armed")) {
 		if (json["armed"] != armed && json["armed"]) {
 			timeArmed = millis();
@@ -174,17 +175,17 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		yPosSetpoint = json["setpoint"][1];
 		zPosSetpoint = json["setpoint"][2];
 	}
-	if (json.containsKey("pid")) {
-		xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-		yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-		zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
-		yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
-		xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-		yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-		zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
-		groundEffectCoef = json["pid"][15];
-		groundEffectOffset = json["pid"][16];
-	}
+	// if (json.containsKey("pid")) {
+	// 	xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+	// 	yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+	// 	zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
+	// 	yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
+	// 	xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+	// 	yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+	// 	zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
+	// 	groundEffectCoef = json["pid"][15];
+	// 	groundEffectOffset = json["pid"][16];
+	// }
 	if (json.containsKey("trim")) {
 		xTrim =   json["trim"][0];
 		yTrim =   json["trim"][1];
@@ -222,13 +223,13 @@ void setup() {
 	data.ch17 = true;
 	data.ch18 = true;
 	data.lost_frame = false;
-	for (int i = 500; i > 172; i--) {
-		for (int j = 0; j < 16; j++) {
-			data.ch[j] = i;
-		}
-		sbus_tx.data(data);
-		sbus_tx.Write();
-	}
+	// for (int i = 500; i > 172; i--) {
+	// 	for (int j = 0; j < 16; j++) {
+	// 		data.ch[j] = i;
+	// 	}
+	// 	sbus_tx.data(data);
+	// 	sbus_tx.Write();
+	// }
 
 		// myServo.attach(servoPin); // servo control
 	if ( ledcAttach(LEDPIN, LEDPMWFREQ, LEDPMWRES)) { // Configure the PWM channel
@@ -379,9 +380,12 @@ void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
 
-	if (micros() - lastPing > 2e6) { // safety timmed killswitch 
-		armed = false;
-	}
+  Serial.printf("Armed = %d", armed);
+
+	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
+	// 	armed = false;
+  //   Serial.printf("Dismared last ping");
+	// }
 
 	readTelemetry();
 
@@ -413,23 +417,30 @@ void loop() {
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
+  // zPWM = zPWM < 1051 ? 1051 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
-	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 220);
+	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
 	data.ch[0] = -yPWM;
 	data.ch[1] = xPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
 
-	int Servo_PWM;
-	data.ch[5] = Servo_PWM;
-  //Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+	// int Servo_PWM;
+	// data.ch[5] = Servo_PWM;
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f | pos x: %f, y: %f, z: %f, yaw: %f\n", 
+  //             xPosSetpoint, yPosSetpoint, zPosSetpoint, yawPosSetpoint, 
+  //             xPos, yPos, zPos, yawPos);
+
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f\n", xPos, yPos, zPos, yawPos);
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    if (failsafe == false) {
+      lastSbusSend = micros();
+      sbus_tx.data(data);
+      sbus_tx.Write();
+      // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    }
 	}
 }
 
