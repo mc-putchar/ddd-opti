@@ -11,8 +11,8 @@
 #define batVoltagePin 34
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
-#define Z_GAIN 0.7
-#define DRONE_INDEX 1
+#define Z_GAIN 0.3
+#define DRONE_INDEX 0
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
 #define LEDPMWCHANNEL 0  // PWM channel
@@ -43,6 +43,7 @@ bfs::SbusData	data;
 StaticJsonDocument<1024> json;
 
 bool			armed = false;
+bool			failsafe = false;
 unsigned long	timeArmed = 0;
 unsigned long	lastPing;
 int				xTrim = 0, yTrim = 0, zTrim = 0, yawTrim = 0;
@@ -140,7 +141,7 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		Serial.println("failed to parse json");
 		return;
 	}
-	serializeJsonPretty(json, Serial);
+	// serializeJsonPretty(json, Serial);
 
 
 
@@ -379,8 +380,11 @@ void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
 
+  Serial.printf("Armed = %d", armed);
+
 	if (micros() - lastPing > 2e6) { // safety timmed killswitch 
 		armed = false;
+    Serial.printf("Dismared last ping");
 	}
 
 	readTelemetry();
@@ -413,6 +417,7 @@ void loop() {
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
+  zPWM = zPWM < 1051 ? 1051 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 220);
 
@@ -423,13 +428,19 @@ void loop() {
 
 	int Servo_PWM;
 	data.ch[5] = Servo_PWM;
-  //Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f | pos x: %f, y: %f, z: %f, yaw: %f\n", 
+  //             xPosSetpoint, yPosSetpoint, zPosSetpoint, yawPosSetpoint, 
+  //             xPos, yPos, zPos, yawPos);
+
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f\n", xPos, yPos, zPos, yawPos);
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    if (failsafe == false) {
+      lastSbusSend = micros();
+      sbus_tx.data(data);
+      sbus_tx.Write();
+      // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    }
 	}
 }
 
