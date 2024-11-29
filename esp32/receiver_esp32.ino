@@ -11,7 +11,7 @@
 #define batVoltagePin 34
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
-#define Z_GAIN 0.3
+#define Z_GAIN 0.7
 #define DRONE_INDEX 1
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
@@ -58,12 +58,13 @@ double xyPosKp  = 1,   xyPosKi = 0,     xyPosKd = 0;
 double zPosKp   = 1.5,  zPosKi = 0,      zPosKd = 0;
 double yawPosKp = 0.3, yawPosKi = 0.1, yawPosKd = 0.05;
 
+double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
+double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
+
 double xVelSetpoint, xVel, xVelOutput;
 double yVelSetpoint, yVel, yVelOutput;
 double zVelSetpoint, zVel, zVelOutput;
 
-double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
-double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
 
 Servo	myServo;
 double	lightAngle = 0;
@@ -417,7 +418,7 @@ void loop() {
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
-  // zPWM = zPWM < 1051 ? 1051 : zPWM; // temporary limit to avoid going too high and disarm
+  zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
@@ -439,6 +440,11 @@ void loop() {
       lastSbusSend = micros();
       sbus_tx.data(data);
       sbus_tx.Write();
+      char buf[32];
+      memset(&buf,0,32);
+      sprintf(buf, "zPWM = %d\n", data.ch[2]);
+      esp_now_send(senderMacAdd, (uint8_t *)&buf, sizeof(buf));
+
       // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
     }
 	}
