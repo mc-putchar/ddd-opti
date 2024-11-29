@@ -106,13 +106,13 @@ function Setpoint2d ({ index, ws, setpoint, setSetpoint, block_incoming_setpoint
 	const updateValue = (newValue) => {
 		setSetpoint((prevSetpoint) => {
 					const updatedSetpoint = [...prevSetpoint];
-					updatedSetpoint[1] = value[0];
+					updatedSetpoint[1] = newValue;
 					return updatedSetpoint;
 				});
 
 		// Update value in WebSocket
 		const wsArray = [...setpoint];
-		wsArray[arg] = newValue;
+		wsArray[1] = newValue;
 		if (ws && ws.readyState === WebSocket.OPEN) {
 			ws.send(`${index}{"${name}":${JSON.stringify(wsArray)}}`);
 		}
