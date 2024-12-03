@@ -9,14 +9,24 @@
 
 #define TAG	"DroneState"
 
-DroneState::DroneState(int idx, SerialHandler & ref)
+SetPoint& SetPoint::operator=(SetPoint const &rhs)
+{
+	if (this != &rhs) {
+		this->x = rhs.x;
+		this->y = rhs.y;
+		this->z = rhs.z;
+	}
+	return *this;
+}
+
+DroneState::DroneState(int idx)
 	: path(NULL),
 	index(idx),
 	armed(false),
 	position{0, 0, 0, 0},
 	trim{0, 0, 0, 0},
 	light{0, 0},
-	serialHandler(ref),
+	target{0, 0, 0},
 	lastTimestamp(std::chrono::steady_clock::now())
 {}
 
@@ -27,7 +37,7 @@ DroneState::DroneState(DroneState const &cpy)
 	position(cpy.position),
 	trim(cpy.trim),
 	light(cpy.light),
-	serialHandler(cpy.serialHandler)
+	target(cpy.target)
 {}
 
 
@@ -53,38 +63,17 @@ ssize_t DroneState::send(std::string const &msg) {
 		std::lock_guard<std::mutex> guard(timestampMutex);
 		this->lastTimestamp = std::chrono::steady_clock::now();
 	}
-	return (serialHandler.send(output));
+	SerialHandler&	serial(SerialHandler::getInstance());
+	return (serial.send(output));
 }
 
-
-// Startup sequence requires throttling down to safe margin
-// to allow arming the drone
 bool DroneState::startup() {
-    bool success = true;  // Variable to track success
-
-    std::thread sendAllFrames([this, &success]() {
-        int b;
-        // a = this->send(this->settrim(0, 64, -800, 0));
-        // sleep(1);
-        b = this->send(this->arm());
-        // sleep(1);
-        // c = this->send(this->settrim(0, 64, 0, 0));
-        
-        // if (a == 0 || b == 0 || c == 0) {
-		// 	ERROR(TAG, "Failed to send startup");
-        //     // std::cerr << "Failed to send startup" << std::endl;
-        //     success = false;  // Set success to false if any send fails
-        // }
-    });
-    sendAllFrames.join();  // Ensure the thread completes before returning
-    return success;  // Return the result of the thread operation
+	return (this->send(this->arm()) > 0);
 }
-
-
 
 std::string DroneState::arm() {
 	armed.store(true);
-	keepAlive();	
+	keepAlive();
 	return std::string("\"armed\":true");
 }
 
@@ -96,11 +85,10 @@ void DroneState::disarm() {
 	// return std::string("\"armed\":true");
 }
 
-
-std::string DroneState::setpoint(float x, float y, float z, float yaw) {
+std::string DroneState::setpoint(float x, float y, float z) {
 	std::stringstream ss;
-	(void)yaw;
 	ss << "[" << x << "," << y << "," << z << "]";
+	this->target = SetPoint(x, y, z);
 	return std::string("\"setpoint\":" + ss.str());
 }
 
@@ -151,7 +139,8 @@ int DroneState::sendAll() {
 	ss << "\"armed\":" << armed << ","
 		<< setpos(position.x, position.y, position.z, position.yaw) << ","
 		<< settrim(trim.x, trim.y, trim.z, trim.yaw) << ","
-		<< setlight(light.angle, light.power);
+		<< setlight(light.angle, light.power) << ","
+		<< setpoint(target.x, target.y, target.z);
 
 	if (path){
 		ss << "," << "\"length\":" << path->length << ","
@@ -167,7 +156,7 @@ void DroneState::keepAlive() {
 			if (!armed.load()) { // Check armed status within the thread
 				break; // Exit the loop if armed is false
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Check every 1.5 seconds
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			auto now = std::chrono::steady_clock::now();
 			std::chrono::steady_clock::time_point copylastTimestamp;
 			std::chrono::duration<double> elapsed;
@@ -176,8 +165,9 @@ void DroneState::keepAlive() {
 				copylastTimestamp = lastTimestamp;
 				elapsed = now - copylastTimestamp; // Calculate elapsed time.
 			}
-			if (elapsed.count() > 1.5) { // More than 1.5 seconds have passed
+			if (elapsed.count() > 1) {
 				send("\"ping\":true");
+				this->sendAll();
 			}
 		}
 	});

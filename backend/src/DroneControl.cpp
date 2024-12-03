@@ -32,9 +32,10 @@ void DroneControl::track(std::shared_ptr<DroneState> drone)
 #include <cmath>
 static inline float quaternion_to_yaw(float x, float y, float z, float w)
 {
-	float sycp = (x * y + z * w) * 2.0f;
+	float sycp = (x * z + y * w) * 2.0f;
 	float cycp = 1 - (y * y + z * z) * 2.0f;
 	return (std::atan2(sycp, cycp));
+	// return (0.0f);
 }
 
 void DroneControl::update(int idx, float position[3], float quaternions[4])
@@ -71,8 +72,7 @@ void DroneControl::update(int idx, json const &data)
 		drones[idx]->send(drones[idx]->setpoint(
 			data["setpoint"][0],
 			data["setpoint"][1],
-			data["setpoint"][2],
-			data["setpoint"][3]
+			data["setpoint"][2]
 		));
 	}
 

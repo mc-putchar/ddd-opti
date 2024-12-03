@@ -130,8 +130,10 @@ void SerialHandler::parseTeleMsg(char* msg)
 		sendFront(ss.str());
 	}
 	else
-		// std::cout << msg << std::endl;
-		INFO(TAG, msg);
+	{
+		WARN(TAG, "Unrecognized message.");
+		WARN(TAG, msg);
+	}
 }
 
 // TODO: rewrite to fit into polling
@@ -159,9 +161,9 @@ void SerialHandler::monitorIncoming()
 	}
 }
 
-int SerialHandler::send(std::string const &msg)
+ssize_t SerialHandler::send(std::string const &msg)
 {
-	int serial_rt;
+	ssize_t serial_rt;
 	{
 		std::lock_guard<std::mutex> guard(this->serialMutex);
 		serial_rt = ::write(this->port_fd, msg.c_str(), msg.length());
@@ -173,6 +175,6 @@ int SerialHandler::send(std::string const &msg)
 int SerialHandler::sendFront(std::string const &msg)
 {
 	WsServer::getInstance().send(msg);
+	INFO(TAG, msg.c_str());
 	return (1);
 }
-

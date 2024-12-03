@@ -18,6 +18,7 @@
 class Log
 {
 	public:
+		static Log& getInstance();
 		Log();
 		virtual ~Log();
 
