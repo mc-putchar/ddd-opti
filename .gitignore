@@ -1,7 +1,14 @@
 build/
-ddd-client
-ddd-controller
-ddd-clientkey
+*.o
+*.a
+*.exe
+*.log
+ddd-backend
 .cache/
+.vscode/
+.DS_Store
 compile_commands.json
 tmp/
+venv/
+__pycache__
+*.log

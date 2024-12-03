@@ -12,7 +12,7 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
-#define DRONE_INDEX 0
+#define DRONE_INDEX 1
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
 #define LEDPMWCHANNEL 0  // PWM channel
@@ -43,6 +43,7 @@ bfs::SbusData	data;
 StaticJsonDocument<1024> json;
 
 bool			armed = false;
+bool			failsafe = false;
 unsigned long	timeArmed = 0;
 unsigned long	lastPing;
 int				xTrim = 0, yTrim = 0, zTrim = 0, yawTrim = 0;
@@ -57,12 +58,13 @@ double xyPosKp  = 1,   xyPosKi = 0,     xyPosKd = 0;
 double zPosKp   = 1.5,  zPosKi = 0,      zPosKd = 0;
 double yawPosKp = 0.3, yawPosKi = 0.1, yawPosKd = 0.05;
 
+double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
+double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
+
 double xVelSetpoint, xVel, xVelOutput;
 double yVelSetpoint, yVel, yVelOutput;
 double zVelSetpoint, zVel, zVelOutput;
 
-double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
-double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
 
 Servo	myServo;
 double	lightAngle = 0;
@@ -82,8 +84,6 @@ unsigned long	lastSbusSend = micros();
 float			loopFrequency = 2000.0;
 float			sbusFrequency = 50.0;
 
-
-
 esp_now_peer_info_t peerInfo;
 
 void registerPeer() {
@@ -101,7 +101,7 @@ typedef struct __attribute__((packed)) s_tel_bat
   uint8_t index;
   uint16_t Bat_volt;
   int16_t Bat_cur;
-}t__tel_bat;
+}t_tel_bat;
 
 typedef struct __attribute__((packed)) s_tel_atitu
 {
@@ -135,36 +135,36 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 
   uint8_t index = incomingData[0] - '0';
   if(index != DRONE_INDEX) {
-    return;
+	return;
   }
 	DeserializationError err = deserializeJson(json, (const char *)&incomingData[1]);
 	if (err) {
 		Serial.println("failed to parse json");
 		return;
 	}
-	serializeJsonPretty(json, Serial);
+	// serializeJsonPretty(json, Serial);
 
 
 
-	if (json.containsKey("vel") ) {
-		xVel = json["vel"][0];
-		yVel = json["vel"][1];
-		zVel = json["vel"][2];
-	}
+	// if (json.containsKey("vel") ) {
+	// 	xVel = json["vel"][0];
+	// 	yVel = json["vel"][1];
+	// 	zVel = json["vel"][2];
+	// }
 	if (json.containsKey("pos")) {
 		xPos =   json["pos"][0];
 		yPos =   json["pos"][1];
 		zPos =   json["pos"][2];
 		yawPos = json["pos"][3];
 	}
-	if (json.containsKey("light")) {
-		lightAngle = json["light"][0];
-		lightPower = json["light"][1];
-		// myServo.write(servoAngle);
-		if (ledcWrite(LEDPIN, lightPower)) {
-			Serial.printf("LED successfully set to %d\n", lightPower);
-		}
-	}
+	// if (json.containsKey("light")) {
+	// 	lightAngle = json["light"][0];
+	// 	lightPower = json["light"][1];
+	// 	// myServo.write(servoAngle);
+	// 	if (ledcWrite(LEDPIN, lightPower)) {
+	// 		Serial.printf("LED successfully set to %d\n", lightPower);
+	// 	}
+	// }
 	if (json.containsKey("armed")) {
 		if (json["armed"] != armed && json["armed"]) {
 			timeArmed = millis();
@@ -176,17 +176,17 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		yPosSetpoint = json["setpoint"][1];
 		zPosSetpoint = json["setpoint"][2];
 	}
-	if (json.containsKey("pid")) {
-		xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-		yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-		zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
-		yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
-		xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-		yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-		zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
-		groundEffectCoef = json["pid"][15];
-		groundEffectOffset = json["pid"][16];
-	}
+	// if (json.containsKey("pid")) {
+	// 	xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+	// 	yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+	// 	zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
+	// 	yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
+	// 	xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+	// 	yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+	// 	zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
+	// 	groundEffectCoef = json["pid"][15];
+	// 	groundEffectOffset = json["pid"][16];
+	// }
 	if (json.containsKey("trim")) {
 		xTrim =   json["trim"][0];
 		yTrim =   json["trim"][1];
@@ -224,13 +224,13 @@ void setup() {
 	data.ch17 = true;
 	data.ch18 = true;
 	data.lost_frame = false;
-	for (int i = 500; i > 172; i--) {
-		for (int j = 0; j < 16; j++) {
-			data.ch[j] = i;
-		}
-		sbus_tx.data(data);
-		sbus_tx.Write();
-	}
+	// for (int i = 500; i > 172; i--) {
+	// 	for (int j = 0; j < 16; j++) {
+	// 		data.ch[j] = i;
+	// 	}
+	// 	sbus_tx.data(data);
+	// 	sbus_tx.Write();
+	// }
 
 		// myServo.attach(servoPin); // servo control
 	if ( ledcAttach(LEDPIN, LEDPMWFREQ, LEDPMWRES)) { // Configure the PWM channel
@@ -289,101 +289,104 @@ void setup() {
 
 // Function to process MAVLink messages received via UART2
 void readTelemetry() {
-    static uint8_t buf[MAVLINK_MAX_PACKET_LEN]; // Buffer for the received message
-    static mavlink_message_t msg;
-    static mavlink_status_t status;
+	static uint8_t buf[MAVLINK_MAX_PACKET_LEN]; // Buffer for the received message
+	static mavlink_message_t msg;
+	static mavlink_status_t status;
 
-    while (TelemetrySerial.available() > 0) {
-        // Read byte by byte
-        uint8_t c = TelemetrySerial.read();
-        // Parse the MAVLink message
-        if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
-            // Print the entire MAVLink message in raw byte form
-            uint8_t message_length = mavlink_msg_to_send_buffer(buf, &msg); // Use this to determine the length of the message
-            // printMessage((uint8_t*)&msg, message_length); // Print the parsed message
-            // Process the message as before
-            switch (msg.msgid) {
-                // case MAVLINK_MSG_ID_HEARTBEAT: {
-                //     mavlink_heartbeat_t heartbeat;
-                //     mavlink_msg_heartbeat_decode(&msg, &heartbeat);
-                //     Serial.println("Heartbeat received!");
-                //     break;
-                // }
-                case MAVLINK_MSG_ID_SYS_STATUS: {
-                    mavlink_sys_status_t sys_status;
-                    mavlink_msg_sys_status_decode(&msg, &sys_status);
+	while (TelemetrySerial.available() > 0) {
+		// Read byte by byte
+		uint8_t c = TelemetrySerial.read();
+		// Parse the MAVLink message
+		if (mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
+			// Print the entire MAVLink message in raw byte form
+			uint8_t message_length = mavlink_msg_to_send_buffer(buf, &msg); // Use this to determine the length of the message
+			// printMessage((uint8_t*)&msg, message_length); // Print the parsed message
+			// Process the message as before
+			switch (msg.msgid) {
+				// case MAVLINK_MSG_ID_HEARTBEAT: {
+				//     mavlink_heartbeat_t heartbeat;
+				//     mavlink_msg_heartbeat_decode(&msg, &heartbeat);
+				//     Serial.println("Heartbeat received!");
+				//     break;
+				// }
+				case MAVLINK_MSG_ID_SYS_STATUS: {
+					mavlink_sys_status_t sys_status;
+					mavlink_msg_sys_status_decode(&msg, &sys_status);
 
-                    bat.id = 1;
-                    bat.index = DRONE_INDEX;
-                    //Serial.printf("Battery Voltage: %fV\n", sys_status.voltage_battery * 0.001); // Example conversion
-                    bat.Bat_volt = sys_status.voltage_battery;
-                    //Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
-                    bat.Bat_cur = sys_status.current_battery;
-                    esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&bat, sizeof(t__tel_bat));
-                    if (result) {
-			                      Serial.println(esp_err_to_name(result));
-		                  }
-                    break;
-                }
-                case MAVLINK_MSG_ID_ATTITUDE: {
-                    mavlink_attitude_t attitude;
-                    mavlink_msg_attitude_decode(&msg, &attitude);
-                    
-                    // Print roll, pitch, and yaw in radians
-                    ati.id = 2;
-                    ati.index = DRONE_INDEX;
-                    //Serial.printf("Pitch: %.2f rad\n", attitude.pitch);
-                    ati.pitch = attitude.pitch;
-                    // Serial.printf("Roll: %.2f rad\n", attitude.roll);
-                    ati.roll = attitude.roll;
-                    // Serial.printf("Yaw: %.2f rad\n", attitude.yaw);
-                    ati.yaw = attitude.yaw;
+					bat.id = 1;
+					bat.index = DRONE_INDEX;
+					//Serial.printf("Battery Voltage: %fV\n", sys_status.voltage_battery * 0.001); // Example conversion
+					bat.Bat_volt = sys_status.voltage_battery;
+					//Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
+					bat.Bat_cur = sys_status.current_battery;
+					esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&bat, sizeof(t_tel_bat));
+					if (result) {
+								  Serial.println(esp_err_to_name(result));
+						  }
+					break;
+				}
+				case MAVLINK_MSG_ID_ATTITUDE: {
+					mavlink_attitude_t attitude;
+					mavlink_msg_attitude_decode(&msg, &attitude);
+					
+					// Print roll, pitch, and yaw in radians
+					ati.id = 2;
+					ati.index = DRONE_INDEX;
+					//Serial.printf("Pitch: %.2f rad\n", attitude.pitch);
+					ati.pitch = attitude.pitch;
+					// Serial.printf("Roll: %.2f rad\n", attitude.roll);
+					ati.roll = attitude.roll;
+					// Serial.printf("Yaw: %.2f rad\n", attitude.yaw);
+					ati.yaw = attitude.yaw;
 
 
-                    esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&ati, sizeof(t_tel_atitu));
-                    if (result) {
-			                      Serial.println(esp_err_to_name(result));
-		                }
+					esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&ati, sizeof(t_tel_atitu));
+					if (result) {
+								  Serial.println(esp_err_to_name(result));
+						}
 
-                    break;
-                }
-                case MAVLINK_MSG_ID_RC_CHANNELS_RAW: { // Assuming aux1 might be part of RC channels
-                    mavlink_rc_channels_raw_t rc_channels;
-                    mavlink_msg_rc_channels_raw_decode(&msg, &rc_channels);
+					break;
+				}
+				case MAVLINK_MSG_ID_RC_CHANNELS_RAW: { // Assuming aux1 might be part of RC channels
+					mavlink_rc_channels_raw_t rc_channels;
+					mavlink_msg_rc_channels_raw_decode(&msg, &rc_channels);
 
-                    rc.id = 3;
-                    rc.index = DRONE_INDEX;
-                    
-                    // Assuming AUX1 corresponds to a specific channel (e.g., channel 5)
-                    // Serial.printf("Aux1 RC: %d\n", rc_channels.chan1_raw); // Adjust the channel as needed
-                    rc.ch_1 = rc_channels.chan1_raw;
-                    // Serial.printf("Aux2 RC: %d\n", rc_channels.chan2_raw); // Adjust the channel as needed
-                    rc.ch_2 = rc_channels.chan2_raw;
-                    //Serial.printf("Aux3 RC: %d\n", rc_channels.chan3_raw); // Adjust the channel as needed
-                    rc.ch_3 = rc_channels.chan3_raw;
-                    // Serial.printf("Aux14 RC: %d\n", rc_channels.chan4_raw); // Adjust the channel as needed
-                    rc.ch_4 = rc_channels.chan4_raw;
-                    // Serial.printf("Aux5 RC: %d\n", rc_channels.chan5_raw); // Adjust the channel as needed
-                    rc.ch_5 = rc_channels.chan5_raw;
+					rc.id = 3;
+					rc.index = DRONE_INDEX;
+					
+					// Assuming AUX1 corresponds to a specific channel (e.g., channel 5)
+					// Serial.printf("Aux1 RC: %d\n", rc_channels.chan1_raw); // Adjust the channel as needed
+					rc.ch_1 = rc_channels.chan1_raw;
+					// Serial.printf("Aux2 RC: %d\n", rc_channels.chan2_raw); // Adjust the channel as needed
+					rc.ch_2 = rc_channels.chan2_raw;
+					//Serial.printf("Aux3 RC: %d\n", rc_channels.chan3_raw); // Adjust the channel as needed
+					rc.ch_3 = rc_channels.chan3_raw;
+					// Serial.printf("Aux14 RC: %d\n", rc_channels.chan4_raw); // Adjust the channel as needed
+					rc.ch_4 = rc_channels.chan4_raw;
+					// Serial.printf("Aux5 RC: %d\n", rc_channels.chan5_raw); // Adjust the channel as needed
+					rc.ch_5 = rc_channels.chan5_raw;
 
-                    esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&rc, sizeof(t_tel_rc));
-                    if (result) {
-			                      Serial.println(esp_err_to_name(result));
-		                }
-                    break;
-                }
-            }
-        }
-    }
+					esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&rc, sizeof(t_tel_rc));
+					if (result) {
+								  Serial.println(esp_err_to_name(result));
+						}
+					break;
+				}
+			}
+		}
+	}
 }
 
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
 
-	if (micros() - lastPing > 2e6) { // safety timmed killswitch 
-		armed = false;
-	}
+  Serial.printf("Armed = %d", armed);
+
+	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
+	// 	armed = false;
+  //   Serial.printf("Dismared last ping");
+	// }
 
 	readTelemetry();
 
@@ -415,20 +418,35 @@ void loop() {
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
+  zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
-	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 220);
+	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
 	data.ch[0] = -yPWM;
 	data.ch[1] = xPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
-  //Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+
+	// int Servo_PWM;
+	// data.ch[5] = Servo_PWM;
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f | pos x: %f, y: %f, z: %f, yaw: %f\n", 
+  //             xPosSetpoint, yPosSetpoint, zPosSetpoint, yawPosSetpoint, 
+  //             xPos, yPos, zPos, yawPos);
+
+  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f\n", xPos, yPos, zPos, yawPos);
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-		// Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    if (failsafe == false) {
+      lastSbusSend = micros();
+      sbus_tx.data(data);
+      sbus_tx.Write();
+      char buf[32];
+      memset(&buf,0,32);
+      sprintf(buf, "zPWM = %d\n", data.ch[2]);
+      esp_now_send(senderMacAdd, (uint8_t *)&buf, sizeof(buf));
+
+      // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
+    }
 	}
 }
 
