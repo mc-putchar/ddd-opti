@@ -13,8 +13,8 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	// const scale = 0.0014;
 	const scale = 1;
 
-	const zRotationReal = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
-	const zRotationGhost = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
+	const zRotationReal = -setpoint[3] % (2 * Math.PI);
+	const zRotationGhost = -position[3] % (2 * Math.PI);
   
 	// Calculate the target position based on the light[0] angle
 	const lightAngle = light[0]; // angle in degrees
