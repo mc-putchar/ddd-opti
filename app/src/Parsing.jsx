@@ -87,7 +87,8 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 			}
 		  }
 		  
-		if (jsonData.setpoint && !blockIncomingSetpointRef.current) {
+		// if (jsonData.setpoint && !blockIncomingSetpointRef.current) {
+		if (jsonData.setpoint) {
 			switch (droneIndex) {
 			case 0:
 				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
