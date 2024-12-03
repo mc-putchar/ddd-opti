@@ -13,6 +13,9 @@ function Setpoint2d({ index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 		const updatedCoordinates = { ...coordinates, [axis]: value[0] };
 		setCoordinates(updatedCoordinates); // Set the updated coordinates
 
+		const flippedCoordinates = [updatedCoordinates.y, updatedCoordinates.z, updatedCoordinates.x, 0];
+
+
 		// Send directly using updated coordinates
 		console.log("sending : ", `${index}{"setpoint":${JSON.stringify([updatedCoordinates.x, updatedCoordinates.z, updatedCoordinates.y, 0])}}`);
 
