@@ -20,6 +20,12 @@ namespace d3
 	Log	log;
 }
 
+Log& Log::getInstance()
+{
+	static Log	log;
+	return log;
+}
+
 void ERROR(char const *tag, char const *msg)
 {
 	d3::log << Log::ERROR << "[" << tag << "]	"

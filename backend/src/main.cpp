@@ -4,6 +4,8 @@
 #include "Log.hpp"
 #include "SerialHandler.hpp"
 #include "WsServer.hpp"
+// #include <fstream>
+// #include <ios>
 
 // TODO: 
 // - Serial port Warn if disconnected (CRITICAL)
@@ -31,6 +33,17 @@ int main(void)
 	{
 		using d3::log;
 		log.set_output(&std::cout, false);
+		// std::ofstream logfile("output.log", std::ios_base::app);
+		// if (logfile.is_open())
+		// {
+		// 	log.set_output(&logfile, true);
+		// 	INFO("Log", "Started logging to file.");
+		// }
+		// else
+		// {
+		// 	log.set_output(&std::cout, false);
+		// 	ERROR("Log", "Failed to open log file");
+		// }
 		if (DEBUG_MODE)
 		{
 			log.set_verbosity(Log::DEBUG);
@@ -50,10 +63,10 @@ int main(void)
 	});
 
 	DroneControl &control = DroneControl::getInstance();
-	control.track(std::make_shared<DroneState>(0, serialHandler));
-	control.track(std::make_shared<DroneState>(1, serialHandler));
-	control.track(std::make_shared<DroneState>(2, serialHandler));
-	control.track(std::make_shared<DroneState>(3, serialHandler));
+	control.track(std::make_shared<DroneState>(0));
+	control.track(std::make_shared<DroneState>(1));
+	control.track(std::make_shared<DroneState>(2));
+	control.track(std::make_shared<DroneState>(3));
 
 	DronePath path("chocolate_Circle.json"); // Create path on the stack
 	control.setPath(0, &path);

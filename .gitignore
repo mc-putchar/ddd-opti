@@ -11,3 +11,4 @@ compile_commands.json
 tmp/
 venv/
 __pycache__
+*.log

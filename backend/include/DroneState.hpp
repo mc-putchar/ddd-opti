@@ -15,9 +15,11 @@ class SerialHandler;
 
 struct SetPoint {
 	float x, y, z;
-	float yaw, pitch, roll;
-	SetPoint(float x, float y, float z, float yaw, float pitch, float roll)
-			: x(x), y(y), z(z), yaw(yaw), pitch(pitch), roll(roll) {}
+	SetPoint(float x, float y, float z)
+			: x(x), y(y), z(z) {};
+	SetPoint(const SetPoint& cpy)
+			: x(cpy.x), y(cpy.y), z(cpy.z) {}
+	SetPoint& operator=(SetPoint const &rhs);
 	SetPoint(std::string setpoint) {
 		std::istringstream iss(setpoint);
 		iss >> this->x;
@@ -59,7 +61,7 @@ struct DLight {
 class DroneState {
 public:
 	DroneState() = delete;
-	DroneState(int idx, SerialHandler & ref);
+	DroneState(int idx);
 	DroneState(DroneState const &cpy);
 	~DroneState();
 
@@ -71,7 +73,7 @@ public:
 	int			sendAll();
 	std::string	arm();
 	void		disarm();
-	std::string setpoint(float x, float y, float z, float yaw);
+	std::string setpoint(float x, float y, float z);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
 	std::string setlight(float angle, float power);
@@ -88,7 +90,7 @@ private:
 	Position				position;
 	Trim					trim;
 	DLight					light;
-	SerialHandler &			serialHandler;
+	SetPoint				target;
 	std::mutex				droneDataMutex; //To protect the read and write of the 3 struct.
 	std::mutex				timestampMutex;
 	std::thread				keepAliveThread;

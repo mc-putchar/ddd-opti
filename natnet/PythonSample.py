@@ -26,9 +26,7 @@ import MoCapData
 
 import websocket
 
-ws = websocket.WebSocket()
-ws.connect("ws://localhost:4242/")
-
+ws = None
 
 # This is a callback function that gets connected to the NatNet client
 # and called once per mocap frame.
@@ -50,6 +48,7 @@ def receive_rigid_body_frame( new_id, position, rotation ):
     #pass
     # print( "Received frame for rigid body", new_id )
     # print( "Received frame for rigid body", new_id," ",position," ",rotation )
+    global ws
     ws.send(f'*{new_id} {position} {rotation}')
 
 
@@ -167,6 +166,12 @@ def my_parse_args(arg_list, args_dict):
 
 if __name__ == "__main__":
 
+    try:
+        ws = websocket.WebSocket()
+        ws.connect("ws://localhost:4242/")
+    except:
+        print("Could not connect to websocket. Ensure backend receiver is running.")
+        raise SystemExit(1)
     optionsDict = {}
     optionsDict["clientAddress"] = "127.0.0.1"
     optionsDict["serverAddress"] = "127.0.0.1"

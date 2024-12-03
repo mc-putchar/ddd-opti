@@ -29,7 +29,7 @@ public:
 
 	bool setup();
 	void monitorIncoming();
-	int send(std::string const &msg);
+	ssize_t send(std::string const &msg);
 	int sendFront(std::string const &msg);
 	void parseTeleMsg(char *msg);
 

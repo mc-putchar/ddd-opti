@@ -66,13 +66,13 @@ void WsServer::remove_client(ws_cli_conn_t client)
 void WsServer::onopen(ws_cli_conn_t client)
 {
 	WsServer::getInstance().add_client(client);
-	std::cout << "Client connected" << std::endl;
+	INFO(TAG, "Client connected");
 }
 
 void WsServer::onclose(ws_cli_conn_t client)
 {
 	WsServer::getInstance().remove_client(client);
-	std::cout << "Client disconnected" << std::endl;
+	INFO(TAG, "Client disconnected");
 }
 
 using json = nlohmann::json;
@@ -86,6 +86,9 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		return;
 	}
 
+	// NOTE:
+	// Messages starting with '*' are position updates from NatNet Client
+	// Messages starting with drone index number are instructions received for that drone
 	int const idx = msg[0] - '0';
 	if (idx < 0)
 	{
@@ -96,8 +99,7 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		int drone_idx;
 		char c;
 		std::stringstream ss(tmp);
-		// INFO(TAG, tmp.c_str());
-		ss >> drone_idx 
+		ss >> drone_idx
 			>> c >> p[0]
 			>> c >> p[2]
 			>> c >> p[1]
