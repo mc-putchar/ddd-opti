@@ -9,7 +9,7 @@
 #include "sbus.h"
 
 #define batVoltagePin 34
-#define MAX_VEL 100
+#define MAX_VEL 1
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
 #define DRONE_INDEX 1
@@ -51,7 +51,7 @@ double			groundEffectCoef = 28, groundEffectOffset = -0.035;
 
 double xPosSetpoint   = 0, xPos = 0;
 double yPosSetpoint   = 0, yPos = 0;
-double zPosSetpoint   = 0, zPos = 0;
+double zPosSetpoint   = 0.7, zPos = 0;
 double yawPosSetpoint = 0, yawPos, yawPosOutput;
 
 double xyPosKp  = 1,   xyPosKi = 0,     xyPosKd = 0;
@@ -156,6 +156,7 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		yPos =   json["pos"][1];
 		zPos =   json["pos"][2];
 		yawPos = json["pos"][3];
+
 	}
 	// if (json.containsKey("light")) {
 	// 	lightAngle = json["light"][0];
@@ -381,7 +382,7 @@ void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
 
-  Serial.printf("Armed = %d", armed);
+  // Serial.printf("Armed = %d", armed);
 
 	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
 	// 	armed = false;
@@ -412,10 +413,35 @@ void loop() {
 	yVelPID.Compute();
 	zVelPID.Compute();
 
-	int xPWM = 992 + (xVelOutput * 811) + xTrim;
-	int yPWM = 992 + (yVelOutput * 811) + yTrim;
-	int zPWM = 992 + (Z_GAIN * zVelOutput * 811) + zTrim;
+	int xPWM = 992 + (xVelSetpoint * 811) + xTrim;
+	int yPWM = 992 + (yVelSetpoint * 811) + yTrim;
+	int zPWM = 992 + (Z_GAIN * zVelSetpoint * 811) + zTrim;
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
+
+  Serial.print("xPos: ");
+    Serial.print(xPos);
+    Serial.print(", yPos: ");
+    Serial.print(yPos);
+    Serial.print(", zPos: ");
+    Serial.print(zPos);
+    Serial.print(", yawPos: ");
+    Serial.print(yawPos); 
+
+  Serial.print(",  SetPx: ");
+  Serial.print(xPosSetpoint);
+  Serial.print(", SetPy: ");
+  Serial.print(yPosSetpoint);
+  Serial.print(", SetPz: ");
+  Serial.print(zPosSetpoint);
+
+  Serial.print(",  xPID: ");
+  Serial.print(xVelSetpoint);
+  Serial.print(", yPID: ");
+  Serial.print(yVelSetpoint);
+  Serial.print(", zPID: ");
+  Serial.print(zVelSetpoint);
+  Serial.print(", yawPID: ");
+  Serial.println(yawPosOutput);
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
   zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
