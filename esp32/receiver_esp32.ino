@@ -95,6 +95,31 @@ void registerPeer() {
 	}
 }
 
+typedef struct __attribute__((packed)) s_graph
+{
+  uint8_t id;                // Unique 9
+  uint8_t index;             // Index or sequence number
+  int16_t xPWM;              // PWM values
+  int16_t yPWM;
+  int16_t zPWM;
+  int16_t yawPWM;
+  float xPID1;          // Velocity outputs
+  float yPID1;
+  float zPID1;
+  float xPID2;          // Position outputs
+  float yPID2;
+  float zPID2;
+  float yawPID2;
+  float xPos;                // Current positions
+  float yPos;
+  float zPos;
+  float xPosSetpoint;        // Position setpoints
+  float yPosSetpoint;
+  float zPosSetpoint;
+} t_graph;
+
+
+
 typedef struct __attribute__((packed)) s_tel_bat
 {
   uint8_t id;
@@ -377,6 +402,8 @@ void readTelemetry() {
 	}
 }
 
+int counter = 0;
+
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
@@ -418,7 +445,7 @@ void loop() {
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
-  zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
+	zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
@@ -427,24 +454,55 @@ void loop() {
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
 
-	// int Servo_PWM;
-	// data.ch[5] = Servo_PWM;
-  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f | pos x: %f, y: %f, z: %f, yaw: %f\n", 
-  //             xPosSetpoint, yPosSetpoint, zPosSetpoint, yawPosSetpoint, 
-  //             xPos, yPos, zPos, yawPos);
+	t_graph graph;
 
-  // Serial.printf("set x: %f, y: %f, z: %f, yaw: %f\n", xPos, yPos, zPos, yawPos);
+	graph.id = 9;  // Example: set the message type ID
+	graph.index = DRONE_INDEX;  // Increment or assign an index value
+
+	// Update PWM values
+	graph.xPWM = xPWM;
+	graph.yPWM = yPWM;
+	graph.zPWM = zPWM;
+	graph.yawPWM = yawPWM;
+
+	// Update velocity outputs
+	graph.xPID1 = xVelOutput;
+	graph.yPID1 = yVelOutput;
+	graph.zPID1 = zVelOutput;
+
+	// Update position outputs
+	graph.xPID2 = xVelSetpoint;
+	graph.yPID2 = yVelSetpoint;
+	graph.zPID2 = zVelSetpoint;
+	graph.yawPID2 = yawPosOutput;
+
+	// Update current positions
+	graph.xPos = xPos;
+	graph.yPos = yPos;
+	graph.zPos = zPos;
+
+	// Update position setpoints
+	graph.xPosSetpoint = xPosSetpoint;
+	graph.yPosSetpoint = yPosSetpoint;
+	graph.zPosSetpoint = zPosSetpoint;
+	counter++;
+    if (counter % 2 == 0) {
+        esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
+    }
+    if (counter >= 2) {
+        counter = 0;
+    }
+
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
     if (failsafe == false) {
       lastSbusSend = micros();
       sbus_tx.data(data);
       sbus_tx.Write();
-      char buf[32];
-      memset(&buf,0,32);
-      sprintf(buf, "zPWM = %d\n", data.ch[2]);
-      esp_now_send(senderMacAdd, (uint8_t *)&buf, sizeof(buf));
-
+    //   char buf[32];
+    //   memset(&buf,0,32);
+    //   sprintf(buf, "zPWM = %d\n", data.ch[2]);
+    //   esp_now_send(senderMacAdd, (uint8_t *)&buf, sizeof(buf));
       // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
     }
 	}

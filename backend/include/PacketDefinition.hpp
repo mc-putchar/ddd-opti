@@ -84,13 +84,13 @@ typedef struct __attribute__((packed)) s_light_info
   uint8_t strobe;
 }t_light_info;
 
-#define S_FRAME_INFO 9
-typedef struct __attribute__((packed)) s_frame_info
-{
-  uint8_t id;  // 9 S_FRAME_INFO
-  uint8_t index;
-  uint16_t frame_nb;
-}t_frame_info;
+// #define S_FRAME_INFO 9
+// typedef struct __attribute__((packed)) s_frame_info
+// {
+//   uint8_t id;  // 9 S_FRAME_INFO
+//   uint8_t index;
+//   uint16_t frame_nb;
+// }t_frame_info;
 
 #define S_FRAME_DATA 10
 typedef struct __attribute__((packed)) s_frame_data
@@ -106,4 +106,28 @@ typedef struct __attribute__((packed)) s_frame_data
   uint8_t strobe;
   uint16_t frame_nb;
 }t_frame_data;
+
+#define S_GRAPH 9
+typedef struct __attribute__((packed)) s_graph
+{
+  uint8_t id;                // Unique 9
+  uint8_t index;             // Index or sequence number
+  int16_t xPWM;              // PWM values
+  int16_t yPWM;
+  int16_t zPWM;
+  int16_t yawPWM;
+  float xPID1;          // Velocity outputs
+  float yPID1;
+  float zPID1;
+  float xPID2;          // Position outputs
+  float yPID2;
+  float zPID2;
+  float yawPID2;
+  float xPos;                // Current positions
+  float yPos;
+  float zPos;
+  float xPosSetpoint;        // Position setpoints
+  float yPosSetpoint;
+  float zPosSetpoint;
+} t_graph;
 

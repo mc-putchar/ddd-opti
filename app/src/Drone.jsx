@@ -13,7 +13,7 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	// const scale = 0.0014;
 	const scale = 1;
 
-	const zRotationReal = -(setpoint[3] * (Math.PI / 180)) % (2 * Math.PI);
+	const zRotationReal = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
 	const zRotationGhost = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
   
 	// Calculate the target position based on the light[0] angle
@@ -28,7 +28,6 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	const coneRotationAngle = -Math.atan2(targetDistance, targetHeight);
 	const conePosition = new THREE.Vector3(0, 1.45 * targetHeight, 1.7 * targetDistance);
 	// console.log("pos ", position);
-
 
     droneReal.traverse((child) => {
 		if (child.isMesh && child.material) {
@@ -58,21 +57,21 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	return (
 		<>
 		{/* Ghost drone = position */}
-		<group position={position} rotation={[0, (zRotationGhost), 0]}>
+		{/* <group position={position} rotation={[0, (zRotationGhost), 0]}>
 			<primitive
 				object={droneGhost}
 				scale={[scale, scale, scale]} // Adjust scale as needed
 				castShadow
 				receiveShadow
-			/>
+			/> */}
 			{/* <Box args={[0.80, 0.25, 0.80]}>
 				<meshLambertMaterial attach="material" color={color} wireframe={true} />
 			</Box> */}
-		</group>
+		{/* </group> */}
 
 		{/* Real drone = setpoint */}
-		{/* <group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}> */}
-		<group position={setpoint} rotation={[ati[0], -(zRotationReal + ati[2]), -ati[1]]}>
+		<group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}>
+		{/* <group position={setpoint} rotation={[ati[0], -(zRotationReal + ati[2]), -ati[1]]}> */}
 		{/* Drone Box */}
 		{/* <Box args={[0.35, 0.15, 0.35]}>
 		  <meshStandardMaterial attach="material" color={color} />

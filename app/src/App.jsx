@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { DroneControll } from './DroneControll';
+import { Graph } from './Graph';
 import { fetchConfigAndInitializeWebSocket } from './WebSocket';
 import { useGLTF } from '@react-three/drei';
 import { Live3dview } from './Live3dview';
@@ -21,9 +22,9 @@ function App() {
 	const [position1, setPosition1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [position2, setPosition2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [position3, setPosition3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
-	// const [setpoint1, setSetpoint1] = useState([0, 1, 0, 0]);
+	const [setpoint1, setSetpoint1] = useState([0, 1, 0, 0]);
 	const [setpoint0, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
-	const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
+	// const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [setpoint2, setSetpoint2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [setpoint3, setSetpoint3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
 	const [rc0, setRc0] = useState([1, 1, 1, 1, 1]);
@@ -38,10 +39,10 @@ function App() {
 	const [pathLen1, setPathLen1] = useState([1]);
 	const [pathLen2, setPathLen2] = useState([1]);
 	const [pathLen3, setPathLen3] = useState([1]);
-	const [light0, setLight0] = useState([90, 1]);
-	const [light1, setLight1] = useState([90, 1]);
-	const [light2, setLight2] = useState([90, 1]);
-	const [light3, setLight3] = useState([90, 1]);
+	const [light0, setLight0] = useState([0, 1]);
+	const [light1, setLight1] = useState([80, 200]);
+	const [light2, setLight2] = useState([0, 1]);
+	const [light3, setLight3] = useState([0, 1]);
 	const [ati0, setAti0] = useState([0, 0, 0]);
 	const [ati1, setAti1] = useState([0, 0, 0]);
 	const [ati2, setAti2] = useState([0, 0, 0]);
@@ -54,6 +55,7 @@ function App() {
 	const [bat1, setBat1] = useState([1, 1]);
 	const [bat2, setBat2] = useState([1, 1]);
 	const [bat3, setBat3] = useState([1, 1]);
+	const [graphInfo, setGraphInfo] = useState(null);
 	const [block_incoming_setpoint, setBlock_incoming_setpoint] = useState(false);
 	const blockIncomingSetpointRef = useRef(block_incoming_setpoint);
 
@@ -68,7 +70,8 @@ function App() {
 		setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
 		setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
 		setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
-		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, blockIncomingSetpointRef
+		setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3,
+		setGraphInfo, blockIncomingSetpointRef
 	); }, []);
 
 	useEffect(() => { // Scroll to the bottom whenever messages update
@@ -112,6 +115,11 @@ function App() {
 			<Timeline duration={48} />
 		</div> */}
 
+		<div className="col-span-8 p-3 bg-stone-950">
+		<Graph
+			graphInfo={graphInfo}
+		/>
+		</div>
 
 		{/* Drone controller */}
 		<div className="col-span-8 grid grid-cols-2 gap-1 px-1 bg-stone-950">
@@ -137,7 +145,7 @@ function App() {
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
 			/>
 
-			{/* <DroneControll
+			<DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
 				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
@@ -157,7 +165,7 @@ function App() {
 				pathLen={pathLen3} color={colors[3]} 
 				block_incoming_setpoint={block_incoming_setpoint}
 				setBlock_incoming_setpoint={setBlock_incoming_setpoint}
-			/> */}
+			/>
 		</div>
 	</div>
 	);

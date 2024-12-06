@@ -1,13 +1,30 @@
 
-function parseWsMessage(setMessages, event,
-setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
-setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
-setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
-setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3, blockIncomingSetpointRef) {
+function parseWsMessage(
+	setMessages, event,
+	setPosition0, setTrim0, setLight0, setSetpoint0, setBat0, setRc0, setAti0, setPathLen0, setFrame0,
+	setPosition1, setTrim1, setLight1, setSetpoint1, setBat1, setRc1, setAti1, setPathLen1, setFrame1,
+	setPosition2, setTrim2, setLight2, setSetpoint2, setBat2, setRc2, setAti2, setPathLen2, setFrame2,
+	setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPathLen3, setFrame3,
+	setGraphInfo, blockIncomingSetpointRef
+	) {
+		// Extract drone index and the binary data from event.data
+		const droneIndex = parseInt(event.data[0], 10); // Get drone index (0, 1, 2...)
+		const jsonString = event.data.slice(1); // Everything after the first byte is the binary data
+		
+		// console.log(event.data);
+		if (droneIndex === 9) {
+			console.log("Graph info: Not a drone, but serial graph info");
 
-	// Extract drone index and JSON part
-	const droneIndex = parseInt(event.data[0], 10);  // Get drone index (0, 1, 2...)
-	const jsonString = event.data.slice(1);  // Get everything after the first character
+			// Parse the JSON string into an object
+			const graph = JSON.parse(jsonString);
+		  
+			// Store the graph info in the state
+			setGraphInfo(graph);
+		return;
+		}
+  
+  
+	
 	
 	try {
 		// console.log("json = ", jsonString);
@@ -15,11 +32,9 @@ setPosition3, setTrim3, setLight3, setSetpoint3, setBat3, setRc3, setAti3, setPa
 		if (jsonData.rc) {
 			switch (droneIndex) {
 			  case 0:
-				console.log("0");
 				setRc0([jsonData.rc[0], jsonData.rc[1], jsonData.rc[2], jsonData.rc[3], jsonData.rc[4]]);
 				break;
 			  case 1:
-				console.log("1");
 				setRc1([jsonData.rc[0], jsonData.rc[1], jsonData.rc[2], jsonData.rc[3], jsonData.rc[4]]);
 				break;
 			  case 2:

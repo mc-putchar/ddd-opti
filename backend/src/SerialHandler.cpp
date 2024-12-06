@@ -129,6 +129,31 @@ void SerialHandler::parseTeleMsg(char* msg)
 
 		sendFront(ss.str());
 	}
+	else if (id == S_GRAPH) {
+		t_graph graph = *reinterpret_cast<t_graph*>(&msg[0]);
+		// Convert the struct to a raw string of bytes
+		std::stringstream ss;
+        ss << 9 << "{"
+           << "\"xPWM\":" << graph.xPWM << ","
+           << "\"yPWM\":" << graph.yPWM << ","
+           << "\"zPWM\":" << graph.zPWM << ","
+           << "\"yawPWM\":" << graph.yawPWM << ","
+           << "\"xPID1\":" << graph.xPID1 << ","
+           << "\"yPID1\":" << graph.yPID1 << ","
+           << "\"zPID1\":" << graph.zPID1 << ","
+           << "\"xPID2\":" << graph.xPID2 << ","
+           << "\"yPID2\":" << graph.yPID2 << ","
+           << "\"zPID2\":" << graph.zPID2 << ","
+           << "\"yawPID2\":" << graph.yawPID2 << ","
+           << "\"xPos\":" << graph.xPos << ","
+           << "\"yPos\":" << graph.yPos << ","
+           << "\"zPos\":" << graph.zPos << ","
+           << "\"xPosSetpoint\":" << graph.xPosSetpoint << ","
+           << "\"yPosSetpoint\":" << graph.yPosSetpoint << ","
+           << "\"zPosSetpoint\":" << graph.zPosSetpoint
+           << "}";
+        sendFront(ss.str());
+	}
 	else
 		std::cout << msg << std::endl;
 }
@@ -171,6 +196,7 @@ int SerialHandler::send(std::string const &msg)
 
 int SerialHandler::sendFront(std::string const &msg)
 {
+	// std::cout << msg << std::endl;
 	WsServer::getInstance().send(msg);
 	return (1);
 }
