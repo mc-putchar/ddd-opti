@@ -12,7 +12,7 @@
 #define MAX_VEL 100
 #define ROTOR_RADIUS 0.0225
 #define Z_GAIN 0.7
-#define DRONE_INDEX 1
+#define DRONE_INDEX 0
 #define SERVOPIN 99
 #define LEDPIN 26  // GPIO pin to control the LED
 #define LEDPMWCHANNEL 0  // PWM channel
@@ -110,12 +110,12 @@ typedef struct __attribute__((packed)) s_graph
   float yPID2;
   float zPID2;
   float yawPID2;
-  float xPos;                // Current positions
-  float yPos;
-  float zPos;
-  float xPosSetpoint;        // Position setpoints
-  float yPosSetpoint;
-  float zPosSetpoint;
+  int xPos;                // Current positions
+  int yPos;
+  int zPos;
+  int xPosSetpoint;        // Position setpoints
+  int yPosSetpoint;
+  int zPosSetpoint;
 } t_graph;
 
 

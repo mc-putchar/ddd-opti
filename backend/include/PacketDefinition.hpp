@@ -123,11 +123,11 @@ typedef struct __attribute__((packed)) s_graph
   float yPID2;
   float zPID2;
   float yawPID2;
-  float xPos;                // Current positions
-  float yPos;
-  float zPos;
-  float xPosSetpoint;        // Position setpoints
-  float yPosSetpoint;
-  float zPosSetpoint;
+  int xPos;                // Current positions
+  int yPos;
+  int zPos;
+  int xPosSetpoint;        // Position setpoints
+  int yPosSetpoint;
+  int zPosSetpoint;
 } t_graph;
 
