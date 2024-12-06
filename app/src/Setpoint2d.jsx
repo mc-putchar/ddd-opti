@@ -17,11 +17,11 @@ function Setpoint2d({ index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 
 
 		// Send directly using updated coordinates
-		console.log("sending : ", `${index}{"setpoint":${JSON.stringify([updatedCoordinates.x, updatedCoordinates.z, updatedCoordinates.y, 0])}}`);
+		console.log("sending : ", `${index}{"setpoint":${JSON.stringify([updatedCoordinates.x, updatedCoordinates.y, updatedCoordinates.z, 0])}}`);
 
 		// Send the new setpoint to the WebSocket
 		if (ws && ws.readyState === WebSocket.OPEN) {
-			ws.send(`${index}{"setpoint":${JSON.stringify([updatedCoordinates.x, updatedCoordinates.z, updatedCoordinates.y, 0])}}`);
+			ws.send(`${index}{"setpoint":${JSON.stringify([updatedCoordinates.x, updatedCoordinates.y, updatedCoordinates.z, 0])}}`);
 		}
 	};
 
@@ -49,7 +49,7 @@ function Setpoint2d({ index, ws, setpoint, setSetpoint, block_incoming_setpoint,
 			<ShadcnSlider 
 				value={[coordinates.z]} // Slider expects an array
 				onValueChange={(value) => handleSliderChange('z', value)} // Update z axis when slider changes
-				min={0.25} // Adjust min value as needed
+				min={0} // Adjust min value as needed
 				max={Config.SPACE_HEIGHT_FLY} // Adjust max value as needed
 				step={0.1} // Step size for the slider
 				className="flex-grow bg-stone-950" // Allow the slider to take up available space and set a height

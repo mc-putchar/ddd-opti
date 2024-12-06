@@ -167,7 +167,7 @@ void DroneState::keepAlive() {
 			}
 			if (elapsed.count() > 1) {
 				send("\"ping\":true");
-				this->sendAll();
+				// this->sendAll();
 			}
 		}
 	});

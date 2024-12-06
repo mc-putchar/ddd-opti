@@ -153,6 +153,7 @@ void SerialHandler::parseTeleMsg(char* msg)
            << "\"zPosSetpoint\":" << graph.zPosSetpoint
            << "}";
         sendFront(ss.str());
+		std::cout << ss.str() <<std::endl;
 	}
 	else
 	{
@@ -199,8 +200,7 @@ ssize_t SerialHandler::send(std::string const &msg)
 
 int SerialHandler::sendFront(std::string const &msg)
 {
-	// std::cout << msg << std::endl;
 	WsServer::getInstance().send(msg);
-	INFO(TAG, msg.c_str());
+	// INFO(TAG, msg.c_str());
 	return (1);
 }

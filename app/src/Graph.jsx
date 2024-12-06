@@ -4,18 +4,20 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 function Graph({ graphInfo }) {
   const [chartData, setChartData] = useState([]);
   const [time, setTime] = useState(0); // Time counter to use for the x-axis
+  const [isFrozen, setIsFrozen] = useState(false); // State for freezing/unfreezing the graph
 
+  // Handle graph updates only if the graph is not frozen
   useEffect(() => {
-    if (graphInfo) {
-      const currentTime = time; // Use current time counter
-      setTime(prevTime => prevTime + 1); // Increment the time by 1 for the next data point
+    if (graphInfo && !isFrozen) {
+      const currentTime = time;  // Use current time counter
+      setTime(prevTime => prevTime + 1);  // Increment the time by 1 for the next data point
 
       // Update chart data with new graph info and the time value
       setChartData(prevData => {
         const newData = [
           ...prevData,
           {
-            time: currentTime, // Set time as the x-axis value
+            time: currentTime,  // Set time as the x-axis value
             xPWM: graphInfo.xPWM,
             yPWM: graphInfo.yPWM,
             zPWM: graphInfo.zPWM,
@@ -42,11 +44,22 @@ function Graph({ graphInfo }) {
         return newData;
       });
     }
-  }, [graphInfo, time]);
+  }, [graphInfo, time, isFrozen]);  // Add isFrozen to the dependency array
+
+  // Toggle the freeze state
+  const handleFreezeToggle = () => {
+    setIsFrozen(prevState => !prevState);
+  };
 
   return (
     <div>
       <h3>PWM Graphs</h3>
+
+      {/* Freeze toggle switch */}
+      <label>
+        <input type="checkbox" checked={isFrozen} onChange={handleFreezeToggle} />
+        Freeze Graph
+      </label>
 
       {/* Setpoints Graph */}
       <ResponsiveContainer width="100%" height={200}>
