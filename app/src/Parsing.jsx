@@ -102,19 +102,22 @@ function parseWsMessage(
 			}
 		  }
 		  
-		if (jsonData.setpoint && !blockIncomingSetpointRef.current) {
+		// if (jsonData.setpoint && !blockIncomingSetpointRef.current) {
+		if (jsonData.setpoint) {
 			switch (droneIndex) {
 			case 0:
-				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				// setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], 0]);
 				break;
 			case 1:
-				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				// setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], 0]);
 				break;
 			case 2:
-				setSetpoint2([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				setSetpoint2([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], jsonData.setpoint[3]]);
 				break;
 			case 3:
-				setSetpoint3([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
+				setSetpoint3([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], jsonData.setpoint[3]]);
 				break;
 			default:
 				console.error('Invalid drone index');
