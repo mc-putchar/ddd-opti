@@ -31,8 +31,8 @@ function App() {
 	const [rc1, setRc1] = useState([1, 1, 1, 1, 1]);
 	const [rc2, setRc2] = useState([1, 1, 1, 1, 1]);
 	const [rc3, setRc3] = useState([1, 1, 1, 1, 1]);
-	const [trim0, setTrim0] = useState([1, 2, 3, 4]);
-	const [trim1, setTrim1] = useState([1, 2, 3, 4]);
+	const [trim0, setTrim0] = useState([0, 0, 0, 0]);
+	const [trim1, setTrim1] = useState([0, 0, 0, 0]);
 	const [trim2, setTrim2] = useState([1, 2, 3, 4]);
 	const [trim3, setTrim3] = useState([1, 2, 3, 4]);
 	const [pathLen0, setPathLen0] = useState([1]);
