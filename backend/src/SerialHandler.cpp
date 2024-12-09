@@ -185,7 +185,7 @@ void SerialHandler::monitorIncoming()
             continue;
         }
 
-        // If the first read returns exactly 32 bytes, attempt to read again
+        // If the first read returns exactly 32 bytes, attempt two additional reads
         if (rb == 32) {
             ssize_t additionalBytes = read(port_fd, buf + rb, BUFFER_SIZE - rb - 1);
             if (additionalBytes < 0) {
@@ -193,7 +193,17 @@ void SerialHandler::monitorIncoming()
                 ERROR(TAG, "Error reading additional bytes from serial.");
                 continue;
             }
-            rb += additionalBytes;  // Update rb to reflect the total bytes read
+            rb += additionalBytes;
+
+            if (rb == 64) {  // If the total bytes read so far is 64, read again
+                additionalBytes = read(port_fd, buf + rb, BUFFER_SIZE - rb - 1);
+                if (additionalBytes < 0) {
+                    std::cerr << "Error reading additional bytes from serial." << std::endl;
+                    ERROR(TAG, "Error reading additional bytes from serial.");
+                    continue;
+                }
+                rb += additionalBytes;
+            }
         }
 
         buf[rb] = 0;  // Null-terminate the buffer to safely convert to string
@@ -205,6 +215,7 @@ void SerialHandler::monitorIncoming()
         }
     }
 }
+
 
 
 ssize_t SerialHandler::send(std::string const &msg)
