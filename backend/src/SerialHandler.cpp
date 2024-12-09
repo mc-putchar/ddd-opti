@@ -148,6 +148,7 @@ void SerialHandler::parseTeleMsg(char* msg, ssize_t rb)
            << "\"xPos\":" << graph.xPos << ","
            << "\"yPos\":" << graph.yPos << ","
            << "\"zPos\":" << graph.zPos << ","
+		   << "\"yawPos\":" << graph.yawPos << ","
            << "\"xPosSetpoint\":" << graph.xPosSetpoint << ","
            << "\"yPosSetpoint\":" << graph.yPosSetpoint << ","
            << "\"zPosSetpoint\":" << graph.zPosSetpoint
