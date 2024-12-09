@@ -49,7 +49,8 @@ def receive_rigid_body_frame( new_id, position, rotation ):
     # print( "Received frame for rigid body", new_id )
     # print( "Received frame for rigid body", new_id," ",position," ",rotation )
     global ws
-    ws.send(f'*{new_id} {position} {rotation}')
+    pos = [int(n * 1000) for n in position]
+    ws.send(f'*{new_id} {pos} {rotation}')
 
 
 def add_lists(totals, totals_tmp):
