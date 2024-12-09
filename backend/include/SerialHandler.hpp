@@ -31,7 +31,7 @@ public:
 	void monitorIncoming();
 	ssize_t send(std::string const &msg);
 	int sendFront(std::string const &msg);
-	void parseTeleMsg(char *msg);
+	void parseTeleMsg(char *msg, ssize_t rb);
 
 private:
 	std::string const	port;

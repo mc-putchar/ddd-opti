@@ -22,8 +22,8 @@ function App() {
 	const [position1, setPosition1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [position2, setPosition2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [position3, setPosition3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);
-	const [setpoint1, setSetpoint1] = useState([0, 0, 0, 0]);
-	const [setpoint0, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
+	const [setpoint0, setSetpoint1] = useState([0, 0, 0, 0]);
+	const [setpoint1, setSetpoint0] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 1.5, 0]);
 	// const [setpoint1, setSetpoint1] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, 0.5, 0]);
 	const [setpoint2, setSetpoint2] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -0.5, 0]);
 	const [setpoint3, setSetpoint3] = useState([(-Config.SPACE_WIDTH/2)+0.4, 0.12, -1.5, 0]);

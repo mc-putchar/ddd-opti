@@ -13,7 +13,6 @@ function parseWsMessage(
 		
 		// console.log(event.data);
 		if (droneIndex === 9) {
-			// console.log("Graph info: Not a drone, but serial graph info");
 
 			// Parse the JSON string into an object
 			const graph = JSON.parse(jsonString);

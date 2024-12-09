@@ -94,7 +94,7 @@ int SerialHandler::setup_serial()
 	return (serial_port);
 }
 
-void SerialHandler::parseTeleMsg(char* msg)
+void SerialHandler::parseTeleMsg(char* msg, ssize_t rb)
 {
 	int const id = static_cast<int>(msg[0]);
 	int const index = static_cast<int>(msg[1]);
@@ -153,7 +153,9 @@ void SerialHandler::parseTeleMsg(char* msg)
            << "\"zPosSetpoint\":" << graph.zPosSetpoint
            << "}";
         sendFront(ss.str());
-		std::cout << ss.str() <<std::endl;
+		// std::cout << ss.str() <<std::endl;
+		std::cout << "rb = " << rb << std::endl;
+
 	}
 	else
 	{
@@ -165,27 +167,45 @@ void SerialHandler::parseTeleMsg(char* msg)
 // TODO: rewrite to fit into polling
 void SerialHandler::monitorIncoming()
 {
-	ssize_t rb(0);
-	char buf[BUFFER_SIZE];
-	std::string msg;
+    ssize_t rb(0);
+    char buf[BUFFER_SIZE];
+    std::string msg;
 
-	while (true)
-	{
-		usleep(500);
-		if (port_fd < 0) continue;
-		std::memset(buf, 0, sizeof(buf));
-		rb = read(port_fd, buf, BUFFER_SIZE - 1);
-		if (rb < 0) {
-			std::cerr << "Error reading from serial." << std::endl;
-			ERROR(TAG, "Error reading from serial.");
-			continue;
-		}
-		buf[rb] = 0;
-		msg = buf;
-		if (!msg.empty())
-			parseTeleMsg(buf);
-	}
+    while (true)
+    {
+        usleep(500);
+        if (port_fd < 0) continue;
+
+        std::memset(buf, 0, sizeof(buf));  // Clear the buffer before each read
+        rb = read(port_fd, buf, BUFFER_SIZE - 1);
+
+        if (rb < 0) {
+            std::cerr << "Error reading from serial." << std::endl;
+            ERROR(TAG, "Error reading from serial.");
+            continue;
+        }
+
+        // If the first read returns exactly 32 bytes, attempt to read again
+        if (rb == 32) {
+            ssize_t additionalBytes = read(port_fd, buf + rb, BUFFER_SIZE - rb - 1);
+            if (additionalBytes < 0) {
+                std::cerr << "Error reading additional bytes from serial." << std::endl;
+                ERROR(TAG, "Error reading additional bytes from serial.");
+                continue;
+            }
+            rb += additionalBytes;  // Update rb to reflect the total bytes read
+        }
+
+        buf[rb] = 0;  // Null-terminate the buffer to safely convert to string
+        msg = buf;  // Store the message
+
+        // Parse the message if it's not empty
+        if (!msg.empty()) {
+            parseTeleMsg(buf, rb);  // Call the parsing function with the buffer
+        }
+    }
 }
+
 
 ssize_t SerialHandler::send(std::string const &msg)
 {

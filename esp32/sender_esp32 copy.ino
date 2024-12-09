@@ -87,10 +87,6 @@ void loop() {
 		if (result) {
 			Serial.println(esp_err_to_name(result));
 		}
-		esp_err_t result = esp_now_send(broadcastAddresses[1], (uint8_t *)&buffer, strlen(buffer) + 1);
-		if (result) {
-			Serial.println(esp_err_to_name(result));
-		}
 	}
 	else {
 		yield();

@@ -40,9 +40,9 @@ function Graph({ graphInfo }) {
         ];
 
         // Keep only the last 10 seconds of data
-        if (newData.length > 10) {
-          newData.shift(); // Remove the oldest entry
-        }
+        // if (newData.length > 10) {
+        //   newData.shift(); // Remove the oldest entry
+        // }
 
         return newData;
       });
@@ -65,7 +65,7 @@ function Graph({ graphInfo }) {
       </label>
 
       {/* Position Values Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'grey' }}>
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
@@ -79,7 +79,7 @@ function Graph({ graphInfo }) {
       </ResponsiveContainer>
 
       {/* Setpoints Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'grey' }}>
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
@@ -93,7 +93,7 @@ function Graph({ graphInfo }) {
       </ResponsiveContainer>
 
       {/* PID1 Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'grey' }}>
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
@@ -108,7 +108,7 @@ function Graph({ graphInfo }) {
       </ResponsiveContainer>
 
       {/* PID2 Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'grey' }}>
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
@@ -123,7 +123,7 @@ function Graph({ graphInfo }) {
       </ResponsiveContainer>
 
       {/* PWM Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'grey' }}>
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />

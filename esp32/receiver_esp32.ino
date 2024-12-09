@@ -19,6 +19,9 @@
 #define LEDPMWFREQ 5000  // Frequency of the PWM signal
 #define LEDPMWRES 8
 
+#define START_MARKER 0xAA
+#define END_MARKER 0x55
+
 #define TX2_PIN 32
 #define RX2_PIN 33
 
@@ -98,11 +101,12 @@ void registerPeer() {
 typedef struct __attribute__((packed)) s_graph
 {
   uint8_t id;                // Unique 9
-  uint8_t index;             // Index or sequence number
-  int16_t xPWM;              // PWM values
-  int16_t yPWM;
-  int16_t zPWM;
-  int16_t yawPWM;
+  float xPos;                // Current positions
+  float yPos;
+  float zPos;
+  float xPosSetpoint;        // Position setpoints
+  float yPosSetpoint;
+  float zPosSetpoint;
   float xPID1;          // Velocity outputs
   float yPID1;
   float zPID1;
@@ -110,12 +114,10 @@ typedef struct __attribute__((packed)) s_graph
   float yPID2;
   float zPID2;
   float yawPID2;
-  int xPos;                // Current positions
-  int yPos;
-  int zPos;
-  int xPosSetpoint;        // Position setpoints
-  int yPosSetpoint;
-  int zPosSetpoint;
+  int16_t xPWM;              // PWM values
+  int16_t yPWM;
+  int16_t zPWM;
+  int16_t yawPWM;
 } t_graph;
 
 
@@ -156,7 +158,6 @@ t_tel_rc rc;
 void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
 	//Serial.printf("Recv %d data: ", len);
 	//Serial.write(incomingData, len);
-	//Serial.println();
 
   uint8_t index = incomingData[0] - '0';
   if(index != DRONE_INDEX) {
@@ -402,14 +403,10 @@ void readTelemetry() {
 	}
 }
 
-int counter = 0;
-t_graph graph;
-
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
 
-  Serial.printf("Armed = %d", armed);
 
 	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
 	// 	armed = false;
@@ -430,7 +427,6 @@ void loop() {
 		resetPid(yVelPID, -1, 1);
 		resetPid(zVelPID, -1, 1);
 	}
-
 	xPosPID.Compute();
 	yPosPID.Compute();
 	zPosPID.Compute();
@@ -442,7 +438,7 @@ void loop() {
 
 	int xPWM = 992 + (xVelOutput * 811) + xTrim;
 	int yPWM = 992 + (yVelOutput * 811) + yTrim;
-	int zPWM = 992 + (Z_GAIN * zVelOutput * 811) + zTrim;
+	int zPWM = 992 + (zVelOutput * 811) + zTrim;
 	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
@@ -450,78 +446,70 @@ void loop() {
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
+
 	data.ch[0] = -yPWM;
 	data.ch[1] = xPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
 
-	counter++;
-    if (counter % 4 == 0) {
-      	graph.id = 9;  // Example: set the message type ID
-        graph.index = DRONE_INDEX;  // Increment or assign an index value
-
-        // Update PWM values
-        graph.xPWM = xPWM;
-        graph.yPWM = yPWM;
-        graph.zPWM = zPWM;
-        graph.yawPWM = yawPWM;
-
-        // Update velocity outputs
-        graph.xPID1 = xVelOutput;
-        graph.yPID1 = yVelOutput;
-        graph.zPID1 = zVelOutput;
-
-        // Update position outputs
-        graph.xPID2 = xVelSetpoint;
-        graph.yPID2 = yVelSetpoint;
-        graph.zPID2 = zVelSetpoint;
-        graph.yawPID2 = yawPosOutput;
-
-        // Update current positions
-        graph.xPos = xPos;
-        graph.yPos = yPos;
-        graph.zPos = zPos;
-
-        // Update position setpoints
-        graph.xPosSetpoint = xPosSetpoint;
-        graph.yPosSetpoint = yPosSetpoint;
-        graph.zPosSetpoint = zPosSetpoint;
-         Serial.print("xPWM: "); Serial.print(graph.xPWM); Serial.print(" ");
-    Serial.print("yPWM: "); Serial.print(graph.yPWM); Serial.print(" ");
-    Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
-    Serial.print("yawPWM: "); Serial.print(graph.yawPWM); Serial.print(" ");
-    Serial.print("xPID1: "); Serial.print(graph.xPID1); Serial.print(" ");
-    Serial.print("yPID1: "); Serial.print(graph.yPID1); Serial.print(" ");
-    Serial.print("zPID1: "); Serial.print(graph.zPID1); Serial.print(" ");
-    Serial.print("xPID2: "); Serial.print(graph.xPID2); Serial.print(" ");
-    Serial.print("yPID2: "); Serial.print(graph.yPID2); Serial.print(" ");
-    Serial.print("zPID2: "); Serial.print(graph.zPID2); Serial.print(" ");
-    Serial.print("yawPID2: "); Serial.print(graph.yawPID2); Serial.print(" ");
-    Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
-    Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
-    Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-    Serial.print("xPosSetpoint: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
-    Serial.print("yPosSetpoint: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
-    Serial.print("zPosSetpoint: "); Serial.println(graph.zPosSetpoint);  // Final value followed by newline
-
-        esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
-    }
-    if (counter >= 4) {
-        counter = 0;
-    }
-
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-    if (failsafe == false) {
-      lastSbusSend = micros();
-      sbus_tx.data(data);
-      sbus_tx.Write();
-    //   char buf[32];
-    //   memset(&buf,0,32);
-    //   sprintf(buf, "zPWM = %d\n", data.ch[2]);
-    //   esp_now_send(senderMacAdd, (uint8_t *)&buf, sizeof(buf));
-      // Serial.printf("PWM x: %d, y: %d, z: %d, yaw: %d\n", xPWM, yPWM, zPWM, yawPWM);
-    }
+		if (failsafe == false) {
+		lastSbusSend = micros();
+		sbus_tx.data(data);
+		sbus_tx.Write();
+
+    t_graph graph;
+
+			graph.id = 9;  // Example: set the message type ID
+			// Update current positions
+			graph.xPos = xPos;
+			graph.yPos = yPos;
+			graph.zPos = zPos;
+
+			// Update position setpoints
+			graph.xPosSetpoint = xPosSetpoint;
+			graph.yPosSetpoint = yPosSetpoint;
+			graph.zPosSetpoint = zPosSetpoint;
+
+			// Update velocity outputs
+			graph.xPID1 = xVelOutput;
+			graph.yPID1 = yVelOutput;
+			graph.zPID1 = zVelOutput;
+
+			// Update position outputs
+			graph.xPID2 = xVelSetpoint;
+			graph.yPID2 = yVelSetpoint;
+			graph.zPID2 = zVelSetpoint;
+			graph.yawPID2 = yawPosOutput;
+
+			// Update PWM values
+			graph.xPWM = xPWM;
+			graph.yPWM = yPWM;
+			graph.zPWM = zPWM;
+			graph.yawPWM = yawPWM;
+
+			// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
+			// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
+			// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
+			// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
+			// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
+			// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
+			// Serial.print("xP1: "); Serial.print(graph.xPID1); Serial.print(" ");
+			// Serial.print("yP1: "); Serial.print(graph.yPID1); Serial.print(" ");
+			// Serial.print("zP1: "); Serial.print(graph.zPID1); Serial.print(" ");
+			// Serial.print("xP2: "); Serial.print(graph.xPID2); Serial.print(" ");
+			// Serial.print("yP2: "); Serial.print(graph.yPID2); Serial.print(" ");
+			// Serial.print("zP2: "); Serial.print(graph.zPID2); Serial.print(" ");
+			// Serial.print("yawP2: "); Serial.print(graph.yawPID2); Serial.print(" ");
+			// Serial.print("xPWM: "); Serial.print(graph.xPWM); Serial.print(" ");
+			// Serial.print("yPWM: "); Serial.print(graph.yPWM); Serial.print(" ");
+			// Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
+			// Serial.print("yawPWM: "); Serial.println(graph.yawPWM);
+			esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
+      Serial.print("size graph: "); Serial.println(sizeof(t_graph));
+
+		}
 	}
 }
 
