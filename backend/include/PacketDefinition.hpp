@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+
 #define S_TEL_BAT 1
 typedef struct __attribute__((packed)) s_tel_bat
 {
