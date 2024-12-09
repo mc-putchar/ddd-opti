@@ -63,7 +63,7 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 				<Slider
 					arg={2} name="trim" vari="Throt"
 					stateArray={trim} setStateArray={setTrim}
-					min={-800} max={-600} index={index} ws={ws} 
+					min={-400} max={400} index={index} ws={ws} 
 				/>
 			</div>
 
