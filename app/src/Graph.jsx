@@ -35,7 +35,8 @@ function Graph({ graphInfo }) {
             zPosSetpoint: graphInfo.zPosSetpoint,
             xPos: graphInfo.xPos,  // Add position data
             yPos: graphInfo.yPos,
-            zPos: graphInfo.zPos
+            zPos: graphInfo.zPos,
+			yawPos: graphInfo.yawPos
           }
         ];
 
@@ -75,6 +76,7 @@ function Graph({ graphInfo }) {
           <Line type="monotone" dataKey="xPos" stroke="red" />
           <Line type="monotone" dataKey="yPos" stroke="blue" />
           <Line type="monotone" dataKey="zPos" stroke="green" />
+		  <Line type="monotone" dataKey="yawPos" stroke="orange" />
         </LineChart>
       </ResponsiveContainer>
 
@@ -103,7 +105,7 @@ function Graph({ graphInfo }) {
           <Line type="monotone" dataKey="xPID1" stroke="red" />
           <Line type="monotone" dataKey="yPID1" stroke="blue" />
           <Line type="monotone" dataKey="zPID1" stroke="green" />
-          <Line type="monotone" dataKey="yawPID1" stroke="orange" />
+          <Line type="monotone" dataKey="yawPID2" stroke="orange" />
         </LineChart>
       </ResponsiveContainer>
 
@@ -118,7 +120,6 @@ function Graph({ graphInfo }) {
           <Line type="monotone" dataKey="xPID2" stroke="red" />
           <Line type="monotone" dataKey="yPID2" stroke="blue" />
           <Line type="monotone" dataKey="zPID2" stroke="green" />
-          <Line type="monotone" dataKey="yawPID2" stroke="orange" />
         </LineChart>
       </ResponsiveContainer>
 

@@ -82,7 +82,7 @@ function App() {
 
 
 	return (
-	<div className="grid grid-rows-[auto,1fr,auto,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300 select-none">
+	<div className="grid grid-rows-[auto,auto,auto,auto] grid-cols-8 gap-1 bg-stone-950 h-screen text-stone-300 select-none">
 
 		{/* Header */}
 		<div className="col-span-8 bg-stone-900 p-2 flex items-center justify-center gap-3">

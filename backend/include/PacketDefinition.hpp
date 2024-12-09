@@ -114,6 +114,7 @@ typedef struct __attribute__((packed)) s_graph
   float xPos;                // Current positions
   float yPos;
   float zPos;
+  float yawPos;
   float xPosSetpoint;        // Position setpoints
   float yPosSetpoint;
   float zPosSetpoint;

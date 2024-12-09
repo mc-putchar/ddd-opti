@@ -104,6 +104,7 @@ typedef struct __attribute__((packed)) s_graph
   float xPos;                // Current positions
   float yPos;
   float zPos;
+  float yawPos;
   float xPosSetpoint;        // Position setpoints
   float yPosSetpoint;
   float zPosSetpoint;
@@ -403,6 +404,8 @@ void readTelemetry() {
 	}
 }
 
+double yawSmooth = 0;
+
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
@@ -416,8 +419,12 @@ void loop() {
 	readTelemetry();
 
 		if (armed) {
-		data.ch[4] = 1800;
+      data.ch[4] = 1800;
+      if (yawSmooth < 1) {
+        yawSmooth = yawSmooth + 0.002;
+      }
 	} else {
+    yawSmooth = 0;
 		data.ch[4] = 172;
 		resetPid(xPosPID, -MAX_VEL, MAX_VEL);
 		resetPid(yPosPID, -MAX_VEL, MAX_VEL);
@@ -439,7 +446,7 @@ void loop() {
 	int xPWM = 992 + (xVelOutput * 811) + xTrim;
 	int yPWM = 992 + (yVelOutput * 811) + yTrim;
 	int zPWM = 992 + (zVelOutput * 811) + zTrim;
-	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
+	int yawPWM = 992 + (yawPosOutput * 811 * yawSmooth) + yawTrim;
 	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
 	// zPWM *= max(0., groundEffectMultiplier);
 	zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
@@ -466,6 +473,7 @@ void loop() {
 			graph.xPos = xPos;
 			graph.yPos = yPos;
 			graph.zPos = zPos;
+      graph.yawPos = yawPos;
 
 			// Update position setpoints
 			graph.xPosSetpoint = xPosSetpoint;
