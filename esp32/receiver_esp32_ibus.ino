@@ -74,7 +74,7 @@ Servo	myServo;
 double	lightAngle = 0;
 int		lightPower = 0;
 
-PID xPosPID(&xPos, &xVelSetpoint, &xPosSetpoint, xyPosKp, xyPosKi, xyPosKd, REVERSE);
+PID xPosPID(&xPos, &xVelSetpoint, &xPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
 PID yPosPID(&yPos, &yVelSetpoint, &yPosSetpoint, xyPosKp, xyPosKi, xyPosKd, DIRECT);
 PID zPosPID(&zPos, &zVelSetpoint, &zPosSetpoint, zPosKp, zPosKi, zPosKd, DIRECT);
 PID yawPosPID(&yawPos, &yawPosOutput, &yawPosSetpoint, yawPosKp, yawPosKi, yawPosKd, DIRECT);
@@ -347,10 +347,10 @@ void readTelemetry() {
 					bat.Bat_volt = sys_status.voltage_battery;
 					//Serial.printf("Battery Current: %.2fA\n", sys_status.current_battery * 0.001); // Example conversion
 					bat.Bat_cur = sys_status.current_battery;
-					esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&bat, sizeof(t_tel_bat));
-					if (result) {
-								  Serial.println(esp_err_to_name(result));
-						  }
+					// esp_err_t result = esp_now_send(senderMacAdd, (uint8_t *)&bat, sizeof(t_tel_bat));
+					// if (result) {
+					// 			  Serial.println(esp_err_to_name(result));
+					// 	  }
 					break;
 				}
 				case MAVLINK_MSG_ID_ATTITUDE: {
@@ -407,66 +407,8 @@ void readTelemetry() {
 
 int smooth = -300;
 
-void loop() {
-	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
-	lastLoopTime = micros();
-
-	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
-	// 	armed = false;
-  //   Serial.printf("Dismared last ping");
-	// }
-
-	readTelemetry();
-
-		if (armed) {
-      data.ch[4] = 1800;
-	} else {
-    smooth = -300;
-		data.ch[4] = 172;
-		resetPid(xPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(yPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(zPosPID, -MAX_VEL, MAX_VEL);
-		resetPid(yawPosPID, -1, 1);
-		resetPid(xVelPID, -1, 1);
-		resetPid(yVelPID, -1, 1);
-		resetPid(zVelPID, -1, 1);
-	}
-	xPosPID.Compute();
-	yPosPID.Compute();
-	zPosPID.Compute();
-	yawPosPID.Compute();
-
-	xVelPID.Compute();
-	yVelPID.Compute();
-	zVelPID.Compute();
-
-	int xPWM = 992 + (xVelOutput * 811) + xTrim;
-	int yPWM = 992 + (yVelOutput * 811) + yTrim;
-	int zPWM = 992 + (zVelOutput * 811 * Z_GAIN) + zTrim;
-	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
-	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
-	// zPWM *= max(0., groundEffectMultiplier);
-	zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
-	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
-	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
-
-
-	data.ch[0] = xPWM;
-	data.ch[1] = yPWM;
-	data.ch[2] = zPWM;
-	data.ch[3] = yawPWM;
-
-
-	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
-		if (failsafe == false) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-
-    if (smooth < 0) {
-      smooth++;
-    }
-    t_graph graph;
+void send_graph() {
+  t_graph graph;
 
 			graph.id = 9;  // Example: set the message type ID
 			// Update current positions
@@ -500,8 +442,7 @@ void loop() {
 			// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
 			// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
 			// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-      // Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
-      
+      Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
 			// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
 			// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
 			// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
@@ -519,7 +460,62 @@ void loop() {
 			esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
       // Serial.print("size graph: "); Serial.println(sizeof(t_graph));
 
+}
+
+void loop() {
+	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
+	lastLoopTime = micros();
+
+	readTelemetry();
+
+	 if (armed) {
+        // Send MAVLink control commands at 50 Hz
+        if (micros() - lastMavlinkCommandSend > 1e6 / 50) { // 50 Hz
+        	xPosPID.Compute();
+        	yPosPID.Compute();
+        	zPosPID.Compute();
+        	yawPosPID.Compute();
+
+        	xVelPID.Compute();
+        	yVelPID.Compute();
+        	zVelPID.Compute();
+        	lastMavlinkCommandSend = micros();
+        	sendMavlinkCommands(xVelOutput, yVelOutput, zVelOutput, yawPosOutput);
+        	send_graph();
+        }
+	} else {
+		resetPid(xPosPID, -MAX_VEL, MAX_VEL);
+		resetPid(yPosPID, -MAX_VEL, MAX_VEL);
+		resetPid(zPosPID, -MAX_VEL, MAX_VEL);
+		resetPid(yawPosPID, -1, 1);
+		resetPid(xVelPID, -1, 1);
+		resetPid(yVelPID, -1, 1);
+		resetPid(zVelPID, -1, 1);
+		if (micros() - lastMavlinkCommandSend > 1e6 / 50) { // 50 Hz
+			lastMavlinkCommandSend = micros();
+			sendMavlinkCommands(0, 0, 0, 0); // Disarm: send zero velocities
 		}
 	}
+
+	int xPWM = 992 + (xVelOutput * 811) + xTrim;
+	int yPWM = 992 + (yVelOutput * 811) + yTrim;
+	int zPWM = 992 + (zVelOutput * 811) + zTrim;
+	int yawPWM = 992 + (yawPosOutput * 811) + yawTrim;
+	// double groundEffectMultiplier = 1 - groundEffectCoef*pow(((2*ROTOR_RADIUS) / (4*(zPos-groundEffectOffset))), 2);
+	// zPWM *= max(0., groundEffectMultiplier);
+	zPWM = zPWM < 180 ? 180 : zPWM; // temporary limit to avoid going too high and disarm
+	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
+	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
+
+
+	data.ch[0] = -yPWM;
+	data.ch[1] = xPWM;
+	data.ch[2] = zPWM;
+	data.ch[3] = yawPWM;
+
+  if (micros() - lastHeartbeatSend > 1e6) { // 1 Hz
+        lastHeartbeatSend = micros();
+        sendHeartbeat();
+    }
 }
 

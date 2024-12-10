@@ -22,7 +22,7 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 }
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) { // callback when data is sent
-	// Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+	Serial.write(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success\n" : "Delivery Fail\n");
 }
 
 void registerPeer(size_t drone) {

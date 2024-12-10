@@ -116,7 +116,8 @@ void WsServer::onmessage(ws_cli_conn_t client, const unsigned char *msg, \
 		{
 			std::string tmp(reinterpret_cast<char const *>(msg + 1), size - 1);
 			json data = json::parse(tmp);
-			DroneControl::getInstance().update(idx, data);
+			DroneControl::getInstance().upda
+			te(idx, data);
 		}
 		catch (nlohmann::json::parse_error& e)
 		{
