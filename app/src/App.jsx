@@ -92,7 +92,7 @@ function App() {
 		</div>
 		
 		{/* Console */}
-		<div className="col-span-3 bg-stone-800 p-2 ml-1 flex min-h-0 console">
+		<div className="col-span-3 bg-stone-800 p-2 ml-1 flex min-h-0 h-[200px] console">
 			<div ref={messagesEndRef} className="overflow-auto w-full text-stone-300" style={{ lineHeight: '1.2'}}>
 				{messages.map((msg, index) => (
 					<p className="m-0 mt-1" key={index}>{msg}</p>
@@ -101,7 +101,7 @@ function App() {
 		</div>
 
 		{/* Three.js view */}
-		<div className="col-span-5 bg-stone-800 mr-1 flex">
+		<div className="col-span-5 bg-stone-800 mr-1 flex h-[200px]">
 			<Live3dview 
 				position0={position0} setpoint0={setpoint0} light0={light0} ati0={ati0}
 				position1={position1} setpoint1={setpoint1} light1={light1} ati1={ati1}

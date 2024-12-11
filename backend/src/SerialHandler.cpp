@@ -225,8 +225,9 @@ ssize_t SerialHandler::send(std::string const &msg)
 	{
 		std::lock_guard<std::mutex> guard(this->serialMutex);
 		serial_rt = ::write(this->port_fd, msg.c_str(), msg.length());
+		this->sendFront(msg);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10)); // to space out wifi packet.
 	}
-	this->sendFront(msg);
 	return (serial_rt);
 }
 

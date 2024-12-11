@@ -1,12 +1,14 @@
 import { Slider, Arm, Path, Progression} from './Input';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Battery } from './Battery';
+import { Pid } from './pid';
 import { Setpoint2d } from './Setpoint2d';
 
 function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 					setpoint, light, trim, setLight, setSetpoint, setTrim, color, block_incoming_setpoint,
 					setBlock_incoming_setpoint }) {
 				
+
 	useKey(" ", () => {
 		console.log("space pressed for drone: ", index);
 		if (ws && ws.readyState === WebSocket.OPEN) {
@@ -107,6 +109,9 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 					stateArray={light} setStateArray={setLight}
 					min={0} max={255} index={index} ws={ws} 
 				/>
+			</div>
+			<div className="col-span-5 bg-stone-700 p-2 flex flex-col">
+				<Pid index={index} ws={ws}/>
 			</div>
 		</div>
 	</>

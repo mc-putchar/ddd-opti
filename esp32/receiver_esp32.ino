@@ -204,17 +204,17 @@ void data_recv_cb(const esp_now_recv_info_t *info, const uint8_t *incomingData, 
 		yPosSetpoint = json["setpoint"][1];
 		zPosSetpoint = json["setpoint"][2];
 	}
-	// if (json.containsKey("pid")) {
-	// 	xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-	// 	yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
-	// 	zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
-	// 	yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
-	// 	xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-	// 	yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
-	// 	zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
-	// 	groundEffectCoef = json["pid"][15];
-	// 	groundEffectOffset = json["pid"][16];
-	// }
+	if (json.containsKey("pid")) {
+		xPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+		yPosPID.SetTunings(json["pid"][0], json["pid"][1], json["pid"][2]);
+		zPosPID.SetTunings(json["pid"][3], json["pid"][4], json["pid"][5]);
+		yawPosPID.SetTunings(json["pid"][6], json["pid"][7], json["pid"][8]);
+		xVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+		yVelPID.SetTunings(json["pid"][9], json["pid"][10], json["pid"][11]);
+		zVelPID.SetTunings(json["pid"][12], json["pid"][13], json["pid"][14]);
+		groundEffectCoef = json["pid"][15];
+		groundEffectOffset = json["pid"][16];
+	}
 	if (json.containsKey("trim")) {
 		xTrim =   json["trim"][0];
 		yTrim =   json["trim"][1];

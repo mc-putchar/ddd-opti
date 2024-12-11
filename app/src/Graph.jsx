@@ -57,7 +57,6 @@ function Graph({ graphInfo }) {
 
   return (
     <div>
-      <h3>PWM Graphs</h3>
 
       {/* Freeze toggle switch */}
       <label>
@@ -128,7 +127,7 @@ function Graph({ graphInfo }) {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
-          <YAxis domain={[100, 2000]} />
+          <YAxis domain={[170, 2000]} />
           <Tooltip />
           <Legend />
           <Line type="monotone" dataKey="xPWM" stroke="red" />
