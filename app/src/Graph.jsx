@@ -55,6 +55,18 @@ function Graph({ graphInfo }) {
     setIsFrozen(prevState => !prevState);
   };
 
+  const saveToFile = () => {
+    const dataStr = JSON.stringify(chartData, null, 2); // Convert chartData to a formatted JSON string
+    const blob = new Blob([dataStr], { type: 'application/json' }); // Create a Blob with JSON data
+    const url = URL.createObjectURL(blob); // Create a temporary URL for the Blob
+    const link = document.createElement('a'); // Create a link element
+    link.href = url;
+    link.download = 'chartData.json'; // Set the filename
+    document.body.appendChild(link);
+    link.click(); // Trigger the download
+    document.body.removeChild(link); // Clean up the link element
+  };
+
   return (
     <div>
 
@@ -63,6 +75,7 @@ function Graph({ graphInfo }) {
         <input type="checkbox" checked={isFrozen} onChange={handleFreezeToggle} />
         Freeze Graph
       </label>
+	  <button onClick={saveToFile}>Save Data to File</button>
 
       {/* Setpoints Graph */}
       <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
