@@ -58,9 +58,8 @@ double zPosSetpoint   = 0, zPos = 0;
 double yawPosSetpoint = 0, yawPos, yawPosOutput;
 
 double xyPosKp  = 1,   xyPosKi = 0,     xyPosKd = 0;
-double zPosKp   = 2.0,  zPosKi = 0.05,      zPosKd = 0.05;
-// double yawPosKp = 0.3, yawPosKi = 0.1, yawPosKd = 0.05;
-double yawPosKp = 0.1, yawPosKi = 0.01, yawPosKd = 0.1;
+double zPosKp   = 1.5,  zPosKi = 0,      zPosKd = 0;
+double yawPosKp = 0.3, yawPosKi = 0.1, yawPosKd = 0.05;
 
 double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
 double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;

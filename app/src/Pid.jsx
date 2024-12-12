@@ -8,7 +8,7 @@ function Pid({ index, ws }) {
 	const [pid, setPid] = useState({
 		xyP1: "1", xyI1: "0", xyD1: "0",
 		zP1: "1.5", zI1: "0", zD1: "0",
-		yawP1: "0.1", yawI1: "0.01", yawD1: "0.1",
+		yawP1: "0.3", yawI1: "0.1", yawD1: "0.05",
 		xyP2: "0.2", xyI2: "0.03", xyD2: "0.05",
 		zP2: "0.3", zI2: "0.1", zD2: "0.05",
 		geC: "28", geO: "-0.035",
