@@ -57,17 +57,17 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	return (
 		<>
 		{/* Ghost drone = position */}
-		{/* <group position={position} rotation={[0, (zRotationGhost), 0]}>
+		<group position={position} rotation={[0, (zRotationGhost), 0]}>
 			<primitive
 				object={droneGhost}
 				scale={[scale, scale, scale]} // Adjust scale as needed
 				castShadow
 				receiveShadow
-			/> */}
+			/>
 			{/* <Box args={[0.80, 0.25, 0.80]}>
 				<meshLambertMaterial attach="material" color={color} wireframe={true} />
 			</Box> */}
-		{/* </group> */}
+		</group>
 
 		{/* Real drone = setpoint */}
 		<group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}>

@@ -76,6 +76,7 @@ public:
 	std::string setpoint(float x, float y, float z);
 	std::string setpos(float x, float y, float z, float yaw);
 	std::string settrim(float x, float y, float z, float yaw);
+	std::string pid(float a, float b, float c, float d, float e, float f,float g, float h, float i,float j, float k, float l, float m, float n, float o, float p, float q);
 	std::string setlight(float angle, float power);
 	void		setPath(DronePath *p);
 	void		keepAlive();

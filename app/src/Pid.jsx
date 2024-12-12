@@ -6,11 +6,11 @@ import { Setpoint2d } from './Setpoint2d';
 function Pid({ index, ws }) {
 				
 	const [pid, setPid] = useState({
-		xyP1: "1", xyI1: "0", xyD1: "0",
-		zP1: "1.5", zI1: "0", zD1: "0",
-		yawP1: "0.3", yawI1: "0.1", yawD1: "0.05",
-		xyP2: "0.2", xyI2: "0.03", xyD2: "0.05",
-		zP2: "0.3", zI2: "0.1", zD2: "0.05",
+		xyP1: "1", xyI1: "0.02", xyD1: "0.1",
+		zP1: "2", zI1: "0.05", zD1: "0.1",
+		yawP1: "0.2", yawI1: "0.05", yawD1: "0",
+		xyP2: "0.3", xyI2: "0.01", xyD2: "0.1",
+		zP2: "0.5", zI2: "0.05", zD2: "0.1",
 		geC: "28", geO: "-0.035",
 	});
 
@@ -28,8 +28,9 @@ function Pid({ index, ws }) {
 	};
 
 	const sendWebSocketMessage = () => {
-		const payload = `${index}{"pid":${Object.values(pid).join(",")}}`;
+		const payload = `${index}{"pid":[${Object.values(pid).join(",")}]}`;
 		ws.send(payload);
+		console.log(payload);
 	};
 	
 	return (

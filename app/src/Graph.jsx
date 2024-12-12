@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 function Graph({ graphInfo }) {
   const [chartData, setChartData] = useState([]);
   const [time, setTime] = useState(0); // Time counter to use for the x-axis
-  const [isFrozen, setIsFrozen] = useState(false); // State for freezing/unfreezing the graph
+  const [isFrozen, setIsFrozen] = useState(true); // State for freezing/unfreezing the graph
 
   // Handle graph updates only if the graph is not frozen
   useEffect(() => {
@@ -64,6 +64,20 @@ function Graph({ graphInfo }) {
         Freeze Graph
       </label>
 
+      {/* Setpoints Graph */}
+      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="time" />
+          <YAxis domain={[-1, 1]} />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="xPosSetpoint" stroke="red" />
+          <Line type="monotone" dataKey="yPosSetpoint" stroke="blue" />
+          <Line type="monotone" dataKey="zPosSetpoint" stroke="green" />
+        </LineChart>
+      </ResponsiveContainer>
+
       {/* Position Values Graph */}
       <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
@@ -79,26 +93,14 @@ function Graph({ graphInfo }) {
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Setpoints Graph */}
-      <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="time" />
-          <YAxis domain={[-2, 2]} />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="xPosSetpoint" stroke="red" />
-          <Line type="monotone" dataKey="yPosSetpoint" stroke="blue" />
-          <Line type="monotone" dataKey="zPosSetpoint" stroke="green" />
-        </LineChart>
-      </ResponsiveContainer>
+
 
       {/* PID1 Graph */}
       <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
-          <YAxis domain={[-2, 2]} />
+          <YAxis domain={[-1, 1]} />
           <Tooltip />
           <Legend />
           <Line type="monotone" dataKey="xPID1" stroke="red" />
@@ -113,7 +115,7 @@ function Graph({ graphInfo }) {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
-          <YAxis domain={[-2, 2]} />
+          <YAxis domain={[-1, 1]} />
           <Tooltip />
           <Legend />
           <Line type="monotone" dataKey="xPID2" stroke="red" />
@@ -127,7 +129,7 @@ function Graph({ graphInfo }) {
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="time" />
-          <YAxis domain={[170, 2000]} />
+          <YAxis domain={[400, 1600]} />
           <Tooltip />
           <Legend />
           <Line type="monotone" dataKey="xPWM" stroke="red" />

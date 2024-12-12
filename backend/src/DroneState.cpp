@@ -92,6 +92,14 @@ std::string DroneState::setpoint(float x, float y, float z) {
 	return std::string("\"setpoint\":" + ss.str());
 }
 
+std::string DroneState::pid(float a, float b, float c, float d, float e, float f,float g, float h, float i,float j, float k, float l, float m, float n, float o, float p, float q) {
+	std::stringstream ss;
+	ss << "[" << a << "," << b << "," << c << "," << d << "," << e << "," 
+       << f << "," << g << "," << h << "," << i << "," << j << "," << k << ","
+       << l << "," << m << "," << n << "," << o << "," << p << "," << q << "]";
+	return std::string("\"pid\":" + ss.str());
+}
+
 
 std::string DroneState::setpos(float x, float y, float z, float yaw) {
 	{

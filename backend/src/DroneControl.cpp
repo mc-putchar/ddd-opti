@@ -76,6 +76,29 @@ void DroneControl::update(int idx, json const &data)
 		));
 	}
 
+	if (data.contains("pid")) {
+		std::cout << "in pid" << std::endl;
+		drones[idx]->send(drones[idx]->pid(
+			data["pid"][0],
+			data["pid"][1],
+			data["pid"][2],
+			data["pid"][3],
+			data["pid"][4],
+			data["pid"][5],
+			data["pid"][6],
+			data["pid"][7],
+			data["pid"][8],
+			data["pid"][9],
+			data["pid"][10],
+			data["pid"][11],
+			data["pid"][12],
+			data["pid"][13],
+			data["pid"][14],
+			data["pid"][15],
+			data["pid"][16]
+		));
+	}
+
 	if (data.contains("armed")) {
 		if (data["armed"].get<bool>()) 
 			drones[idx]->startup();

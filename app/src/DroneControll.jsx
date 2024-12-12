@@ -1,7 +1,7 @@
 import { Slider, Arm, Path, Progression} from './Input';
 import React, { useEffect, useState } from 'react';
 import { Battery } from './Battery';
-import { Pid } from './pid';
+import { Pid } from './Pid';
 import { Setpoint2d } from './Setpoint2d';
 
 function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
