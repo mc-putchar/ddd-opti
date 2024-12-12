@@ -106,11 +106,11 @@ function parseWsMessage(
 			switch (droneIndex) {
 			case 0:
 				// setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
-				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], 0]);
+				setSetpoint0([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], 0]);
 				break;
 			case 1:
 				// setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], jsonData.setpoint[3]]);
-				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], 0]);
+				setSetpoint1([jsonData.setpoint[0], jsonData.setpoint[2], jsonData.setpoint[1], 0]);
 				break;
 			case 2:
 				setSetpoint2([jsonData.setpoint[0], jsonData.setpoint[1], jsonData.setpoint[2], jsonData.setpoint[3]]);
