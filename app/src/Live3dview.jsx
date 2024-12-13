@@ -86,7 +86,7 @@ const Live3dview = React.memo(({
 
 		<Curtain />
 		<Box args={[Config.SPACE_WIDTH_FLY, Config.SPACE_HEIGHT_FLY, Config.SPACE_DEPTH_FLY]}
-			position={[0, Config.SPACE_HEIGHT_FLY/2, 0]}>
+			position={[0, Config.SPACE_HEIGHT_FLY/4, 0]}>
 			<meshLambertMaterial attach="material" color={"yellow"} wireframe={true} />
 		</Box>
 		<pointLight position={[0, 3, 0]} intensity={50} color="white" castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}/>

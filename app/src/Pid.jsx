@@ -6,8 +6,8 @@ import { Setpoint2d } from './Setpoint2d';
 function Pid({ index, ws }) {
 				
 	const [pid, setPid] = useState({
-		xyP1: "1", xyI1: "0.02", xyD1: "0.1",
-		zP1: "2", zI1: "0.05", zD1: "0.1",
+		xyP1: "1", xyI1: "0.05", xyD1: "0.1",
+		zP1: "0.5", zI1: "0.09", zD1: "0.05",
 		yawP1: "0.2", yawI1: "0.05", yawD1: "0",
 		xyP2: "0.3", xyI2: "0.01", xyD2: "0.1",
 		zP2: "0.5", zI2: "0.05", zD2: "0.1",

@@ -75,7 +75,7 @@ function Graph({ graphInfo }) {
         <input type="checkbox" checked={isFrozen} onChange={handleFreezeToggle} />
         Freeze Graph
       </label>
-	  <button onClick={saveToFile}>Save Data to File</button>
+	  <button onClick={saveToFile}> - Save Data to File</button>
 
       {/* Setpoints Graph */}
       <ResponsiveContainer width="100%" height={200} style={{ backgroundColor: 'black' }}>
