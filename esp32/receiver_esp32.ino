@@ -470,11 +470,10 @@ void loop() {
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
 		if (failsafe == false) {
-		lastSbusSend = micros();
-		sbus_tx.data(data);
-		sbus_tx.Write();
-
-	}
+			lastSbusSend = micros();
+			sbus_tx.data(data);
+			sbus_tx.Write();
+		}
 	t_graph graph;
 
 	graph.id = 9;  // Example: set the message type ID
@@ -509,7 +508,7 @@ void loop() {
 	// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
 	// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
 	// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-// Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
+	// Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
 
 	// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
 	// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
