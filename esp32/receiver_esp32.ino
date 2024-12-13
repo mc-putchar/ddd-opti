@@ -404,7 +404,10 @@ void readTelemetry() {
 	}
 }
 
-int smooth = -300;
+
+bool launching = false;
+bool launch_done = false;
+double last_altitude = 0.0f;
 
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
@@ -417,10 +420,19 @@ void loop() {
 
 	readTelemetry();
 
-		if (armed) {
-      data.ch[4] = 1800;
+	if (armed) {
+		data.ch[4] = 1800;
+		if (!launching) {
+			launching = true;
+			last_altitude = zPos;
+		} else if (!launch_done) {
+			if (zPos < last_altitude) {
+				zPosSetpoint = last_altitude;
+				launch_done = true;
+			}
+			last_altitude = zPos;
+		}
 	} else {
-    smooth = -300;
 		data.ch[4] = 172;
 		resetPid(xPosPID, -MAX_VEL, MAX_VEL);
 		resetPid(yPosPID, -MAX_VEL, MAX_VEL);
@@ -462,17 +474,15 @@ void loop() {
 		sbus_tx.data(data);
 		sbus_tx.Write();
 
-    if (smooth < 0) {
-      smooth++;
-    }
-    t_graph graph;
+	}
+	t_graph graph;
 
 			graph.id = 9;  // Example: set the message type ID
 			// Update current positions
 			graph.xPos = xPos;
 			graph.yPos = yPos;
 			graph.zPos = zPos;
-      graph.yawPos = yawPos;
+	  graph.yawPos = yawPos;
 
 			// Update position setpoints
 			graph.xPosSetpoint = xPosSetpoint;
@@ -499,8 +509,8 @@ void loop() {
 			// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
 			// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
 			// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-      // Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
-      
+	  // Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
+	  
 			// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
 			// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
 			// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
@@ -516,7 +526,7 @@ void loop() {
 			// Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
 			// Serial.print("yawPWM: "); Serial.println(graph.yawPWM);
 			esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
-      // Serial.print("size graph: "); Serial.println(sizeof(t_graph));
+	  // Serial.print("size graph: "); Serial.println(sizeof(t_graph));
 
 		}
 	}
