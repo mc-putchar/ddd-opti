@@ -1,35 +1,29 @@
-import React, { useEffect, useState, useRef} from 'react';
-import { OrbitControls, Cone, Sphere, Plane, Cylinder, Box, useGLTF } from '@react-three/drei';
+import React, { useState, useRef} from 'react';
+import { Cone, Box} from '@react-three/drei';
 import * as THREE from 'three';
-import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as Config from './Settings';
-
 
 const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) => {
 	const [droneReal, setDroneReal] = useState(droneGlb.scene.clone(true));
 	const [droneGhost, setDroneGhost] = useState(droneGlb.scene.clone(true));
 	const lightTarget = useRef();
-	// const scale = 0.0014;
-	const scale = 1;
 
 	const zRotationReal = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
 	const zRotationGhost = -(position[3] * (Math.PI / 180)) % (2 * Math.PI);
-  
+
 	// Calculate the target position based on the light[0] angle
-	const lightAngle = light[0]; // angle in degrees
+	const lightAngle = light[0]; 
 	const radians = lightAngle * (Math.PI / 180); // convert to radians
-  
+
 	// Calculate new target position based on the angle
 	const targetHeight = -Math.cos(radians);
 	const targetDistance = Math.sin(radians);
 	const targetPosition = new THREE.Vector3(0, 1 * targetHeight, 1 * targetDistance);
-  
+
 	const coneRotationAngle = -Math.atan2(targetDistance, targetHeight);
 	const conePosition = new THREE.Vector3(0, 1.45 * targetHeight, 1.7 * targetDistance);
-	// console.log("pos ", position);
 
-    droneReal.traverse((child) => {
+	droneReal.traverse((child) => {
 		if (child.isMesh && child.material) {
 		  child.material = new THREE.MeshStandardMaterial({
 			color: color || 'yellow',    // Set color dynamically
@@ -55,15 +49,13 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 	  });
 
 	return (
-		<>
+	<>
 		{/* Ghost drone = position */}
 		<group position={position} rotation={[0, (zRotationGhost), 0]}>
 			<primitive
 				object={droneGhost}
-				scale={[scale, scale, scale]} // Adjust scale as needed
 				castShadow
-				receiveShadow
-			/>
+				receiveShadow />
 			{/* <Box args={[0.80, 0.25, 0.80]}>
 				<meshLambertMaterial attach="material" color={color} wireframe={true} />
 			</Box> */}
@@ -72,39 +64,31 @@ const Drone = React.memo(({ position, light, setpoint, color, droneGlb, ati }) =
 		{/* Real drone = setpoint */}
 		<group position={setpoint} rotation={[ati[0], (zRotationReal), -ati[1]]}>
 		{/* <group position={setpoint} rotation={[ati[0], -(zRotationReal + ati[2]), -ati[1]]}> */}
-		{/* Drone Box */}
-		{/* <Box args={[0.35, 0.15, 0.35]}>
-		  <meshStandardMaterial attach="material" color={color} />
-		</Box> */}
-		<primitive
+			<primitive
 				object={droneReal}
 				position={[0, 0, 0]}
-				scale={[scale, scale, scale]} // Adjust scale as needed
 				castShadow
-				receiveShadow
-				/>
-		
-		<Box args={[Config.DRONE_BOUNDING_BOX, 0.25, Config.DRONE_BOUNDING_BOX]}>
-			<meshLambertMaterial attach="material" color={color} wireframe={true} />
-		</Box>
-		
-		
-		{/* Cone for the drone */}
-		<LightBeam
-			args={[0.8, 3, 12]} light={light[1]} position={conePosition}
-			rotation={[Math.PI, -(Math.PI / 2), coneRotationAngle]}
-			/>
+				receiveShadow />
 
-		{/* Spotlight above the drone */}
-		<spotLight
-			position={[0, -0.1, 0]} angle={0.25}
-			penumbra={1} intensity={light[1]}
-			castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}
-			target={lightTarget.current} // Point spotlight at the target
-			color={Config.LIGHT_COLOR}
-			/>
-		<mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
-	</group>
+			<Box args={[Config.DRONE_BOUNDING_BOX, 0.25, Config.DRONE_BOUNDING_BOX]}>
+				<meshLambertMaterial attach="material" color={color} wireframe={true} />
+			</Box>
+		
+			{/* Cone for the drone */}
+			<LightBeam
+				args={[0.8, 3, 12]} light={light[1]} position={conePosition}
+				rotation={[Math.PI, -(Math.PI / 2), coneRotationAngle]} />
+
+			{/* Spotlight above the drone */}
+			<spotLight
+				position={[0, -0.1, 0]} angle={0.25}
+				penumbra={1} intensity={light[1]}
+				castShadow shadow-mapSize-width={1024} shadow-mapSize-height={1024}
+				target={lightTarget.current} // Point spotlight at the target
+				color={Config.LIGHT_COLOR} />
+
+			<mesh ref={lightTarget} position={targetPosition} /> {/* Adjust this target position as needed */}
+		</group>
 	</>
 	);
 });
@@ -160,11 +144,11 @@ function LightBeam({rotation, position, light, args}) {
 	  });
 	
 	return (
-		<>
-			<Cone args={args} position={position} rotation={rotation}>
-				<primitive attach="material" object={coneMaterial} />
-			</Cone>
-		</>
+	<>
+		<Cone args={args} position={position} rotation={rotation}>
+			<primitive attach="material" object={coneMaterial} />
+		</Cone>
+	</>
 	)
 }
 

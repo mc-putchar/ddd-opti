@@ -1,10 +1,7 @@
-import { Slider, Arm, Path, Progression} from './Input';
 import React, { useEffect, useState } from 'react';
-import { Battery } from './Battery';
-import { Setpoint2d } from './Setpoint2d';
 
 function Pid({ index, ws }) {
-				
+
 	const [pid, setPid] = useState({
 		xyP1: "1", xyI1: "0.05", xyD1: "0.1",
 		zP1: "0.5", zI1: "0.09", zD1: "0.05",
@@ -34,7 +31,7 @@ function Pid({ index, ws }) {
 	};
 	
 	return (
-		<div className="grid grid-cols-6 gap-2 p-2">
+		<div className="grid grid-cols-9 gap-2 p-2">
 		{Object.keys(pid).map((key) => (
 		  <div key={key} className="flex flex-col">
 			<label className="text-stone-300 text-sm mb-1">{key}</label>
@@ -48,10 +45,9 @@ function Pid({ index, ws }) {
 		  </div>
 		))}
 		<button
-		  onClick={sendWebSocketMessage}
-		  className="col-span-3 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
-		>
-		  Submit
+			onClick={sendWebSocketMessage}
+			className="col-span-3 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
+				Submit
 		</button>
 	  </div>
 	)

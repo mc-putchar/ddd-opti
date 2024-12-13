@@ -1,9 +1,10 @@
 
 function Battery({bat}) {
 	
+	//TODO adjust to different battery 
 	function estimateBatteryPercentage({voltage_battery}) { 
 		const min_voltage = 3000; // 3.0V * 3 cells = 9.0V
-		const max_voltage = 4200; // 4.2V * 3 cells = 12.6V
+		const max_voltage = 4200; // 4.2V * 3 cells = 12.6V 
 		
 		// Check if the voltage is within the expected range
 		if (voltage_battery < min_voltage) {
