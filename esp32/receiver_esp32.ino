@@ -415,7 +415,7 @@ void loop() {
 
 	// if (micros() - lastPing > 2e6) { // safety timmed killswitch 
 	// 	armed = false;
-  //   Serial.printf("Dismared last ping");
+	//   Serial.printf("Dismared last ping");
 	// }
 
 	readTelemetry();
@@ -477,58 +477,56 @@ void loop() {
 	}
 	t_graph graph;
 
-			graph.id = 9;  // Example: set the message type ID
-			// Update current positions
-			graph.xPos = xPos;
-			graph.yPos = yPos;
-			graph.zPos = zPos;
-	  graph.yawPos = yawPos;
+	graph.id = 9;  // Example: set the message type ID
+	// Update current positions
+	graph.xPos = xPos;
+	graph.yPos = yPos;
+	graph.zPos = zPos;
+	graph.yawPos = yawPos;
 
-			// Update position setpoints
-			graph.xPosSetpoint = xPosSetpoint;
-			graph.yPosSetpoint = yPosSetpoint;
-			graph.zPosSetpoint = zPosSetpoint;
+	// Update position setpoints
+	graph.xPosSetpoint = xPosSetpoint;
+	graph.yPosSetpoint = yPosSetpoint;
+	graph.zPosSetpoint = zPosSetpoint;
 
-			// Update velocity outputs
-			graph.xPID1 = xVelOutput;
-			graph.yPID1 = yVelOutput;
-			graph.zPID1 = zVelOutput;
+	// Update velocity outputs
+	graph.xPID1 = xVelOutput;
+	graph.yPID1 = yVelOutput;
+	graph.zPID1 = zVelOutput;
 
-			// Update position outputs
-			graph.xPID2 = xVelSetpoint;
-			graph.yPID2 = yVelSetpoint;
-			graph.zPID2 = zVelSetpoint;
-			graph.yawPID2 = yawPosOutput;
+	// Update position outputs
+	graph.xPID2 = xVelSetpoint;
+	graph.yPID2 = yVelSetpoint;
+	graph.zPID2 = zVelSetpoint;
+	graph.yawPID2 = yawPosOutput;
 
-			// Update PWM values
-			graph.xPWM = xPWM;
-			graph.yPWM = yPWM;
-			graph.zPWM = zPWM;
-			graph.yawPWM = yawPWM;
+	// Update PWM values
+	graph.xPWM = xPWM;
+	graph.yPWM = yPWM;
+	graph.zPWM = zPWM;
+	graph.yawPWM = yawPWM;
 
-			// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
-			// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
-			// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-	  // Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
-	  
-			// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
-			// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
-			// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
-			// Serial.print("xP1: "); Serial.print(graph.xPID1); Serial.print(" ");
-			// Serial.print("yP1: "); Serial.print(graph.yPID1); Serial.print(" ");
-			// Serial.print("zP1: "); Serial.print(graph.zPID1); Serial.print(" ");
-			// Serial.print("xP2: "); Serial.print(graph.xPID2); Serial.print(" ");
-			// Serial.print("yP2: "); Serial.print(graph.yPID2); Serial.print(" ");
-			// Serial.print("zP2: "); Serial.print(graph.zPID2); Serial.print(" ");
-			// Serial.print("yawP2: "); Serial.print(graph.yawPID2); Serial.print(" ");
-			// Serial.print("xPWM: "); Serial.print(graph.xPWM); Serial.print(" ");
-			// Serial.print("yPWM: "); Serial.print(graph.yPWM); Serial.print(" ");
-			// Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
-			// Serial.print("yawPWM: "); Serial.println(graph.yawPWM);
-			esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
-	  // Serial.print("size graph: "); Serial.println(sizeof(t_graph));
+	// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
+	// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
+	// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
+// Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
 
-		}
+	// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
+	// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
+	// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
+	// Serial.print("xP1: "); Serial.print(graph.xPID1); Serial.print(" ");
+	// Serial.print("yP1: "); Serial.print(graph.yPID1); Serial.print(" ");
+	// Serial.print("zP1: "); Serial.print(graph.zPID1); Serial.print(" ");
+	// Serial.print("xP2: "); Serial.print(graph.xPID2); Serial.print(" ");
+	// Serial.print("yP2: "); Serial.print(graph.yPID2); Serial.print(" ");
+	// Serial.print("zP2: "); Serial.print(graph.zPID2); Serial.print(" ");
+	// Serial.print("yawP2: "); Serial.print(graph.yawPID2); Serial.print(" ");
+	// Serial.print("xPWM: "); Serial.print(graph.xPWM); Serial.print(" ");
+	// Serial.print("yPWM: "); Serial.print(graph.yPWM); Serial.print(" ");
+	// Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
+	// Serial.print("yawPWM: "); Serial.println(graph.yawPWM);
+	esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
+	// Serial.print("size graph: "); Serial.println(sizeof(t_graph));
 	}
 }
 
