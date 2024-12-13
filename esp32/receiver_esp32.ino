@@ -52,22 +52,25 @@ unsigned long	lastPing;
 int				xTrim = 0, yTrim = 0, zTrim = 0, yawTrim = 0;
 double			groundEffectCoef = 28, groundEffectOffset = -0.035;
 
-double xPosSetpoint   = 0, xPos = 0;
-double yPosSetpoint   = 0, yPos = 0;
-double zPosSetpoint   = 0, zPos = 0;
-double yawPosSetpoint = 0, yawPos, yawPosOutput;
+double	xPosSetpoint   = 0, xPos = 0;
+double	yPosSetpoint   = 0, yPos = 0;
+double	zPosSetpoint   = 0, zPos = 0;
+double	yawPosSetpoint = 0, yawPos, yawPosOutput;
 
-double xyPosKp  = 1,   xyPosKi = 0,     xyPosKd = 0;
-double zPosKp   = 1.5,  zPosKi = 0,      zPosKd = 0;
-double yawPosKp = 0.3, yawPosKi = 0.1, yawPosKd = 0.05;
+double	xyPosKp  = 0.3,   xyPosKi = 0.05,     xyPosKd = 0.3;
+double	zPosKp   = 0.5,  zPosKi = 0.03,      zPosKd = 0.3;
+double	yawPosKp = 0.2, yawPosKi = 0.05, yawPosKd = 0.05;
 
-double xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
-double zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
+double	xyVelKp = 0.2, xyVelKi = 0.03, xyVelKd = 0.05;
+double	zVelKp = 0.3, zVelKi = 0.1, zVelKd = 0.05;
 
-double xVelSetpoint, xVel, xVelOutput;
-double yVelSetpoint, yVel, yVelOutput;
-double zVelSetpoint, zVel, zVelOutput;
+double	xVelSetpoint, xVel, xVelOutput;
+double	yVelSetpoint, yVel, yVelOutput;
+double	zVelSetpoint, zVel, zVelOutput;
 
+bool	launching = false;
+bool	launch_done = false;
+double	launch_altitude = 0.0f;
 
 Servo	myServo;
 double	lightAngle = 0;
@@ -243,10 +246,10 @@ void readMacAddress(){
 
 void setup() {
 	Serial.begin(115200); // Initialize Serial Monitor
-  Serial.println("starting up");
+	Serial.println("starting up");
 	TelemetrySerial.begin(115200, SERIAL_8N1, RX2_PIN);
 
-  sbus_tx.Begin();
+	sbus_tx.Begin();
 	data.failsafe = false;
 	data.ch17 = true;
 	data.ch18 = true;
@@ -311,7 +314,7 @@ void setup() {
 	lastPing = micros();
 	lastLoopTime = micros();
 	lastSbusSend = micros();
-  registerPeer();
+	registerPeer();
 }
 
 // Function to process MAVLink messages received via UART2
@@ -404,11 +407,6 @@ void readTelemetry() {
 	}
 }
 
-
-bool launching = false;
-bool launch_done = false;
-double last_altitude = 0.0f;
-
 void loop() {
 	while (micros() - lastLoopTime < 1e6 / loopFrequency) { yield(); }
 	lastLoopTime = micros();
@@ -424,13 +422,13 @@ void loop() {
 		data.ch[4] = 1800;
 		if (!launching) {
 			launching = true;
-			last_altitude = zPos;
+			launch_altitude = zPos;
 		} else if (!launch_done) {
-			if (zPos < last_altitude) {
-				zPosSetpoint = last_altitude;
+			if (zPos + 0.005f < launch_altitude) {
+				zPosSetpoint = launch_altitude;
 				launch_done = true;
 			}
-			last_altitude = zPos;
+			launch_altitude = zPos;
 		}
 	} else {
 		data.ch[4] = 172;
@@ -461,12 +459,10 @@ void loop() {
 	zPWM = zPWM > 1800 ? 1800 : zPWM; // temporary limit to avoid going too high and disarm
 	zPWM = ((armed && millis() - timeArmed > 100) ? zPWM : 180);
 
-
 	data.ch[0] = xPWM;
 	data.ch[1] = yPWM;
 	data.ch[2] = zPWM;
 	data.ch[3] = yawPWM;
-
 
 	if (micros() - lastSbusSend > 1e6 / sbusFrequency) {
 		if (failsafe == false) {
@@ -474,58 +470,38 @@ void loop() {
 			sbus_tx.data(data);
 			sbus_tx.Write();
 		}
-	t_graph graph;
 
-	graph.id = 9;  // Example: set the message type ID
-	// Update current positions
-	graph.xPos = xPos;
-	graph.yPos = yPos;
-	graph.zPos = zPos;
-	graph.yawPos = yawPos;
+		t_graph graph;
 
-	// Update position setpoints
-	graph.xPosSetpoint = xPosSetpoint;
-	graph.yPosSetpoint = yPosSetpoint;
-	graph.zPosSetpoint = zPosSetpoint;
+		graph.id = 9;
 
-	// Update velocity outputs
-	graph.xPID1 = xVelOutput;
-	graph.yPID1 = yVelOutput;
-	graph.zPID1 = zVelOutput;
+		// Update current positions
+		graph.xPos = xPos;
+		graph.yPos = yPos;
+		graph.zPos = zPos;
+		graph.yawPos = yawPos;
 
-	// Update position outputs
-	graph.xPID2 = xVelSetpoint;
-	graph.yPID2 = yVelSetpoint;
-	graph.zPID2 = zVelSetpoint;
-	graph.yawPID2 = yawPosOutput;
+		// Update position setpoints
+		graph.xPosSetpoint = xPosSetpoint;
+		graph.yPosSetpoint = yPosSetpoint;
+		graph.zPosSetpoint = zPosSetpoint;
 
-	// Update PWM values
-	graph.xPWM = xPWM;
-	graph.yPWM = yPWM;
-	graph.zPWM = zPWM;
-	graph.yawPWM = yawPWM;
+		// Update velocity outputs
+		graph.xPID1 = xVelOutput;
+		graph.yPID1 = yVelOutput;
+		graph.zPID1 = zVelOutput;
 
-	// Serial.print("xPos: "); Serial.print(graph.xPos); Serial.print(" ");
-	// Serial.print("yPos: "); Serial.print(graph.yPos); Serial.print(" ");
-	// Serial.print("zPos: "); Serial.print(graph.zPos); Serial.print(" ");
-	// Serial.print("yawPos: "); Serial.print(graph.yawPos); Serial.print(" ");
+		// Update position outputs
+		graph.xPID2 = xVelSetpoint;
+		graph.yPID2 = yVelSetpoint;
+		graph.zPID2 = zVelSetpoint;
+		graph.yawPID2 = yawPosOutput;
 
-	// Serial.print("xSet: "); Serial.print(graph.xPosSetpoint); Serial.print(" ");
-	// Serial.print("ySett: "); Serial.print(graph.yPosSetpoint); Serial.print(" ");
-	// Serial.print("zSet: "); Serial.print(graph.zPosSetpoint); Serial.print(" ");
-	// Serial.print("xP1: "); Serial.print(graph.xPID1); Serial.print(" ");
-	// Serial.print("yP1: "); Serial.print(graph.yPID1); Serial.print(" ");
-	// Serial.print("zP1: "); Serial.print(graph.zPID1); Serial.print(" ");
-	// Serial.print("xP2: "); Serial.print(graph.xPID2); Serial.print(" ");
-	// Serial.print("yP2: "); Serial.print(graph.yPID2); Serial.print(" ");
-	// Serial.print("zP2: "); Serial.print(graph.zPID2); Serial.print(" ");
-	// Serial.print("yawP2: "); Serial.print(graph.yawPID2); Serial.print(" ");
-	// Serial.print("xPWM: "); Serial.print(graph.xPWM); Serial.print(" ");
-	// Serial.print("yPWM: "); Serial.print(graph.yPWM); Serial.print(" ");
-	// Serial.print("zPWM: "); Serial.print(graph.zPWM); Serial.print(" ");
-	// Serial.print("yawPWM: "); Serial.println(graph.yawPWM);
-	esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
-	// Serial.print("size graph: "); Serial.println(sizeof(t_graph));
+		// Update PWM values
+		graph.xPWM = xPWM;
+		graph.yPWM = yPWM;
+		graph.zPWM = zPWM;
+		graph.yawPWM = yawPWM;
+		esp_now_send(senderMacAdd, (uint8_t *)&graph, sizeof(t_graph));
 	}
 }
-
