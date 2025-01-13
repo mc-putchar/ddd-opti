@@ -115,7 +115,7 @@ function App() {
 				trim={trim1} setTrim={setTrim1}
 				frame={frame1} setFrame={setFrame1}
 				pathLen={pathLen1} color={colors[1]} />
-			{/* <DroneControll
+			<DroneControll
 				index={2} bat={bat2} rc={rc2} ws={ws}
 				setpoint={setpoint2} setSetpoint={setSetpoint2}
 				light={light2} setLight={setLight2}
@@ -128,7 +128,7 @@ function App() {
 				light={light3} setLight={setLight3}
 				trim={trim3} setTrim={setTrim3}
 				frame={frame3} setFrame={setFrame3}
-				pathLen={pathLen3} color={colors[3]} /> */}
+				pathLen={pathLen3} color={colors[3]} />
 		</div>
 
 		{/* Graph */}

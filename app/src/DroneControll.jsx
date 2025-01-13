@@ -98,9 +98,9 @@ function DroneControll({ bat, rc, index, ws, frame, setFrame, pathLen,
 			</div>
 
 			{/* Pid corrections */}
-			<div className="col-span-5 bg-stone-700 p-2 flex flex-col">
+			{/* <div className="col-span-5 bg-stone-700 p-2 flex flex-col">
 				<Pid index={index} ws={ws}/>
-			</div>
+			</div> */}
 		</div>
 	</>
 	)

@@ -59,15 +59,15 @@ const Live3dview = React.memo(({
 		<Drone
 			position={position0} light={light0} setpoint={setpoint0} 
 			color={colors[0]} droneGlb={droneGlb} ati={ati0} />
-		{/* <Drone
+		<Drone
 			position={position1} light={light1} setpoint={setpoint1} 
-			color={colors[1]} droneGlb={droneGlb} ati={ati1} /> */}
-		{/* <Drone
+			color={colors[1]} droneGlb={droneGlb} ati={ati1} />
+		<Drone
 			position={position2} light={light2} setpoint={setpoint2} 
 			color={colors[2]} droneGlb={droneGlb} ati={ati2} />
 		<Drone
 			position={position3} light={light3} setpoint={setpoint3} 
-			color={colors[3]} droneGlb={droneGlb} ati={ati3} /> */}
+			color={colors[3]} droneGlb={droneGlb} ati={ati3} />
 
 		<OptiCameras/>
 
