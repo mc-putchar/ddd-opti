@@ -34,11 +34,11 @@ Below is a graphical representation of the system architecture, illustrating how
 
 ## Demo
 
-gif0
+gif0 //in construction
 
-gif1
+gif1 //in construction
 
-gif2
+gif2 //in construction
 
 ![Drone Left-Right Movement](link-to-your-gif.gif)  
 
