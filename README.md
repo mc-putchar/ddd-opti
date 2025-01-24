@@ -35,7 +35,7 @@ Below is a graphical representation of the system architecture, illustrating how
 ## Demo
 
 
-![Drone Left-Right Movement](extra/demo.gif)  
+![Drone Left-Right Movement](extras/demo.gif)  
 
 ---
 
